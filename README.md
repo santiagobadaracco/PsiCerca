@@ -1,156 +1,83 @@
-🧠 PsiCerca
+# PsiCerca v1
 
-Encontrá profesionales de salud mental cerca tuyo.
+MVP de plataforma web para conectar personas con profesionales de Psicología.
 
-PsiCerca es una plataforma digital en desarrollo que busca facilitar el encuentro entre personas que buscan atención psicológica y profesionales de la salud mental.
+## Arquitectura
 
-El proyecto combina un directorio de profesionales, herramientas de búsqueda y, progresivamente, funcionalidades para facilitar la gestión de consultas y turnos.
+- **Frontend:** HTML + CSS + JavaScript vanilla.
+- **Hosting:** GitHub Pages.
+- **Autenticación:** Supabase Auth (email + contraseña).
+- **Base de datos:** Supabase PostgreSQL.
+- **Seguridad:** Row Level Security (RLS) en tablas y políticas de acceso.
+- **Sin backend propio:** el navegador se comunica con Supabase usando la clave pública `anon`.
 
----
+## Funcionalidades v1
 
-🚀 Estado del proyecto
+### Públicas
+- Landing de PsiCerca.
+- Directorio de profesionales.
+- Perfil público de profesional.
+- Registro e inicio de sesión.
 
-«Actualmente en Fase 0 — Validación»
+### Para psicólogos
+- Crear cuenta.
+- Panel profesional.
+- Completar y editar perfil.
+- Publicar/despublicar perfil.
+- Cerrar sesión.
 
-La primera versión de PsiCerca está enfocada en validar la propuesta y conocer las necesidades tanto de profesionales como de personas que buscan atención.
+### Próxima versión
+- Agenda.
+- Disponibilidad horaria.
+- Solicitud de turnos.
+- Notificaciones.
+- Recuperación de contraseña.
+- Verificación de matrícula.
+- Planes Premium.
 
-El proyecto se desarrolla progresivamente, priorizando la validación de cada funcionalidad antes de realizar inversiones mayores en infraestructura.
+## Estructura
 
----
-
-✨ Características previstas
-
-Para quienes buscan atención
-
-- 🔎 Búsqueda de profesionales.
-- 📍 Filtros por ubicación.
-- 💻 Modalidad presencial y virtual.
-- 🧠 Orientación o enfoque profesional.
-- 👤 Perfiles profesionales.
-- 📅 Solicitud de turnos.
-- 🔔 Recordatorios de turnos.
-
-Para profesionales
-
-- 👤 Perfil profesional.
-- 📋 Información sobre formación y matrícula.
-- 📍 Ubicación y modalidad de atención.
-- 📅 Gestión de disponibilidad.
-- 🗓️ Agenda online.
-- 📊 Estadísticas de perfil.
-- 🔗 Página profesional personalizada.
-
-Las funcionalidades se incorporarán progresivamente durante el desarrollo del proyecto.
-
----
-
-🎯 Objetivo
-
-PsiCerca busca construir una herramienta sencilla que permita:
-
-Para usuarios:
-
-«Encontrar profesionales de salud mental de manera clara y conveniente.»
-
-Para profesionales:
-
-«Aumentar su visibilidad y disponer de herramientas digitales para facilitar la gestión de su práctica.»
-
----
-
-🛠️ Tecnologías
-
-La primera versión utiliza tecnologías web estándar:
-
-- HTML5
-- CSS3
-- JavaScript
-
-El proyecto está diseñado para poder evolucionar posteriormente hacia una arquitectura con backend, base de datos y sistema de autenticación.
-
----
-
-📁 Estructura inicial
-
-PsiCerca/
-│
+```text
+PsiCerca-v1/
 ├── index.html
-├── README.md
-└── assets/
+├── login.html
+├── registro.html
+├── dashboard.html
+├── profesionales.html
+├── profesional.html
+├── css/
+│   └── styles.css
+├── js/
+│   ├── config.example.js
+│   ├── supabase.js
+│   ├── auth.js
+│   ├── dashboard.js
+│   └── directorio.js
+└── supabase/
+    └── schema.sql
+```
 
-La estructura del proyecto se ampliará a medida que se incorporen nuevas funcionalidades.
+## Configuración de Supabase
 
----
+1. Crear un proyecto en Supabase.
+2. Abrir **SQL Editor** y ejecutar `supabase/schema.sql`.
+3. Copiar `js/config.example.js` como `js/config.js`.
+4. En `js/config.js`, pegar la **Project URL** y la clave pública **anon** del proyecto.
+5. Subir todos los archivos al repositorio de GitHub Pages.
 
-🌱 Roadmap
+> Nunca colocar una `service_role key` en el frontend. La única clave que debe aparecer en GitHub es la clave pública `anon`.
 
-Fase 0 — Validación
+## Importante
 
-- [x] Landing inicial
-- [x] Identidad visual
-- [x] Formulario para profesionales
-- [x] Formulario para usuarios
-- [ ] Validación con usuarios reales
+La v1 no guarda historias clínicas, diagnósticos, tratamientos ni otros datos clínicos. El perfil profesional contiene información pública de presentación. La verificación de matrícula todavía debe implementarse antes de presentar perfiles como verificados.
 
-Fase 1 — Directorio
+## Publicación en GitHub Pages
 
-- [ ] Registro de profesionales
-- [ ] Perfiles profesionales
-- [ ] Sistema de búsqueda
-- [ ] Filtros
+En GitHub: **Settings → Pages → Deploy from a branch → main → /root**.
 
-Fase 2 — Contacto
+## Modelo de datos
 
-- [ ] Solicitud de contacto
-- [ ] Integración con WhatsApp
-- [ ] Solicitud de turnos
+- `profiles`: información pública del profesional.
+- `auth.users`: gestionada por Supabase para las cuentas y credenciales.
 
-Fase 3 — Agenda
-
-- [ ] Disponibilidad profesional
-- [ ] Agenda online
-- [ ] Confirmación de turnos
-- [ ] Recordatorios
-
-Fase 4 — Plataforma
-
-- [ ] Panel para profesionales
-- [ ] Estadísticas
-- [ ] Perfiles avanzados
-- [ ] Herramientas de gestión
-
----
-
-⚖️ Alcance
-
-PsiCerca funciona como una plataforma tecnológica de conexión entre usuarios y profesionales independientes.
-
-PsiCerca no presta servicios de psicología, no realiza diagnósticos y no realiza tratamientos psicológicos.
-
-Los profesionales que eventualmente formen parte de la plataforma serán responsables de su ejercicio profesional y del cumplimiento de las normas aplicables.
-
-La publicación de perfiles profesionales estará sujeta a mecanismos de verificación que serán definidos durante el desarrollo del proyecto.
-
----
-
-🔐 Privacidad
-
-La protección de los datos personales es un principio central del proyecto.
-
-Durante las primeras etapas se evitará recopilar información clínica o datos sensibles que no sean necesarios para el funcionamiento de la plataforma.
-
-Antes de implementar funcionalidades que involucren información de pacientes, turnos o cualquier otro dato sensible, se definirán las medidas técnicas y legales correspondientes.
-
----
-
-📌 Desarrollo
-
-PsiCerca se encuentra actualmente en desarrollo.
-
-Las funcionalidades, arquitectura y tecnologías utilizadas pueden cambiar a medida que avance el proyecto y se obtenga información de usuarios y profesionales.
-
----
-
-📄 Licencia
-
-La licencia del proyecto será definida posteriormente.
+El usuario autenticado solo puede modificar su propio perfil mediante RLS.
