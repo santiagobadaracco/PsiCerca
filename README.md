@@ -1,83 +1,24 @@
-# PsiCerca v1
+# PsiCerca — Fase 0.1
 
-MVP de plataforma web para conectar personas con profesionales de Psicología.
+Landing de validación + endpoint opcional con Google Apps Script.
 
-## Arquitectura
+## Qué incluye
+- Landing responsive.
+- Formulario de interés para psicólogos.
+- Formulario de interés para personas que buscan profesional.
+- Validación comercial de la propuesta.
+- Aviso de privacidad básico.
+- Modo demo con localStorage.
+- `google-apps-script.gs` para guardar registros en Google Sheets.
 
-- **Frontend:** HTML + CSS + JavaScript vanilla.
-- **Hosting:** GitHub Pages.
-- **Autenticación:** Supabase Auth (email + contraseña).
-- **Base de datos:** Supabase PostgreSQL.
-- **Seguridad:** Row Level Security (RLS) en tablas y políticas de acceso.
-- **Sin backend propio:** el navegador se comunica con Supabase usando la clave pública `anon`.
+## Configuración del almacenamiento
+1. Crear una hoja de cálculo en Google Sheets.
+2. Abrir Extensiones → Apps Script.
+3. Copiar el contenido de `google-apps-script.gs`.
+4. Ejecutar `setup()` una vez y autorizar.
+5. Implementar → Nueva implementación → Aplicación web → acceso según necesidad.
+6. Copiar la URL `/exec`.
+7. En `index.html`, reemplazar `FORM_ENDPOINT` por esa URL.
+8. Volver a subir `index.html` a GitHub Pages.
 
-## Funcionalidades v1
-
-### Públicas
-- Landing de PsiCerca.
-- Directorio de profesionales.
-- Perfil público de profesional.
-- Registro e inicio de sesión.
-
-### Para psicólogos
-- Crear cuenta.
-- Panel profesional.
-- Completar y editar perfil.
-- Publicar/despublicar perfil.
-- Cerrar sesión.
-
-### Próxima versión
-- Agenda.
-- Disponibilidad horaria.
-- Solicitud de turnos.
-- Notificaciones.
-- Recuperación de contraseña.
-- Verificación de matrícula.
-- Planes Premium.
-
-## Estructura
-
-```text
-PsiCerca-v1/
-├── index.html
-├── login.html
-├── registro.html
-├── dashboard.html
-├── profesionales.html
-├── profesional.html
-├── css/
-│   └── styles.css
-├── js/
-│   ├── config.example.js
-│   ├── supabase.js
-│   ├── auth.js
-│   ├── dashboard.js
-│   └── directorio.js
-└── supabase/
-    └── schema.sql
-```
-
-## Configuración de Supabase
-
-1. Crear un proyecto en Supabase.
-2. Abrir **SQL Editor** y ejecutar `supabase/schema.sql`.
-3. Copiar `js/config.example.js` como `js/config.js`.
-4. En `js/config.js`, pegar la **Project URL** y la clave pública **anon** del proyecto.
-5. Subir todos los archivos al repositorio de GitHub Pages.
-
-> Nunca colocar una `service_role key` en el frontend. La única clave que debe aparecer en GitHub es la clave pública `anon`.
-
-## Importante
-
-La v1 no guarda historias clínicas, diagnósticos, tratamientos ni otros datos clínicos. El perfil profesional contiene información pública de presentación. La verificación de matrícula todavía debe implementarse antes de presentar perfiles como verificados.
-
-## Publicación en GitHub Pages
-
-En GitHub: **Settings → Pages → Deploy from a branch → main → /root**.
-
-## Modelo de datos
-
-- `profiles`: información pública del profesional.
-- `auth.users`: gestionada por Supabase para las cuentas y credenciales.
-
-El usuario autenticado solo puede modificar su propio perfil mediante RLS.
+Mientras `FORM_ENDPOINT` esté vacío, el sitio funciona en modo demo y guarda datos solamente en el navegador. No usar ese modo para captar datos reales.
