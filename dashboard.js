@@ -1,4 +1,3 @@
-javascript
 ;(async () => {
   try {
     const user = await requireUser();
