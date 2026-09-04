@@ -68,23 +68,27 @@ fields.forEach(field => {
   }
 });
 
-const publicCheckbox = document.getElementById('is_public');
+const publicCheckbox =
+  document.getElementById('is_public');
 
 if (publicCheckbox) {
-  publicCheckbox.checked = !!currentProfile.is_public;
+  publicCheckbox.checked =
+    !!currentProfile.is_public;
 }
 
 // ==============================
 // FOTO
 // ==============================
 
-const photoInput = document.getElementById('photo');
-const photoPreview = document.getElementById('photoPreview');
+const photoInput =
+  document.getElementById('photo');
+
+const photoPreview =
+  document.getElementById('photoPreview');
 
 let photoWasRemoved = false;
 
 function getInitials() {
-
   const nombre =
     currentProfile.display_name || 'PS';
 
@@ -98,7 +102,6 @@ function getInitials() {
 }
 
 function mostrarFoto(url) {
-
   if (!photoPreview) return;
 
   photoPreview.innerHTML = '';
@@ -119,14 +122,11 @@ function mostrarFoto(url) {
 }
 
 function mostrarIniciales() {
-
   if (!photoPreview) return;
 
   photoPreview.innerHTML = '';
   photoPreview.textContent = getInitials();
 }
-
-// Mostrar foto guardada
 
 if (currentProfile.photo_url) {
   mostrarFoto(currentProfile.photo_url);
@@ -142,7 +142,6 @@ let removeButton =
   document.getElementById('removePhoto');
 
 if (!removeButton && photoInput) {
-
   removeButton =
     document.createElement('button');
 
@@ -163,11 +162,9 @@ if (!removeButton && photoInput) {
 }
 
 if (removeButton) {
-
   removeButton.addEventListener(
     'click',
     () => {
-
       photoWasRemoved = true;
 
       if (photoInput) {
@@ -189,28 +186,16 @@ if (removeButton) {
 // ==============================
 
 if (photoInput) {
-
   photoInput.addEventListener(
     'change',
     function () {
-
-      const archivo =
-        this.files[0];
+      const archivo = this.files[0];
 
       if (!archivo) return;
 
-      // Si selecciona una nueva foto,
-      // dejamos de considerar que quiere eliminarla.
-
       photoWasRemoved = false;
 
-      // Tamaño máximo
-
-      if (
-        archivo.size >
-        2 * 1024 * 1024
-      ) {
-
+      if (archivo.size > 2 * 1024 * 1024) {
         showMessage(
           'msg',
           'La foto no puede superar los 2 MB.',
@@ -218,11 +203,8 @@ if (photoInput) {
         );
 
         this.value = '';
-
         return;
       }
-
-      // Formatos permitidos
 
       const formatosPermitidos = [
         'image/jpeg',
@@ -235,7 +217,6 @@ if (photoInput) {
           archivo.type
         )
       ) {
-
         showMessage(
           'msg',
           'La foto debe ser JPG, PNG o WEBP.',
@@ -243,26 +224,18 @@ if (photoInput) {
         );
 
         this.value = '';
-
         return;
       }
 
-      // Vista previa
+      const lector = new FileReader();
 
-      const lector =
-        new FileReader();
-
-      lector.onload =
-        function (evento) {
-
-          mostrarFoto(
-            evento.target.result
-          );
-
-        };
+      lector.onload = function (evento) {
+        mostrarFoto(
+          evento.target.result
+        );
+      };
 
       lector.readAsDataURL(archivo);
-
     }
   );
 }
@@ -272,26 +245,21 @@ if (photoInput) {
 // ==============================
 
 const form =
-  document.getElementById(
-    'profileForm'
-  );
+  document.getElementById('profileForm');
 
 if (!form) {
-
   throw new Error(
     'No se encontró el formulario del perfil.'
   );
-
 }
 
 // ==============================
-// GUARDAR
+// GUARDAR PERFIL
 // ==============================
 
 form.addEventListener(
   'submit',
   async function (event) {
-
     event.preventDefault();
 
     const button =
@@ -300,16 +268,11 @@ form.addEventListener(
       );
 
     if (button) {
-
       button.disabled = true;
-
-      button.textContent =
-        'Guardando…';
-
+      button.textContent = 'Guardando…';
     }
 
     try {
-
       let photoURL =
         currentProfile.photo_url || '';
 
@@ -318,15 +281,14 @@ form.addEventListener(
         photoInput.files &&
         photoInput.files[0];
 
-      // ==================================
-      // ELIMINAR FOTO
-      // ==================================
+      // ==============================
+      // QUITAR FOTO
+      // ==============================
 
       if (
         photoWasRemoved &&
         currentProfile.photo_url
       ) {
-
         const oldURL =
           currentProfile.photo_url;
 
@@ -337,11 +299,13 @@ form.addEventListener(
           oldURL.indexOf(marker);
 
         if (position !== -1) {
-
-          const oldPath =
+          let oldPath =
             oldURL.substring(
               position + marker.length
             );
+
+          oldPath =
+            oldPath.split('?')[0];
 
           const deleteResult =
             await sb.storage
@@ -351,18 +315,16 @@ form.addEventListener(
           if (deleteResult.error) {
             throw deleteResult.error;
           }
-
         }
 
         photoURL = '';
       }
 
-      // ==================================
+      // ==============================
       // SUBIR NUEVA FOTO
-      // ==================================
+      // ==============================
 
       if (archivo) {
-
         const extension =
           archivo.name
             .split('.')
@@ -373,9 +335,6 @@ form.addEventListener(
           user.id +
           '/profile.' +
           extension;
-
-        // Primero eliminamos las posibles
-        // versiones anteriores.
 
         const extensiones = [
           'jpg',
@@ -406,8 +365,6 @@ form.addEventListener(
           );
         }
 
-        // Subir nueva foto
-
         const subida =
           await sb.storage
             .from('profile-photos')
@@ -429,9 +386,7 @@ form.addEventListener(
         const publicURL =
           sb.storage
             .from('profile-photos')
-            .getPublicUrl(
-              ruta
-            );
+            .getPublicUrl(ruta);
 
         photoURL =
           publicURL.data.publicUrl +
@@ -439,89 +394,68 @@ form.addEventListener(
           Date.now();
       }
 
-      // ==================================
+      // ==============================
       // DATOS DEL PERFIL
-      // ==================================
+      // ==============================
 
       const payload = {
-
         id: user.id,
 
         display_name:
           document
-            .getElementById(
-              'display_name'
-            )
+            .getElementById('display_name')
             .value
             .trim(),
 
         license:
           document
-            .getElementById(
-              'license'
-            )
+            .getElementById('license')
             .value
             .trim(),
 
         jurisdiction:
           document
-            .getElementById(
-              'jurisdiction'
-            )
+            .getElementById('jurisdiction')
             .value,
 
         zone:
           document
-            .getElementById(
-              'zone'
-            )
+            .getElementById('zone')
             .value
             .trim(),
 
         modality:
           document
-            .getElementById(
-              'modality'
-            )
+            .getElementById('modality')
             .value,
 
         orientation:
           document
-            .getElementById(
-              'orientation'
-            )
+            .getElementById('orientation')
             .value
             .trim(),
 
         population:
           document
-            .getElementById(
-              'population'
-            )
+            .getElementById('population')
             .value
             .trim(),
 
         whatsapp:
           document
-            .getElementById(
-              'whatsapp'
-            )
+            .getElementById('whatsapp')
             .value
             .trim(),
 
         bio:
           document
-            .getElementById(
-              'bio'
-            )
+            .getElementById('bio')
             .value
             .trim(),
 
         is_public:
           document
-            .getElementById(
-              'is_public'
-            )
+            .getElementById('is_public')
             .checked,
 
         photo_url:
@@ -531,9 +465,9 @@ form.addEventListener(
           new Date().toISOString()
       };
 
-      // ==================================
+      // ==============================
       // GUARDAR EN SUPABASE
-      // ==================================
+      // ==============================
 
       const resultado =
         await sb
@@ -549,9 +483,9 @@ form.addEventListener(
         throw resultado.error;
       }
 
-      // ==================================
+      // ==============================
       // ACTUALIZAR ESTADO LOCAL
-      // ==================================
+      // ==============================
 
       currentProfile.photo_url =
         photoURL;
@@ -564,20 +498,10 @@ form.addEventListener(
 
       photoWasRemoved = false;
 
-      // ==================================
-      // MOSTRAR RESULTADO
-      // ==================================
-
       if (photoURL) {
-
-        mostrarFoto(
-          photoURL
-        );
-
+        mostrarFoto(photoURL);
       } else {
-
         mostrarIniciales();
-
       }
 
       showMessage(
@@ -586,7 +510,6 @@ form.addEventListener(
       );
 
     } catch (error) {
-
       console.error(
         'Error guardando perfil:',
         error
@@ -600,30 +523,23 @@ form.addEventListener(
       );
 
     } finally {
-
       if (button) {
-
         button.disabled = false;
-
         button.textContent =
           'Guardar cambios';
-
       }
-
     }
-
   }
 );
 ```
 
 } catch (error) {
-
-```
 console.error(
-  'Error en dashboard:',
-  error
+'Error en dashboard:',
+error
 );
 
+```
 showMessage(
   'msg',
   error.message ||
@@ -633,5 +549,5 @@ showMessage(
 ```
 
 }
-
 })();
+
