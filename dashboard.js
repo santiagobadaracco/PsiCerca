@@ -1,4 +1,4 @@
-(async () => {
+;(async () => {
 try {
 const user = await requireUser();
 
