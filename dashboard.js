@@ -1,6 +1,8 @@
+```javascript
 (async () => {
   try {
     const user = await requireUser();
+
     if (!user) return;
 
     document.getElementById('welcome').textContent =
@@ -19,7 +21,6 @@
       throw profileError;
     }
 
-    // Datos iniciales provenientes del registro
     const meta = user.user_metadata || {};
 
     const currentProfile = profile || {
@@ -33,7 +34,8 @@
       population: '',
       whatsapp: '',
       bio: '',
-      is_public: false
+      is_public: false,
+      photo_url: ''
     };
 
     // Cargar datos en el formulario
@@ -57,13 +59,113 @@
       }
     });
 
+    // Estado de publicación
     const publicCheckbox = document.getElementById('is_public');
 
     if (publicCheckbox) {
       publicCheckbox.checked = !!currentProfile.is_public;
     }
 
-    // Guardar perfil
+    // ==============================
+    // FOTO DE PERFIL
+    // ==============================
+
+    const photoInput = document.getElementById('photo');
+    const photoPreview = document.getElementById('photoPreview');
+
+    const initials =
+      (currentProfile.display_name || 'PS')
+        .split(' ')
+        .map(x => x[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase();
+
+    // Mostrar foto existente
+    if (currentProfile.photo_url) {
+
+      photoPreview.innerHTML = `
+        <img
+          src="${escapeHTML(currentProfile.photo_url)}"
+          alt="Foto de perfil"
+          style="
+            width:100%;
+            height:100%;
+            object-fit:cover;
+          "
+        >
+      `;
+
+    } else {
+
+      photoPreview.textContent = initials;
+
+    }
+
+    // Vista previa antes de guardar
+    if (photoInput) {
+
+      photoInput.addEventListener('change', () => {
+
+        const file = photoInput.files[0];
+
+        if (!file) return;
+
+        if (file.size > 2 * 1024 * 1024) {
+
+          showMessage(
+            'msg',
+            'La foto no puede superar los 2 MB.',
+            true
+          );
+
+          photoInput.value = '';
+
+          return;
+        }
+
+        const allowedTypes = [
+          'image/jpeg',
+          'image/png',
+          'image/webp'
+        ];
+
+        if (!allowedTypes.includes(file.type)) {
+
+          showMessage(
+            'msg',
+            'La foto debe ser JPG, PNG o WEBP.',
+            true
+          );
+
+          photoInput.value = '';
+
+          return;
+        }
+
+        const previewURL = URL.createObjectURL(file);
+
+        photoPreview.innerHTML = `
+          <img
+            src="${previewURL}"
+            alt="Vista previa"
+            style="
+              width:100%;
+              height:100%;
+              object-fit:cover;
+            "
+          >
+        `;
+
+      });
+
+    }
+
+
+    // ==============================
+    // GUARDAR PERFIL
+    // ==============================
+
     document
       .getElementById('profileForm')
       .addEventListener('submit', async e => {
@@ -77,41 +179,122 @@
 
         try {
 
+          let photoURL = currentProfile.photo_url || '';
+
+          // ------------------------------
+          // SUBIR FOTO SI SE SELECCIONÓ
+          // ------------------------------
+
+          const file = photoInput?.files?.[0];
+
+          if (file) {
+
+            const extension =
+              file.name.split('.').pop().toLowerCase();
+
+            const filePath =
+              `${user.id}/profile.${extension}`;
+
+            const { error: uploadError } =
+              await sb.storage
+                .from('profile-photos')
+                .upload(
+                  filePath,
+                  file,
+                  {
+                    cacheControl: '3600',
+                    upsert: true,
+                    contentType: file.type
+                  }
+                );
+
+            if (uploadError) {
+              throw uploadError;
+            }
+
+            const {
+              data: publicURLData
+            } = sb.storage
+              .from('profile-photos')
+              .getPublicUrl(filePath);
+
+            photoURL = publicURLData.publicUrl;
+
+          }
+
+
+          // ------------------------------
+          // GUARDAR DATOS DEL PERFIL
+          // ------------------------------
+
           const payload = {
+
             id: user.id,
+
             display_name:
-              document.getElementById('display_name').value.trim(),
+              document
+                .getElementById('display_name')
+                .value
+                .trim(),
 
             license:
-              document.getElementById('license').value.trim(),
+              document
+                .getElementById('license')
+                .value
+                .trim(),
 
             jurisdiction:
-              document.getElementById('jurisdiction').value,
+              document
+                .getElementById('jurisdiction')
+                .value,
 
             zone:
-              document.getElementById('zone').value.trim(),
+              document
+                .getElementById('zone')
+                .value
+                .trim(),
 
             modality:
-              document.getElementById('modality').value,
+              document
+                .getElementById('modality')
+                .value,
 
             orientation:
-              document.getElementById('orientation').value.trim(),
+              document
+                .getElementById('orientation')
+                .value
+                .trim(),
 
             population:
-              document.getElementById('population').value.trim(),
+              document
+                .getElementById('population')
+                .value
+                .trim(),
 
             whatsapp:
-              document.getElementById('whatsapp').value.trim(),
+              document
+                .getElementById('whatsapp')
+                .value
+                .trim(),
 
             bio:
-              document.getElementById('bio').value.trim(),
+              document
+                .getElementById('bio')
+                .value
+                .trim(),
 
             is_public:
-              document.getElementById('is_public').checked,
+              document
+                .getElementById('is_public')
+                .checked,
+
+            photo_url:
+              photoURL,
 
             updated_at:
               new Date().toISOString()
           };
+
 
           const { error } = await sb
             .from('profiles')
@@ -123,6 +306,11 @@
             throw error;
           }
 
+
+          // Actualizar referencia local
+          currentProfile.photo_url = photoURL;
+
+
           showMessage(
             'msg',
             'Perfil guardado correctamente.'
@@ -130,11 +318,15 @@
 
         } catch (error) {
 
-          console.error('Error guardando perfil:', error);
+          console.error(
+            'Error guardando perfil:',
+            error
+          );
 
           showMessage(
             'msg',
-            error.message || 'No se pudieron guardar los cambios.',
+            error.message ||
+            'No se pudieron guardar los cambios.',
             true
           );
 
@@ -144,16 +336,25 @@
           button.textContent = 'Guardar cambios';
 
         }
+
       });
+
 
   } catch (error) {
 
-    console.error('Error en dashboard:', error);
+    console.error(
+      'Error en dashboard:',
+      error
+    );
 
     showMessage(
       'msg',
-      error.message || 'Ocurrió un error.',
+      error.message ||
+      'Ocurrió un error.',
       true
     );
+
   }
+
 })();
+```
