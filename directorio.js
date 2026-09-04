@@ -44,6 +44,7 @@ async function loadProfiles() {
   const population = normalizeText(document.getElementById('population').value);
 
   const filtered = data.filter(profile => {
+
     const searchableText = normalizeText([
       profile.display_name,
       profile.orientation,
@@ -63,7 +64,10 @@ async function loadProfiles() {
       !modality || profile.modality === modality;
 
     const matchesPopulation =
-      !population || profilePopulation.includes(population);
+      !population || profilePopulation
+        .split(',')
+        .map(item => normalizeText(item))
+        .some(item => item === population);
 
     return (
       matchesQuery &&
@@ -88,6 +92,7 @@ async function loadProfiles() {
   }
 
   box.innerHTML = filtered.map(profile => {
+
     const initials = (profile.display_name || 'P')
       .split(' ')
       .map(word => word[0])
@@ -96,8 +101,18 @@ async function loadProfiles() {
       .toUpperCase();
 
     const avatar = profile.photo_url
-      ? `<img src="${escapeHTML(profile.photo_url)}" alt="${escapeHTML(profile.display_name)}" style="width:52px;height:52px;border-radius:50%;object-fit:cover;">`
-      : `<div class="avatar">${escapeHTML(initials)}</div>`;
+      ? `
+        <img
+          src="${escapeHTML(profile.photo_url)}"
+          alt="${escapeHTML(profile.display_name)}"
+          style="width:52px;height:52px;border-radius:50%;object-fit:cover;"
+        >
+      `
+      : `
+        <div class="avatar">
+          ${escapeHTML(initials)}
+        </div>
+      `;
 
     const chips = [
       profile.orientation,
@@ -106,17 +121,30 @@ async function loadProfiles() {
       profile.population
     ]
       .filter(Boolean)
-      .map(item => `<span class="chip">${escapeHTML(item)}</span>`)
+      .map(item => `
+        <span class="chip">
+          ${escapeHTML(item)}
+        </span>
+      `)
       .join('');
 
     return `
       <article class="pro-card">
+
         <div class="pro-top">
+
           ${avatar}
+
           <div>
-            <h3>${escapeHTML(profile.display_name || 'Profesional')}</h3>
-            <p>${escapeHTML(profile.license || '')}</p>
+            <h3>
+              ${escapeHTML(profile.display_name || 'Profesional')}
+            </h3>
+
+            <p>
+              ${escapeHTML(profile.license || '')}
+            </p>
           </div>
+
         </div>
 
         <div class="chips">
@@ -124,18 +152,26 @@ async function loadProfiles() {
         </div>
 
         <p>
-          ${escapeHTML(profile.bio || 'Profesional de la salud mental.')}
+          ${escapeHTML(
+            profile.bio ||
+            'Profesional de la salud mental.'
+          )}
         </p>
 
-        <a class="btn primary full" href="profesional.html?id=${encodeURIComponent(profile.id)}">
+        <a
+          class="btn primary full"
+          href="profesional.html?id=${encodeURIComponent(profile.id)}"
+        >
           Ver perfil
         </a>
+
       </article>
     `;
   }).join('');
 }
 
 window.clearFilters = function () {
+
   document.getElementById('q').value = '';
   document.getElementById('zone').value = '';
   document.getElementById('modality').value = '';
