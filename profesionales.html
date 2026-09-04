@@ -31,29 +31,37 @@
     </div>
   </header>
 
+
   <main class="directory">
 
     <div class="container">
 
-      <span class="eyebrow">Directorio</span>
+      <span class="eyebrow">
+        Directorio
+      </span>
 
-      <h1>Encontrá un profesional</h1>
+      <h1>
+        Encontrá un profesional
+      </h1>
 
       <p class="small">
         Explorá los perfiles públicos disponibles.
       </p>
 
+
       <div class="filters">
 
         <input
           id="q"
-          placeholder="Nombre u orientación"
+          placeholder="Nombre, orientación o población"
         >
+
 
         <input
           id="zone"
           placeholder="Zona / localidad"
         >
+
 
         <select id="modality">
 
@@ -61,28 +69,80 @@
             Cualquier modalidad
           </option>
 
-          <option>
+          <option value="Presencial y online">
             Presencial y online
           </option>
 
-          <option>
+          <option value="Solo online">
             Solo online
           </option>
 
-          <option>
+          <option value="Solo presencial">
             Solo presencial
           </option>
 
         </select>
 
+
+        <select id="population">
+
+          <option value="">
+            Cualquier población
+          </option>
+
+          <option value="Niños">
+            Niños
+          </option>
+
+          <option value="Adolescentes">
+            Adolescentes
+          </option>
+
+          <option value="Adultos">
+            Adultos
+          </option>
+
+          <option value="Adultos mayores">
+            Adultos mayores
+          </option>
+
+          <option value="Parejas">
+            Parejas
+          </option>
+
+          <option value="Familias">
+            Familias
+          </option>
+
+        </select>
+
+
         <button
           class="btn primary"
+          type="button"
           onclick="loadProfiles()"
         >
           Buscar
         </button>
 
+
+        <button
+          class="btn secondary"
+          type="button"
+          onclick="clearFilters()"
+        >
+          Limpiar
+        </button>
+
       </div>
+
+
+      <div
+        id="resultCount"
+        class="small"
+        style="margin-bottom:18px;"
+      ></div>
+
 
       <div
         id="results"
@@ -97,6 +157,7 @@
 
   </main>
 
+
   <footer class="footer">
 
     <div class="container">
@@ -105,7 +166,9 @@
 
   </footer>
 
+
   <script src="directorio.js"></script>
 
 </body>
+
 </html>
