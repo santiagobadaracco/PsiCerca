@@ -1,9 +1,10 @@
+```html
 <!doctype html>
 <html lang="es">
 
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <title>Perfil profesional — PsiCerca</title>
 
@@ -23,40 +24,42 @@
         Psi<span>Cerca</span>
       </a>
 
-      <a
-        href="profesionales.html"
-        class="btn secondary"
-      >
+      <a href="profesionales.html" class="btn secondary">
         ← Volver al directorio
       </a>
 
     </div>
   </header>
 
-  <main
-    class="form-wrap"
-    style="max-width:760px"
-  >
+  <main class="form-wrap" style="max-width:760px">
 
-    <div
-      id="profile"
-      class="panel"
-    >
+    <div id="profile" class="panel">
+
       <div class="empty">
         Cargando perfil…
       </div>
+
     </div>
 
   </main>
 
+  <footer class="footer">
+
+    <div class="container">
+      PsiCerca · Plataforma tecnológica · 2026
+    </div>
+
+  </footer>
+
+
   <script>
-    (async () => {
+
+    (async function () {
+
+      const box = document.getElementById('profile');
 
       const id =
-        new URLSearchParams(location.search).get('id');
-
-      const box =
-        document.getElementById('profile');
+        new URLSearchParams(window.location.search).get('id');
 
       if (!id) {
 
@@ -73,10 +76,7 @@
 
         const sb = requireSupabase();
 
-        const {
-          data: p,
-          error
-        } = await sb
+        const { data: p, error } = await sb
           .from('profiles')
           .select(`
             display_name,
@@ -97,6 +97,10 @@
           throw error;
         }
 
+        if (!p) {
+          throw new Error('Perfil no encontrado');
+        }
+
         const initials =
           (p.display_name || 'PS')
             .split(' ')
@@ -105,9 +109,8 @@
             .slice(0, 2)
             .toUpperCase();
 
-        const wa =
-          (p.whatsapp || '')
-            .replace(/\D/g, '');
+        const whatsapp =
+          (p.whatsapp || '').replace(/\D/g, '');
 
         box.innerHTML = `
 
@@ -127,13 +130,11 @@
               </span>
 
               <h1>
-                ${escapeHTML(
-                  p.display_name || 'Profesional'
-                )}
+                ${escapeHTML(p.display_name || 'Profesional')}
               </h1>
 
               <div class="small">
-                Matrícula
+                Matrícula:
                 ${escapeHTML(p.license || '—')}
                 ·
                 ${escapeHTML(p.jurisdiction || '—')}
@@ -142,6 +143,7 @@
             </div>
 
           </div>
+
 
           <div
             class="chips"
@@ -156,15 +158,16 @@
                 p.zone
               ]
               .filter(Boolean)
-              .map(x => `
-                <span class="chip">
+              .map(x =>
+                `<span class="chip">
                   ${escapeHTML(x)}
-                </span>
-              `)
+                </span>`
+              )
               .join('')
             }
 
           </div>
+
 
           <h2>
             Sobre mi práctica
@@ -179,14 +182,15 @@
             }
           </p>
 
+
           ${
-            wa
+            whatsapp
               ? `
                 <a
                   class="btn primary"
                   target="_blank"
                   rel="noopener"
-                  href="https://wa.me/${wa}"
+                  href="https://wa.me/${whatsapp}"
                 >
                   Contactar por WhatsApp
                 </a>
@@ -194,35 +198,39 @@
               : ''
           }
 
+
           <p
             class="small"
             style="margin-top:20px"
           >
             PsiCerca facilita el contacto y no determina
-            qué profesional es clínicamente adecuado para
-            una persona.
+            qué profesional es clínicamente adecuado
+            para una persona.
           </p>
 
         `;
 
-      } catch (err) {
+      } catch (error) {
 
         console.error(
           'Error cargando perfil:',
-          err
+          error
         );
 
         box.innerHTML = `
           <div class="empty">
-            Este perfil no está disponible
-            o no es público.
+            Este perfil no está disponible o no es público.
           </div>
         `;
 
       }
 
     })();
+
   </script>
 
 </body>
+
 </html>
+```
+
