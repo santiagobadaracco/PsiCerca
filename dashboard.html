@@ -126,6 +126,9 @@
           class="profile-form"
         >
 
+
+          <!-- FOTO -->
+
           <div class="field span-2">
 
             <label for="photo">
@@ -161,6 +164,8 @@
           </div>
 
 
+          <!-- NOMBRE -->
+
           <div class="field">
 
             <label for="display_name">
@@ -176,10 +181,12 @@
           </div>
 
 
+          <!-- JURISDICCIÓN PRINCIPAL -->
+
           <div class="field">
 
             <label for="jurisdiction">
-              Jurisdicción
+              Jurisdicción principal
             </label>
 
             <select id="jurisdiction">
@@ -201,10 +208,12 @@
           </div>
 
 
+          <!-- MATRÍCULA PRINCIPAL -->
+
           <div class="field">
 
             <label for="license">
-              Matrícula
+              Matrícula principal
             </label>
 
             <input
@@ -216,20 +225,32 @@
           </div>
 
 
-          <div class="field">
+          <!-- MATRÍCULAS -->
 
-            <label for="zone">
-              Zona / localidad
+          <div class="field span-2">
+
+            <label>
+              Otras matrículas
             </label>
 
-            <input
-              id="zone"
-              type="text"
-              placeholder="Ej. Lanús"
+            <p class="small">
+              Si tenés matrícula en otra jurisdicción, podés agregarla.
+            </p>
+
+            <div id="licensesContainer"></div>
+
+            <button
+              id="addLicense"
+              class="btn secondary"
+              type="button"
             >
+              + Agregar matrícula
+            </button>
 
           </div>
 
+
+          <!-- MODALIDAD -->
 
           <div class="field">
 
@@ -260,96 +281,127 @@
           </div>
 
 
-          <div class="field">
+          <!-- ZONAS -->
 
-  <label>
-    Población
-  </label>
+          <div class="field span-2">
 
-  <input
-    id="population"
-    type="hidden"
-  >
+            <label>
+              Zonas de atención presencial
+            </label>
 
-  <div class="population-options">
+            <p class="small">
+              Seleccioná dónde atendés presencialmente. Podés agregar más de una zona.
+            </p>
 
-    <label class="check">
-      <input
-        type="checkbox"
-        class="population-option"
-        value="Niños"
-      >
-      <span>Niños</span>
-    </label>
+            <div id="locationsContainer"></div>
 
-    <label class="check">
-      <input
-        type="checkbox"
-        class="population-option"
-        value="Adolescentes"
-      >
-      <span>Adolescentes</span>
-    </label>
+            <button
+              id="addLocation"
+              class="btn secondary"
+              type="button"
+            >
+              + Agregar zona de atención
+            </button>
 
-    <label class="check">
-      <input
-        type="checkbox"
-        class="population-option"
-        value="Adultos"
-      >
-      <span>Adultos</span>
-    </label>
-
-    <label class="check">
-      <input
-        type="checkbox"
-        class="population-option"
-        value="Adultos mayores"
-      >
-      <span>Adultos mayores</span>
-    </label>
-
-    <label class="check">
-      <input
-        type="checkbox"
-        class="population-option"
-        value="Parejas"
-      >
-      <span>Parejas</span>
-    </label>
-
-    <label class="check">
-      <input
-        type="checkbox"
-        class="population-option"
-        value="Familias"
-      >
-      <span>Familias</span>
-    </label>
-
-  </div>
-
-  <p class="small">
-    Podés seleccionar más de una opción.
-  </p>
-
-</div>
+          </div>
 
 
-          <div class="field">
+          <!-- POBLACIÓN -->
 
-            <label for="population">
+          <div class="field span-2">
+
+            <label>
               Población
             </label>
 
             <input
               id="population"
+              type="hidden"
+            >
+
+            <div class="population-options">
+
+              <label class="check">
+                <input
+                  type="checkbox"
+                  class="population-option"
+                  value="Niños"
+                >
+                <span>Niños</span>
+              </label>
+
+              <label class="check">
+                <input
+                  type="checkbox"
+                  class="population-option"
+                  value="Adolescentes"
+                >
+                <span>Adolescentes</span>
+              </label>
+
+              <label class="check">
+                <input
+                  type="checkbox"
+                  class="population-option"
+                  value="Adultos"
+                >
+                <span>Adultos</span>
+              </label>
+
+              <label class="check">
+                <input
+                  type="checkbox"
+                  class="population-option"
+                  value="Adultos mayores"
+                >
+                <span>Adultos mayores</span>
+              </label>
+
+              <label class="check">
+                <input
+                  type="checkbox"
+                  class="population-option"
+                  value="Parejas"
+                >
+                <span>Parejas</span>
+              </label>
+
+              <label class="check">
+                <input
+                  type="checkbox"
+                  class="population-option"
+                  value="Familias"
+                >
+                <span>Familias</span>
+              </label>
+
+            </div>
+
+            <p class="small">
+              Podés seleccionar más de una opción.
+            </p>
+
+          </div>
+
+
+          <!-- ORIENTACIÓN -->
+
+          <div class="field">
+
+            <label for="orientation">
+              Orientación
+            </label>
+
+            <input
+              id="orientation"
               type="text"
-              placeholder="Ej. Adultos, adolescentes"
+              placeholder="Ej. Psicoanálisis"
             >
 
           </div>
 
+
+          <!-- WHATSAPP -->
 
           <div class="field">
 
@@ -366,6 +418,8 @@
           </div>
 
 
+          <!-- BIO -->
+
           <div class="field span-2">
 
             <label for="bio">
@@ -380,6 +434,8 @@
 
           </div>
 
+
+          <!-- PUBLICAR -->
 
           <div class="field span-2">
 
@@ -400,6 +456,8 @@
 
           </div>
 
+
+          <!-- GUARDAR -->
 
           <div class="span-2">
 
