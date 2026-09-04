@@ -19,7 +19,9 @@
     // Si todavía no existe un perfil, lo creamos
     if (!profile) {
       const meta = user.user_metadata || {};
-
+      
+console.log('USUARIO DASHBOARD:', user.id, user.email);
+      
       const payload = {
         id: user.id,
         display_name: meta.full_name || '',
