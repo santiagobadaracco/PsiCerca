@@ -1,12 +1,14 @@
-```javascript
 (async () => {
   try {
     const user = await requireUser();
 
     if (!user) return;
 
-    document.getElementById('welcome').textContent =
-      `Sesión iniciada como ${user.email}`;
+    const welcome = document.getElementById('welcome');
+
+    if (welcome) {
+      welcome.textContent = 'Sesión iniciada como ' + user.email;
+    }
 
     const sb = requireSupabase();
 
@@ -38,7 +40,10 @@
       photo_url: ''
     };
 
-    // Cargar datos en el formulario
+    // ==============================
+    // CARGAR DATOS DEL FORMULARIO
+    // ==============================
+
     const fields = [
       'display_name',
       'license',
@@ -55,11 +60,10 @@
       const element = document.getElementById(field);
 
       if (element) {
-        element.value = currentProfile[field] ?? '';
+        element.value = currentProfile[field] || '';
       }
     });
 
-    // Estado de publicación
     const publicCheckbox = document.getElementById('is_public');
 
     if (publicCheckbox) {
@@ -73,38 +77,26 @@
     const photoInput = document.getElementById('photo');
     const photoPreview = document.getElementById('photoPreview');
 
-    const initials =
-      (currentProfile.display_name || 'PS')
-        .split(' ')
-        .map(x => x[0])
-        .join('')
-        .slice(0, 2)
-        .toUpperCase();
+    const initials = (currentProfile.display_name || 'PS')
+      .split(' ')
+      .map(x => x[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase();
 
-    // Mostrar foto existente
-    if (currentProfile.photo_url) {
-
-      photoPreview.innerHTML = `
-        <img
-          src="${escapeHTML(currentProfile.photo_url)}"
-          alt="Foto de perfil"
-          style="
-            width:100%;
-            height:100%;
-            object-fit:cover;
-          "
-        >
-      `;
-
-    } else {
-
-      photoPreview.textContent = initials;
-
+    if (photoPreview) {
+      if (currentProfile.photo_url) {
+        photoPreview.innerHTML =
+          '<img src="' +
+          currentProfile.photo_url +
+          '" alt="Foto de perfil" style="width:100%;height:100%;object-fit:cover;">';
+      } else {
+        photoPreview.textContent = initials;
+      }
     }
 
-    // Vista previa antes de guardar
-    if (photoInput) {
-
+    // Vista previa
+    if (photoInput && photoPreview) {
       photoInput.addEventListener('change', () => {
 
         const file = photoInput.files[0];
@@ -112,7 +104,6 @@
         if (!file) return;
 
         if (file.size > 2 * 1024 * 1024) {
-
           showMessage(
             'msg',
             'La foto no puede superar los 2 MB.',
@@ -120,7 +111,6 @@
           );
 
           photoInput.value = '';
-
           return;
         }
 
@@ -131,7 +121,6 @@
         ];
 
         if (!allowedTypes.includes(file.type)) {
-
           showMessage(
             'msg',
             'La foto debe ser JPG, PNG o WEBP.',
@@ -139,222 +128,194 @@
           );
 
           photoInput.value = '';
-
           return;
         }
 
         const previewURL = URL.createObjectURL(file);
 
-        photoPreview.innerHTML = `
-          <img
-            src="${previewURL}"
-            alt="Vista previa"
-            style="
-              width:100%;
-              height:100%;
-              object-fit:cover;
-            "
-          >
-        `;
-
+        photoPreview.innerHTML =
+          '<img src="' +
+          previewURL +
+          '" alt="Vista previa" style="width:100%;height:100%;object-fit:cover;">';
       });
-
     }
-
 
     // ==============================
     // GUARDAR PERFIL
     // ==============================
 
-    document
-      .getElementById('profileForm')
-      .addEventListener('submit', async e => {
+    const form = document.getElementById('profileForm');
 
-        e.preventDefault();
+    if (!form) {
+      throw new Error('No se encontró el formulario del perfil.');
+    }
 
-        const button = e.target.querySelector('button');
+    form.addEventListener('submit', async event => {
 
+      event.preventDefault();
+
+      const button = form.querySelector('button[type="submit"]');
+
+      if (button) {
         button.disabled = true;
         button.textContent = 'Guardando…';
+      }
 
-        try {
+      try {
 
-          let photoURL = currentProfile.photo_url || '';
+        let photoURL = currentProfile.photo_url || '';
 
-          // ------------------------------
-          // SUBIR FOTO SI SE SELECCIONÓ
-          // ------------------------------
+        // ==============================
+        // SUBIR FOTO
+        // ==============================
 
-          const file = photoInput?.files?.[0];
+        const file = photoInput && photoInput.files
+          ? photoInput.files[0]
+          : null;
 
-          if (file) {
+        if (file) {
 
-            const extension =
-              file.name.split('.').pop().toLowerCase();
+          const extension = file.name
+            .split('.')
+            .pop()
+            .toLowerCase();
 
-            const filePath =
-              `${user.id}/profile.${extension}`;
+          const filePath = user.id + '/profile.' + extension;
 
-            const { error: uploadError } =
-              await sb.storage
-                .from('profile-photos')
-                .upload(
-                  filePath,
-                  file,
-                  {
-                    cacheControl: '3600',
-                    upsert: true,
-                    contentType: file.type
-                  }
-                );
+          const uploadResult = await sb.storage
+            .from('profile-photos')
+            .upload(
+              filePath,
+              file,
+              {
+                cacheControl: '3600',
+                upsert: true,
+                contentType: file.type
+              }
+            );
 
-            if (uploadError) {
-              throw uploadError;
-            }
-
-            const {
-              data: publicURLData
-            } = sb.storage
-              .from('profile-photos')
-              .getPublicUrl(filePath);
-
-            photoURL = publicURLData.publicUrl;
-
+          if (uploadResult.error) {
+            throw uploadResult.error;
           }
 
+          const publicResult = sb.storage
+            .from('profile-photos')
+            .getPublicUrl(filePath);
 
-          // ------------------------------
-          // GUARDAR DATOS DEL PERFIL
-          // ------------------------------
-
-          const payload = {
-
-            id: user.id,
-
-            display_name:
-              document
-                .getElementById('display_name')
-                .value
-                .trim(),
-
-            license:
-              document
-                .getElementById('license')
-                .value
-                .trim(),
-
-            jurisdiction:
-              document
-                .getElementById('jurisdiction')
-                .value,
-
-            zone:
-              document
-                .getElementById('zone')
-                .value
-                .trim(),
-
-            modality:
-              document
-                .getElementById('modality')
-                .value,
-
-            orientation:
-              document
-                .getElementById('orientation')
-                .value
-                .trim(),
-
-            population:
-              document
-                .getElementById('population')
-                .value
-                .trim(),
-
-            whatsapp:
-              document
-                .getElementById('whatsapp')
-                .value
-                .trim(),
-
-            bio:
-              document
-                .getElementById('bio')
-                .value
-                .trim(),
-
-            is_public:
-              document
-                .getElementById('is_public')
-                .checked,
-
-            photo_url:
-              photoURL,
-
-            updated_at:
-              new Date().toISOString()
-          };
-
-
-          const { error } = await sb
-            .from('profiles')
-            .upsert(payload, {
-              onConflict: 'id'
-            });
-
-          if (error) {
-            throw error;
-          }
-
-
-          // Actualizar referencia local
-          currentProfile.photo_url = photoURL;
-
-
-          showMessage(
-            'msg',
-            'Perfil guardado correctamente.'
-          );
-
-        } catch (error) {
-
-          console.error(
-            'Error guardando perfil:',
-            error
-          );
-
-          showMessage(
-            'msg',
-            error.message ||
-            'No se pudieron guardar los cambios.',
-            true
-          );
-
-        } finally {
-
-          button.disabled = false;
-          button.textContent = 'Guardar cambios';
-
+          photoURL = publicResult.data.publicUrl;
         }
 
-      });
+        // ==============================
+        // DATOS DEL PERFIL
+        // ==============================
 
+        const payload = {
+          id: user.id,
+
+          display_name: document
+            .getElementById('display_name')
+            .value
+            .trim(),
+
+          license: document
+            .getElementById('license')
+            .value
+            .trim(),
+
+          jurisdiction: document
+            .getElementById('jurisdiction')
+            .value,
+
+          zone: document
+            .getElementById('zone')
+            .value
+            .trim(),
+
+          modality: document
+            .getElementById('modality')
+            .value,
+
+          orientation: document
+            .getElementById('orientation')
+            .value
+            .trim(),
+
+          population: document
+            .getElementById('population')
+            .value
+            .trim(),
+
+          whatsapp: document
+            .getElementById('whatsapp')
+            .value
+            .trim(),
+
+          bio: document
+            .getElementById('bio')
+            .value
+            .trim(),
+
+          is_public: document
+            .getElementById('is_public')
+            .checked,
+
+          photo_url: photoURL,
+
+          updated_at: new Date().toISOString()
+        };
+
+        // ==============================
+        // GUARDAR EN SUPABASE
+        // ==============================
+
+        const result = await sb
+          .from('profiles')
+          .upsert(payload, {
+            onConflict: 'id'
+          });
+
+        if (result.error) {
+          throw result.error;
+        }
+
+        currentProfile.photo_url = photoURL;
+        currentProfile.is_public = payload.is_public;
+
+        showMessage(
+          'msg',
+          'Perfil guardado correctamente.'
+        );
+
+      } catch (error) {
+
+        console.error('Error guardando perfil:', error);
+
+        showMessage(
+          'msg',
+          error.message || 'No se pudieron guardar los cambios.',
+          true
+        );
+
+      } finally {
+
+        if (button) {
+          button.disabled = false;
+          button.textContent = 'Guardar cambios';
+        }
+
+      }
+
+    });
 
   } catch (error) {
 
-    console.error(
-      'Error en dashboard:',
-      error
-    );
+    console.error('Error en dashboard:', error);
 
     showMessage(
       'msg',
-      error.message ||
-      'Ocurrió un error.',
+      error.message || 'Ocurrió un error.',
       true
     );
-
   }
 
 })();
-```
