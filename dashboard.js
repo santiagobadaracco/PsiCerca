@@ -1,343 +1,637 @@
 (async () => {
-  try {
-    const user = await requireUser();
+try {
+const user = await requireUser();
 
-    if (!user) return;
+```
+if (!user) return;
 
-    const welcome = document.getElementById('welcome');
+const welcome = document.getElementById('welcome');
 
-    if (welcome) {
-      welcome.textContent = 'Sesión iniciada como ' + user.email;
-    }
+if (welcome) {
+  welcome.textContent = 'Sesión iniciada como ' + user.email;
+}
 
-    const sb = requireSupabase();
+const sb = requireSupabase();
 
-    const { data: profile, error: profileError } = await sb
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .maybeSingle();
+// ==============================
+// BUSCAR PERFIL
+// ==============================
 
-    if (profileError) {
-      throw profileError;
-    }
+const { data: profile, error: profileError } = await sb
+  .from('profiles')
+  .select('*')
+  .eq('id', user.id)
+  .maybeSingle();
 
-    const meta = user.user_metadata || {};
+if (profileError) {
+  throw profileError;
+}
 
-    const currentProfile = profile || {
-      id: user.id,
-      display_name: meta.full_name || '',
-      license: meta.license || '',
-      jurisdiction: meta.jurisdiction || '',
-      zone: '',
-      modality: '',
-      orientation: '',
-      population: '',
-      whatsapp: '',
-      bio: '',
-      is_public: false,
-      photo_url: ''
-    };
+const meta = user.user_metadata || {};
 
-    // ==============================
-    // CARGAR DATOS
-    // ==============================
+const currentProfile = profile || {
+  id: user.id,
+  display_name: meta.full_name || '',
+  license: meta.license || '',
+  jurisdiction: meta.jurisdiction || '',
+  zone: '',
+  modality: '',
+  orientation: '',
+  population: '',
+  whatsapp: '',
+  bio: '',
+  is_public: false,
+  photo_url: ''
+};
 
-    const fields = [
-      'display_name',
-      'license',
-      'jurisdiction',
-      'zone',
-      'modality',
-      'orientation',
-      'population',
-      'whatsapp',
-      'bio'
-    ];
+// ==============================
+// CARGAR DATOS
+// ==============================
 
-    fields.forEach(field => {
-      const element = document.getElementById(field);
+const fields = [
+  'display_name',
+  'license',
+  'jurisdiction',
+  'zone',
+  'modality',
+  'orientation',
+  'population',
+  'whatsapp',
+  'bio'
+];
 
-      if (element) {
-        element.value = currentProfile[field] || '';
+fields.forEach(field => {
+  const element = document.getElementById(field);
+
+  if (element) {
+    element.value = currentProfile[field] || '';
+  }
+});
+
+const publicCheckbox = document.getElementById('is_public');
+
+if (publicCheckbox) {
+  publicCheckbox.checked = !!currentProfile.is_public;
+}
+
+// ==============================
+// FOTO
+// ==============================
+
+const photoInput = document.getElementById('photo');
+const photoPreview = document.getElementById('photoPreview');
+
+let photoWasRemoved = false;
+
+function getInitials() {
+
+  const nombre =
+    currentProfile.display_name || 'PS';
+
+  return nombre
+    .split(' ')
+    .filter(Boolean)
+    .map(nombre => nombre.charAt(0))
+    .join('')
+    .substring(0, 2)
+    .toUpperCase();
+}
+
+function mostrarFoto(url) {
+
+  if (!photoPreview) return;
+
+  photoPreview.innerHTML = '';
+
+  const imagen =
+    document.createElement('img');
+
+  imagen.src = url;
+  imagen.alt = 'Foto de perfil';
+
+  imagen.style.width = '100%';
+  imagen.style.height = '100%';
+  imagen.style.objectFit = 'cover';
+  imagen.style.borderRadius = '50%';
+  imagen.style.display = 'block';
+
+  photoPreview.appendChild(imagen);
+}
+
+function mostrarIniciales() {
+
+  if (!photoPreview) return;
+
+  photoPreview.innerHTML = '';
+  photoPreview.textContent = getInitials();
+}
+
+// Mostrar foto guardada
+
+if (currentProfile.photo_url) {
+  mostrarFoto(currentProfile.photo_url);
+} else {
+  mostrarIniciales();
+}
+
+// ==============================
+// BOTÓN QUITAR FOTO
+// ==============================
+
+let removeButton =
+  document.getElementById('removePhoto');
+
+if (!removeButton && photoInput) {
+
+  removeButton =
+    document.createElement('button');
+
+  removeButton.type = 'button';
+  removeButton.id = 'removePhoto';
+  removeButton.className =
+    'btn secondary';
+
+  removeButton.textContent =
+    'Quitar foto';
+
+  removeButton.style.marginTop =
+    '10px';
+
+  photoInput.parentElement.appendChild(
+    removeButton
+  );
+}
+
+if (removeButton) {
+
+  removeButton.addEventListener(
+    'click',
+    () => {
+
+      photoWasRemoved = true;
+
+      if (photoInput) {
+        photoInput.value = '';
       }
-    });
 
-    const publicCheckbox = document.getElementById('is_public');
+      mostrarIniciales();
 
-    if (publicCheckbox) {
-      publicCheckbox.checked = !!currentProfile.is_public;
+      showMessage(
+        'msg',
+        'La foto se quitará al guardar los cambios.'
+      );
     }
+  );
+}
 
-    // ==============================
-    // FOTO DE PERFIL
-    // ==============================
+// ==============================
+// SELECCIONAR NUEVA FOTO
+// ==============================
 
-    const photoInput = document.getElementById('photo');
-    const photoPreview = document.getElementById('photoPreview');
+if (photoInput) {
 
-    function getInitials(name) {
-      return (name || 'PS')
-        .split(' ')
-        .filter(Boolean)
-        .map(x => x[0])
-        .join('')
-        .slice(0, 2)
-        .toUpperCase();
-    }
+  photoInput.addEventListener(
+    'change',
+    function () {
 
-    function showPhoto(url) {
-      if (!photoPreview) return;
+      const archivo =
+        this.files[0];
 
-      if (url) {
-        photoPreview.innerHTML = '';
+      if (!archivo) return;
 
-        const img = document.createElement('img');
+      // Si selecciona una nueva foto,
+      // dejamos de considerar que quiere eliminarla.
 
-        img.src = url;
-        img.alt = 'Foto de perfil';
+      photoWasRemoved = false;
 
-        img.style.width = '100%';
-        img.style.height = '100%';
-        img.style.objectFit = 'cover';
-        img.style.borderRadius = '50%';
+      // Tamaño máximo
 
-        photoPreview.appendChild(img);
+      if (
+        archivo.size >
+        2 * 1024 * 1024
+      ) {
 
-      } else {
-        photoPreview.innerHTML = '';
-        photoPreview.textContent =
-          getInitials(currentProfile.display_name);
+        showMessage(
+          'msg',
+          'La foto no puede superar los 2 MB.',
+          true
+        );
+
+        this.value = '';
+
+        return;
       }
-    }
 
-    // Mostrar foto guardada
-    showPhoto(currentProfile.photo_url);
+      // Formatos permitidos
 
-    // ==============================
-    // VISTA PREVIA
-    // ==============================
+      const formatosPermitidos = [
+        'image/jpeg',
+        'image/png',
+        'image/webp'
+      ];
 
-    if (photoInput) {
+      if (
+        !formatosPermitidos.includes(
+          archivo.type
+        )
+      ) {
 
-      photoInput.addEventListener('change', () => {
+        showMessage(
+          'msg',
+          'La foto debe ser JPG, PNG o WEBP.',
+          true
+        );
 
-        const file = photoInput.files[0];
+        this.value = '';
 
-        if (!file) return;
+        return;
+      }
 
-        if (file.size > 2 * 1024 * 1024) {
+      // Vista previa
 
-          showMessage(
-            'msg',
-            'La foto no puede superar los 2 MB.',
-            true
+      const lector =
+        new FileReader();
+
+      lector.onload =
+        function (evento) {
+
+          mostrarFoto(
+            evento.target.result
           );
 
-          photoInput.value = '';
-          return;
-        }
+        };
 
-        const allowedTypes = [
-          'image/jpeg',
-          'image/png',
-          'image/webp'
-        ];
+      lector.readAsDataURL(archivo);
 
-        if (!allowedTypes.includes(file.type)) {
+    }
+  );
+}
 
-          showMessage(
-            'msg',
-            'La foto debe ser JPG, PNG o WEBP.',
-            true
-          );
+// ==============================
+// FORMULARIO
+// ==============================
 
-          photoInput.value = '';
-          return;
-        }
+const form =
+  document.getElementById(
+    'profileForm'
+  );
 
-        const previewURL = URL.createObjectURL(file);
+if (!form) {
 
-        showPhoto(previewURL);
-      });
+  throw new Error(
+    'No se encontró el formulario del perfil.'
+  );
+
+}
+
+// ==============================
+// GUARDAR
+// ==============================
+
+form.addEventListener(
+  'submit',
+  async function (event) {
+
+    event.preventDefault();
+
+    const button =
+      form.querySelector(
+        'button[type="submit"]'
+      );
+
+    if (button) {
+
+      button.disabled = true;
+
+      button.textContent =
+        'Guardando…';
+
     }
 
-    // ==============================
-    // GUARDAR PERFIL
-    // ==============================
+    try {
 
-    const form = document.getElementById('profileForm');
+      let photoURL =
+        currentProfile.photo_url || '';
 
-    if (!form) {
-      throw new Error('No se encontró el formulario del perfil.');
-    }
+      const archivo =
+        photoInput &&
+        photoInput.files &&
+        photoInput.files[0];
 
-    form.addEventListener('submit', async event => {
+      // ==================================
+      // ELIMINAR FOTO
+      // ==================================
 
-      event.preventDefault();
+      if (
+        photoWasRemoved &&
+        currentProfile.photo_url
+      ) {
 
-      const button = form.querySelector('button[type="submit"]');
+        const oldURL =
+          currentProfile.photo_url;
 
-      if (button) {
-        button.disabled = true;
-        button.textContent = 'Guardando…';
+        const marker =
+          '/profile-photos/';
+
+        const position =
+          oldURL.indexOf(marker);
+
+        if (position !== -1) {
+
+          const oldPath =
+            oldURL.substring(
+              position + marker.length
+            );
+
+          const deleteResult =
+            await sb.storage
+              .from('profile-photos')
+              .remove([oldPath]);
+
+          if (deleteResult.error) {
+            throw deleteResult.error;
+          }
+
+        }
+
+        photoURL = '';
       }
 
-      try {
+      // ==================================
+      // SUBIR NUEVA FOTO
+      // ==================================
 
-        let photoURL = currentProfile.photo_url || '';
+      if (archivo) {
 
-        // ==============================
-        // SUBIR FOTO
-        // ==============================
-
-        const file = photoInput && photoInput.files
-          ? photoInput.files[0]
-          : null;
-
-        if (file) {
-
-          const extension = file.name
+        const extension =
+          archivo.name
             .split('.')
             .pop()
             .toLowerCase();
 
-          const filePath =
-            user.id + '/profile.' + extension;
+        const ruta =
+          user.id +
+          '/profile.' +
+          extension;
 
-          const uploadResult = await sb.storage
+        // Primero eliminamos las posibles
+        // versiones anteriores.
+
+        const extensiones = [
+          'jpg',
+          'jpeg',
+          'png',
+          'webp'
+        ];
+
+        const archivosAnteriores =
+          extensiones.map(
+            extensionAnterior =>
+              user.id +
+              '/profile.' +
+              extensionAnterior
+          );
+
+        const deleteOld =
+          await sb.storage
+            .from('profile-photos')
+            .remove(
+              archivosAnteriores
+            );
+
+        if (deleteOld.error) {
+          console.warn(
+            'No se pudieron eliminar algunas fotos anteriores:',
+            deleteOld.error
+          );
+        }
+
+        // Subir nueva foto
+
+        const subida =
+          await sb.storage
             .from('profile-photos')
             .upload(
-              filePath,
-              file,
+              ruta,
+              archivo,
               {
                 cacheControl: '3600',
                 upsert: true,
-                contentType: file.type
+                contentType:
+                  archivo.type
               }
             );
 
-          if (uploadResult.error) {
-            throw uploadResult.error;
-          }
+        if (subida.error) {
+          throw subida.error;
+        }
 
-          const publicResult = sb.storage
+        const publicURL =
+          sb.storage
             .from('profile-photos')
-            .getPublicUrl(filePath);
+            .getPublicUrl(
+              ruta
+            );
 
-          photoURL = publicResult.data.publicUrl;
-        }
+        photoURL =
+          publicURL.data.publicUrl +
+          '?v=' +
+          Date.now();
+      }
 
-        // ==============================
-        // DATOS
-        // ==============================
+      // ==================================
+      // DATOS DEL PERFIL
+      // ==================================
 
-        const payload = {
+      const payload = {
 
-          id: user.id,
+        id: user.id,
 
-          display_name:
-            document.getElementById('display_name').value.trim(),
+        display_name:
+          document
+            .getElementById(
+              'display_name'
+            )
+            .value
+            .trim(),
 
-          license:
-            document.getElementById('license').value.trim(),
+        license:
+          document
+            .getElementById(
+              'license'
+            )
+            .value
+            .trim(),
 
-          jurisdiction:
-            document.getElementById('jurisdiction').value,
+        jurisdiction:
+          document
+            .getElementById(
+              'jurisdiction'
+            )
+            .value,
 
-          zone:
-            document.getElementById('zone').value.trim(),
+        zone:
+          document
+            .getElementById(
+              'zone'
+            )
+            .value
+            .trim(),
 
-          modality:
-            document.getElementById('modality').value,
+        modality:
+          document
+            .getElementById(
+              'modality'
+            )
+            .value,
 
-          orientation:
-            document.getElementById('orientation').value.trim(),
+        orientation:
+          document
+            .getElementById(
+              'orientation'
+            )
+            .value
+            .trim(),
 
-          population:
-            document.getElementById('population').value.trim(),
+        population:
+          document
+            .getElementById(
+              'population'
+            )
+            .value
+            .trim(),
 
-          whatsapp:
-            document.getElementById('whatsapp').value.trim(),
+        whatsapp:
+          document
+            .getElementById(
+              'whatsapp'
+            )
+            .value
+            .trim(),
 
-          bio:
-            document.getElementById('bio').value.trim(),
+        bio:
+          document
+            .getElementById(
+              'bio'
+            )
+            .value
+            .trim(),
 
-          is_public:
-            document.getElementById('is_public').checked,
+        is_public:
+          document
+            .getElementById(
+              'is_public'
+            )
+            .checked,
 
-          photo_url:
-            photoURL,
+        photo_url:
+          photoURL,
 
-          updated_at:
-            new Date().toISOString()
-        };
+        updated_at:
+          new Date().toISOString()
+      };
 
-        // ==============================
-        // GUARDAR EN SUPABASE
-        // ==============================
+      // ==================================
+      // GUARDAR EN SUPABASE
+      // ==================================
 
-        const result = await sb
+      const resultado =
+        await sb
           .from('profiles')
-          .upsert(payload, {
-            onConflict: 'id'
-          });
+          .upsert(
+            payload,
+            {
+              onConflict: 'id'
+            }
+          );
 
-        if (result.error) {
-          throw result.error;
-        }
+      if (resultado.error) {
+        throw resultado.error;
+      }
 
-        // Actualizar datos locales
-        currentProfile.photo_url = photoURL;
-        currentProfile.display_name = payload.display_name;
-        currentProfile.is_public = payload.is_public;
+      // ==================================
+      // ACTUALIZAR ESTADO LOCAL
+      // ==================================
 
-        // MOSTRAR FOTO GUARDADA
-        showPhoto(photoURL);
+      currentProfile.photo_url =
+        photoURL;
 
-        showMessage(
-          'msg',
-          'Perfil guardado correctamente.'
+      currentProfile.display_name =
+        payload.display_name;
+
+      currentProfile.is_public =
+        payload.is_public;
+
+      photoWasRemoved = false;
+
+      // ==================================
+      // MOSTRAR RESULTADO
+      // ==================================
+
+      if (photoURL) {
+
+        mostrarFoto(
+          photoURL
         );
 
-      } catch (error) {
+      } else {
 
-        console.error(
-          'Error guardando perfil:',
-          error
-        );
-
-        showMessage(
-          'msg',
-          error.message ||
-          'No se pudieron guardar los cambios.',
-          true
-        );
-
-      } finally {
-
-        if (button) {
-          button.disabled = false;
-          button.textContent = 'Guardar cambios';
-        }
+        mostrarIniciales();
 
       }
 
-    });
+      showMessage(
+        'msg',
+        'Perfil guardado correctamente.'
+      );
 
-  } catch (error) {
+    } catch (error) {
 
-    console.error(
-      'Error en dashboard:',
-      error
-    );
+      console.error(
+        'Error guardando perfil:',
+        error
+      );
 
-    showMessage(
-      'msg',
-      error.message ||
-      'Ocurrió un error.',
-      true
-    );
+      showMessage(
+        'msg',
+        error.message ||
+        'No se pudieron guardar los cambios.',
+        true
+      );
+
+    } finally {
+
+      if (button) {
+
+        button.disabled = false;
+
+        button.textContent =
+          'Guardar cambios';
+
+      }
+
+    }
+
   }
+);
+```
+
+} catch (error) {
+
+```
+console.error(
+  'Error en dashboard:',
+  error
+);
+
+showMessage(
+  'msg',
+  error.message ||
+  'Ocurrió un error.',
+  true
+);
+```
+
+}
 
 })();
