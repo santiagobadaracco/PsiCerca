@@ -1,77 +1,226 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Crear cuenta — PsiCerca</title><link rel="stylesheet" href="styles.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js"></script>
-<script src="supabase.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
+<!doctype html>
+<html lang="es">
 
-  const form = document.getElementById('registerForm');
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
 
-  if (!form) {
-    console.error('No se encontró el formulario registerForm.');
-    return;
-  }
+  <title>Crear cuenta — PsiCerca</title>
 
-  form.addEventListener('submit', async e => {
-    e.preventDefault();
+  <link rel="stylesheet" href="styles.css">
 
-    const button = form.querySelector('button');
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
+</head>
 
-    const fullName = document.getElementById('fullName').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-    const license = document.getElementById('license').value.trim();
-    const jurisdiction = document.getElementById('jurisdiction').value;
+<body>
 
-    button.disabled = true;
-    button.textContent = 'Creando…';
+  <header>
+    <div class="container nav">
+      <a class="logo" href="index.html">
+        Psi<span>Cerca</span>
+      </a>
 
-    try {
-      const sb = requireSupabase();
+      <a href="login.html" class="btn secondary">
+        Iniciar sesión
+      </a>
+    </div>
+  </header>
 
-      const { data, error } = await sb.auth.signUp({
-        email: email,
-        password: password,
+  <main class="form-wrap">
 
-        options: {
-          emailRedirectTo:
-            'https://santiagobadaracco.github.io/PsiCerca/login.html',
+    <div class="form-card">
 
-          data: {
-            full_name: fullName,
-            license: license,
-            jurisdiction: jurisdiction
-          }
-        }
-      });
+      <span class="eyebrow">Primer paso</span>
 
-      if (error) throw error;
+      <h1>Crear cuenta profesional</h1>
 
-      if (data.session) {
+      <p class="small">
+        Tu cuenta te permitirá acceder al panel y crear tu perfil público.
+      </p>
 
-        window.location.href = 'dashboard.html';
+      <form id="registerForm">
 
-      } else {
+        <div class="field">
+          <label>Nombre y apellido</label>
+          <input
+            id="fullName"
+            required
+            autocomplete="name"
+          >
+        </div>
 
-        showMessage(
-          'msg',
-          'Cuenta creada. Revisá tu email para confirmar la cuenta y luego iniciá sesión.'
-        );
+        <div class="field">
+          <label>Email</label>
+          <input
+            id="email"
+            type="email"
+            required
+            autocomplete="email"
+          >
+        </div>
+
+        <div class="field">
+          <label>Contraseña</label>
+          <input
+            id="password"
+            type="password"
+            minlength="8"
+            required
+            autocomplete="new-password"
+          >
+          <div class="small">
+            Mínimo 8 caracteres.
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Matrícula</label>
+          <input
+            id="license"
+            required
+          >
+        </div>
+
+        <div class="field">
+          <label>Jurisdicción</label>
+
+          <select id="jurisdiction" required>
+            <option value="">Seleccioná</option>
+            <option>Ciudad de Buenos Aires</option>
+            <option>Provincia de Buenos Aires</option>
+            <option>Otra</option>
+          </select>
+        </div>
+
+        <label class="check">
+          <input
+            id="terms"
+            type="checkbox"
+            required
+          >
+
+          <span>
+            Acepto crear una cuenta profesional y que mis datos de perfil
+            puedan ser publicados si activo esa opción.
+          </span>
+        </label>
+
+        <button
+          class="btn primary full"
+          type="submit"
+        >
+          Crear cuenta
+        </button>
+
+        <div
+          id="msg"
+          class="message"
+        ></div>
+
+      </form>
+
+    </div>
+
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+      const form = document.getElementById('registerForm');
+
+      if (!form) {
+        console.error('No se encontró el formulario registerForm.');
+        return;
       }
 
-    } catch (err) {
+      form.addEventListener('submit', async e => {
 
-      showMessage(
-        'msg',
-        err.message || 'No se pudo crear la cuenta.',
-        true
-      );
+        e.preventDefault();
 
-    } finally {
+        const button = form.querySelector('button');
 
-      button.disabled = false;
-      button.textContent = 'Crear cuenta';
+        const fullName =
+          document.getElementById('fullName').value.trim();
 
-    }
-  });
+        const email =
+          document.getElementById('email').value.trim();
 
-});
-</script>
+        const password =
+          document.getElementById('password').value;
+
+        const license =
+          document.getElementById('license').value.trim();
+
+        const jurisdiction =
+          document.getElementById('jurisdiction').value;
+
+        button.disabled = true;
+        button.textContent = 'Creando…';
+
+        try {
+
+          const sb = requireSupabase();
+
+          const { data, error } = await sb.auth.signUp({
+
+            email: email,
+
+            password: password,
+
+            options: {
+
+              emailRedirectTo:
+                'https://santiagobadaracco.github.io/PsiCerca/login.html',
+
+              data: {
+                full_name: fullName,
+                license: license,
+                jurisdiction: jurisdiction
+              }
+
+            }
+
+          });
+
+          if (error) {
+            throw error;
+          }
+
+          if (data.session) {
+
+            window.location.href = 'dashboard.html';
+
+          } else {
+
+            showMessage(
+              'msg',
+              'Cuenta creada. Revisá tu email para confirmar la cuenta y luego iniciá sesión.'
+            );
+
+          }
+
+        } catch (err) {
+
+          showMessage(
+            'msg',
+            err.message || 'No se pudo crear la cuenta.',
+            true
+          );
+
+        } finally {
+
+          button.disabled = false;
+          button.textContent = 'Crear cuenta';
+
+        }
+
+      });
+
+    });
+  </script>
+
+</body>
+</html>
