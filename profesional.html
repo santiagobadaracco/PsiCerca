@@ -1,4 +1,3 @@
-```html
 <!doctype html>
 <html lang="es">
 
@@ -87,7 +86,8 @@
             orientation,
             population,
             bio,
-            whatsapp
+            whatsapp,
+            photo_url
           `)
           .eq('id', id)
           .eq('is_public', true)
@@ -104,10 +104,33 @@
         const initials =
           (p.display_name || 'PS')
             .split(' ')
+            .filter(Boolean)
             .map(x => x[0])
             .join('')
             .slice(0, 2)
             .toUpperCase();
+
+        const avatar = p.photo_url
+          ? `
+            <div
+              class="avatar"
+              style="width:72px;height:72px;overflow:hidden;"
+            >
+              <img
+                src="${escapeHTML(p.photo_url)}"
+                alt="Foto de ${escapeHTML(p.display_name || 'profesional')}"
+                style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;"
+              >
+            </div>
+          `
+          : `
+            <div
+              class="avatar"
+              style="width:72px;height:72px"
+            >
+              ${escapeHTML(initials)}
+            </div>
+          `;
 
         const whatsapp =
           (p.whatsapp || '').replace(/\D/g, '');
@@ -116,12 +139,7 @@
 
           <div class="pro-top">
 
-            <div
-              class="avatar"
-              style="width:72px;height:72px"
-            >
-              ${escapeHTML(initials)}
-            </div>
+            ${avatar}
 
             <div>
 
@@ -232,5 +250,3 @@
 </body>
 
 </html>
-```
-
