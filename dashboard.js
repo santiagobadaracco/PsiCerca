@@ -277,17 +277,24 @@ const selectedPopulation = populationField.value;
 
         showMessage('msg', 'Perfil guardado correctamente.');
 
-      } catch (error) {
+           } catch (error) {
         console.error('Error al guardar perfil:', error);
+
+        if (
+          error.code === '23505' ||
+          error.message?.includes('unique_license_jurisdiction')
+        ) {
+          showMessage(
+            'msg',
+            'Esta matrícula ya está registrada en PsiCerca para esa jurisdicción. Si considerás que se trata de un error, contactanos.',
+            true
+          );
+          return;
+        }
+
         showMessage(
           'msg',
           error.message || 'No se pudo guardar el perfil.',
           true
         );
       }
-    });
-
-  } catch (error) {
-    console.error('Error en dashboard:', error);
-  }
-})();
