@@ -1,274 +1,141 @@
+function normalizeText(value = '') {
+  return String(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+}
+
 async function loadProfiles() {
   const box = document.getElementById('results');
   const count = document.getElementById('resultCount');
 
-  box.innerHTML = '<div class="empty">Buscando…</div>';
+  box.innerHTML = '<div class="empty">Buscando profesionales...</div>';
 
-  if (count) {
+  const sb = requireSupabase();
+
+  const { data, error } = await sb
+    .from('profiles')
+    .select(`
+      id,
+      display_name,
+      license,
+      jurisdiction,
+      zone,
+      modality,
+      orientation,
+      population,
+      bio,
+      photo_url
+    `)
+    .eq('is_public', true)
+    .order('display_name', { ascending: true });
+
+  if (error) {
+    console.error(error);
+    box.innerHTML = '<div class="empty">No se pudieron cargar los profesionales.</div>';
     count.textContent = '';
+    return;
   }
 
-  try {
-    const sb = requireSupabase();
+  const q = normalizeText(document.getElementById('q').value);
+  const zone = normalizeText(document.getElementById('zone').value);
+  const modality = document.getElementById('modality').value;
+  const population = normalizeText(document.getElementById('population').value);
 
-    let query = sb
-      .from('profiles')
-      .select(
-        'id,display_name,license,jurisdiction,zone,modality,orientation,population,bio,photo_url'
-      )
-      .eq('is_public', true)
-      .order('display_name');
+  const filtered = data.filter(profile => {
+    const searchableText = normalizeText([
+      profile.display_name,
+      profile.orientation,
+      profile.population
+    ].join(' '));
 
-    const q = document
-      .getElementById('q')
-      .value
-      .trim();
+    const profileZone = normalizeText(profile.zone);
+    const profilePopulation = normalizeText(profile.population);
 
-    const zone = document
-      .getElementById('zone')
-      .value
-      .trim();
+    const matchesQuery =
+      !q || searchableText.includes(q);
 
-    const modality = document
-      .getElementById('modality')
-      .value;
+    const matchesZone =
+      !zone || profileZone.includes(zone);
 
-    const population = document
-      .getElementById('population')
-      .value;
+    const matchesModality =
+      !modality || profile.modality === modality;
 
-    // ==============================
-    // BÚSQUEDA GENERAL
-    // ==============================
+    const matchesPopulation =
+      !population || profilePopulation.includes(population);
 
-    if (q) {
-      query = query.or(
-        `display_name.ilike.%${q}%,orientation.ilike.%${q}%,population.ilike.%${q}%`
-      );
-    }
-
-    // ==============================
-    // ZONA
-    // ==============================
-
-    if (zone) {
-      query = query.ilike(
-        'zone',
-        `%${zone}%`
-      );
-    }
-
-    // ==============================
-    // MODALIDAD
-    // ==============================
-
-    if (modality) {
-      query = query.eq(
-        'modality',
-        modality
-      );
-    }
-
-    // ==============================
-    // POBLACIÓN
-    // ==============================
-
-    if (population) {
-      query = query.ilike(
-        'population',
-        `%${population}%`
-      );
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-      throw error;
-    }
-
-    // ==============================
-    // CONTADOR
-    // ==============================
-
-    if (count) {
-      if (data.length === 1) {
-        count.textContent =
-          '1 profesional encontrado';
-      } else {
-        count.textContent =
-          `${data.length} profesionales encontrados`;
-      }
-    }
-
-    // ==============================
-    // SIN RESULTADOS
-    // ==============================
-
-    if (!data.length) {
-      box.innerHTML = `
-        <div class="empty">
-          No encontramos profesionales
-          que coincidan con tu búsqueda.
-        </div>
-      `;
-
-      return;
-    }
-
-    // ==============================
-    // TARJETAS
-    // ==============================
-
-    box.innerHTML = data.map(p => {
-
-      const initials =
-        (p.display_name || 'PS')
-          .split(' ')
-          .filter(Boolean)
-          .map(x => x[0])
-          .join('')
-          .slice(0, 2)
-          .toUpperCase();
-
-      const avatar = p.photo_url
-        ? `
-          <div
-            class="avatar"
-            style="overflow:hidden;"
-          >
-            <img
-              src="${escapeHTML(p.photo_url)}"
-              alt="Foto de ${escapeHTML(
-                p.display_name || 'profesional'
-              )}"
-              style="
-                width:100%;
-                height:100%;
-                object-fit:cover;
-                border-radius:50%;
-                display:block;
-              "
-            >
-          </div>
-        `
-        : `
-          <div class="avatar">
-            ${escapeHTML(initials)}
-          </div>
-        `;
-
-      return `
-        <article class="pro-card">
-
-          <div class="pro-top">
-
-            ${avatar}
-
-            <div>
-
-              <h3>
-                ${escapeHTML(
-                  p.display_name ||
-                  'Profesional'
-                )}
-              </h3>
-
-              <div class="small">
-                Matrícula:
-                ${escapeHTML(
-                  p.license || '—'
-                )}
-              </div>
-
-            </div>
-
-          </div>
-
-
-          <div class="chips">
-
-            ${
-              [
-                p.orientation,
-                p.population,
-                p.modality,
-                p.zone
-              ]
-              .filter(Boolean)
-              .map(
-                x =>
-                  `<span class="chip">
-                    ${escapeHTML(x)}
-                  </span>`
-              )
-              .join('')
-            }
-
-          </div>
-
-
-          <p>
-            ${escapeHTML(
-              (p.bio || '').slice(0, 180)
-            )}
-            ${
-              (p.bio || '').length > 180
-                ? '…'
-                : ''
-            }
-          </p>
-
-
-          <a
-            class="btn secondary full"
-            href="profesional.html?id=${encodeURIComponent(
-              p.id
-            )}"
-          >
-            Ver perfil
-          </a>
-
-        </article>
-      `;
-
-    }).join('');
-
-  } catch (err) {
-
-    console.error(
-      'Error cargando directorio:',
-      err
+    return (
+      matchesQuery &&
+      matchesZone &&
+      matchesModality &&
+      matchesPopulation
     );
+  });
 
-    if (count) {
-      count.textContent = '';
-    }
+  count.textContent =
+    filtered.length === 1
+      ? '1 profesional encontrado'
+      : `${filtered.length} profesionales encontrados`;
 
+  if (!filtered.length) {
     box.innerHTML = `
       <div class="empty">
-
-        No pudimos cargar el directorio.
-
-        <br>
-
-        <span class="small">
-          ${escapeHTML(
-            err.message || 'Error'
-          )}
-        </span>
-
+        No encontramos profesionales con esos criterios.
       </div>
     `;
+    return;
   }
+
+  box.innerHTML = filtered.map(profile => {
+    const initials = (profile.display_name || 'P')
+      .split(' ')
+      .map(word => word[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase();
+
+    const avatar = profile.photo_url
+      ? `<img src="${escapeHTML(profile.photo_url)}" alt="${escapeHTML(profile.display_name)}" style="width:52px;height:52px;border-radius:50%;object-fit:cover;">`
+      : `<div class="avatar">${escapeHTML(initials)}</div>`;
+
+    const chips = [
+      profile.orientation,
+      profile.zone,
+      profile.modality,
+      profile.population
+    ]
+      .filter(Boolean)
+      .map(item => `<span class="chip">${escapeHTML(item)}</span>`)
+      .join('');
+
+    return `
+      <article class="pro-card">
+        <div class="pro-top">
+          ${avatar}
+          <div>
+            <h3>${escapeHTML(profile.display_name || 'Profesional')}</h3>
+            <p>${escapeHTML(profile.license || '')}</p>
+          </div>
+        </div>
+
+        <div class="chips">
+          ${chips}
+        </div>
+
+        <p>
+          ${escapeHTML(profile.bio || 'Profesional de la salud mental.')}
+        </p>
+
+        <a class="btn primary full" href="profesional.html?id=${encodeURIComponent(profile.id)}">
+          Ver perfil
+        </a>
+      </article>
+    `;
+  }).join('');
 }
 
-
-// ==============================
-// LIMPIAR FILTROS
-// ==============================
-
 window.clearFilters = function () {
-
   document.getElementById('q').value = '';
   document.getElementById('zone').value = '';
   document.getElementById('modality').value = '';
@@ -276,9 +143,5 @@ window.clearFilters = function () {
 
   loadProfiles();
 };
-
-// ==============================
-// CARGA INICIAL
-// ==============================
 
 loadProfiles();
