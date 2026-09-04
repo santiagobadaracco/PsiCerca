@@ -151,15 +151,28 @@
                 ${escapeHTML(p.display_name || 'Profesional')}
               </h1>
 
-              <div class="small">
-                Matrícula:
-                ${escapeHTML(p.license || '—')}
-                ·
-                ${escapeHTML(p.jurisdiction || '—')}
-              </div>
+           <div class="small">
+  Matrícula:
+  <strong>${escapeHTML(p.license || '—')}</strong>
+  ·
+  ${escapeHTML(p.jurisdiction || '—')}
+</div>
 
-            </div>
-
+${
+  p.license
+    ? `
+      <a
+        href="https://www.argentina.gob.ar/salud/buscador-nacional-de-profesionales-de-la-salud"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn secondary"
+        style="margin-top:12px;font-size:13px;"
+      >
+        🔎 Consultar matrícula en registro oficial
+      </a>
+    `
+    : ''
+}
           </div>
 
 
@@ -217,14 +230,30 @@
           }
 
 
-          <p
-            class="small"
-            style="margin-top:20px"
-          >
-            PsiCerca facilita el contacto y no determina
-            qué profesional es clínicamente adecuado
-            para una persona.
-          </p>
+        <p
+  class="small"
+  style="margin-top:20px"
+>
+  La información de matrícula es declarada por el profesional.
+  PsiCerca recomienda verificarla en el
+  <a
+    href="https://www.argentina.gob.ar/salud/buscador-nacional-de-profesionales-de-la-salud"
+    target="_blank"
+    rel="noopener noreferrer"
+    style="color:var(--accent);font-weight:700;"
+  >
+    registro oficial del Ministerio de Salud
+  </a>.
+</p>
+
+<p
+  class="small"
+  style="margin-top:10px"
+>
+  PsiCerca facilita el contacto y no determina
+  qué profesional es clínicamente adecuado
+  para una persona.
+</p>
 
         `;
 
