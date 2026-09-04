@@ -84,7 +84,11 @@
         document.querySelectorAll('.population-option:checked')
       ).map(option => option.value);
 
-      document.getElementById('population').value = selected.join(', ');
+      const populationField = document.getElementById('population');
+
+      if (populationField) {
+        populationField.value = selected.join(', ');
+      }
     }
 
     document.querySelectorAll('.population-option').forEach(option => {
@@ -100,7 +104,12 @@
       if (!file) return;
 
       if (file.size > 2 * 1024 * 1024) {
-        showMessage('msg', 'La foto no puede superar los 2 MB.', true);
+        showMessage(
+          'msg',
+          'La foto no puede superar los 2 MB.',
+          true
+        );
+
         photoInput.value = '';
         return;
       }
@@ -155,21 +164,31 @@
 
         updatePopulationValue();
 
-        const populationField = document.getElementById('population');
+        const populationField =
+          document.getElementById('population');
 
-if (!populationField) {
-  throw new Error('No se encontró el campo de población.');
-}
+        if (!populationField) {
+          throw new Error(
+            'No se encontró el campo de población.'
+          );
+        }
 
-const selectedPopulation = populationField.value;
+        const selectedPopulation = populationField.value;
+
         let photoUrl = currentProfile?.photo_url || null;
 
         // Eliminar foto si corresponde
         if (photoWasRemoved && photoUrl) {
-          const extensions = ['jpg', 'jpeg', 'png', 'webp'];
+          const extensions = [
+            'jpg',
+            'jpeg',
+            'png',
+            'webp'
+          ];
 
           const paths = extensions.map(
-            extension => `${user.id}/profile.${extension}`
+            extension =>
+              `${user.id}/profile.${extension}`
           );
 
           await sb.storage
@@ -188,7 +207,12 @@ const selectedPopulation = populationField.value;
             .pop()
             .toLowerCase();
 
-          const validExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+          const validExtensions = [
+            'jpg',
+            'jpeg',
+            'png',
+            'webp'
+          ];
 
           if (!validExtensions.includes(extension)) {
             throw new Error(
@@ -196,52 +220,110 @@ const selectedPopulation = populationField.value;
             );
           }
 
-          const extensions = ['jpg', 'jpeg', 'png', 'webp'];
+          const extensions = [
+            'jpg',
+            'jpeg',
+            'png',
+            'webp'
+          ];
 
           const oldPaths = extensions
             .filter(ext => ext !== extension)
-            .map(ext => `${user.id}/profile.${ext}`);
+            .map(
+              ext =>
+                `${user.id}/profile.${ext}`
+            );
 
           await sb.storage
             .from('profile-photos')
             .remove(oldPaths);
 
-          const path = `${user.id}/profile.${extension}`;
+          const path =
+            `${user.id}/profile.${extension}`;
 
-          const { error: uploadError } = await sb.storage
-            .from('profile-photos')
-            .upload(path, file, {
-              upsert: true,
-              contentType: file.type
-            });
+          const { error: uploadError } =
+            await sb.storage
+              .from('profile-photos')
+              .upload(
+                path,
+                file,
+                {
+                  upsert: true,
+                  contentType: file.type
+                }
+              );
 
           if (uploadError) {
             throw uploadError;
           }
 
-          const { data: publicData } = sb.storage
-            .from('profile-photos')
-            .getPublicUrl(path);
+          const { data: publicData } =
+            sb.storage
+              .from('profile-photos')
+              .getPublicUrl(path);
 
-          photoUrl = `${publicData.publicUrl}?v=${Date.now()}`;
+          photoUrl =
+            `${publicData.publicUrl}?v=${Date.now()}`;
         }
 
         const payload = {
-  id: user.id,
-  display_name: document.getElementById('display_name')?.value.trim() || '',
-  license: document.getElementById('license')?.value.trim() || '',
-  jurisdiction: document.getElementById('jurisdiction')?.value || '',
-  zone: document.getElementById('zone')?.value.trim() || '',
-  modality: document.getElementById('modality')?.value || '',
-  orientation: document.getElementById('orientation')?.value.trim() || '',
-  population: selectedPopulation,
-  whatsapp: document.getElementById('whatsapp')?.value.trim() || '',
-  bio: document.getElementById('bio')?.value.trim() || '',
-  is_public: document.getElementById('is_public')?.checked || false,
-  photo_url: photoUrl
-};
+          id: user.id,
+          display_name:
+            document
+              .getElementById('display_name')
+              ?.value.trim() || '',
 
-        const { data: savedProfile, error: saveError } = await sb
+          license:
+            document
+              .getElementById('license')
+              ?.value.trim() || '',
+
+          jurisdiction:
+            document
+              .getElementById('jurisdiction')
+              ?.value || '',
+
+          zone:
+            document
+              .getElementById('zone')
+              ?.value.trim() || '',
+
+          modality:
+            document
+              .getElementById('modality')
+              ?.value || '',
+
+          orientation:
+            document
+              .getElementById('orientation')
+              ?.value.trim() || '',
+
+          population:
+            selectedPopulation,
+
+          whatsapp:
+            document
+              .getElementById('whatsapp')
+              ?.value.trim() || '',
+
+          bio:
+            document
+              .getElementById('bio')
+              ?.value.trim() || '',
+
+          is_public:
+            document
+              .getElementById('is_public')
+              ?.checked || false,
+
+          photo_url:
+            photoUrl
+        };
+
+        const {
+          data: savedProfile,
+          error: saveError
+        } = await sb
           .from('profiles')
           .upsert(payload)
           .select()
@@ -264,6 +346,7 @@ const selectedPopulation = populationField.value;
           `;
 
           showRemoveButton();
+
         } else {
           photoPreview.innerHTML = 'PS';
 
@@ -275,26 +358,45 @@ const selectedPopulation = populationField.value;
           }
         }
 
-        showMessage('msg', 'Perfil guardado correctamente.');
+        showMessage(
+          'msg',
+          'Perfil guardado correctamente.'
+        );
 
-           } catch (error) {
-        console.error('Error al guardar perfil:', error);
+      } catch (error) {
+        console.error(
+          'Error al guardar perfil:',
+          error
+        );
 
         if (
           error.code === '23505' ||
-          error.message?.includes('unique_license_jurisdiction')
+          error.message?.includes(
+            'unique_license_jurisdiction'
+          )
         ) {
           showMessage(
             'msg',
             'Esta matrícula ya está registrada en PsiCerca para esa jurisdicción. Si considerás que se trata de un error, contactanos.',
             true
           );
+
           return;
         }
 
         showMessage(
           'msg',
-          error.message || 'No se pudo guardar el perfil.',
+          error.message ||
+            'No se pudo guardar el perfil.',
           true
         );
       }
+    });
+
+  } catch (error) {
+    console.error(
+      'Error en dashboard:',
+      error
+    );
+  }
+})();
