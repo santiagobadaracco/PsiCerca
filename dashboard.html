@@ -1,5 +1,4 @@
 <!doctype html>
-
 <html lang="es">
 
 <head>
@@ -10,473 +9,365 @@
 
   <link rel="stylesheet" href="styles.css">
 
-  <!-- Supabase -->
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <!-- Configuración -->
-
   <script src="config.js"></script>
-
-  <!-- Cliente Supabase -->
-
   <script src="supabase.js"></script>
-
-  <!-- Autenticación -->
-
   <script src="auth.js"></script>
-
 </head>
 
 <body>
 
-  <!-- ============================== -->
+<header>
+  <div class="container nav">
 
-  <!-- ENCABEZADO -->
-
-  <!-- ============================== -->
-
-  <header>
-    <div class="container nav">
-
-```
-  <a class="logo" href="index.html">
-    Psi<span>Cerca</span>
-  </a>
-
-  <nav class="navlinks">
-
-    <a href="profesionales.html">
-      Directorio
+    <a class="logo" href="index.html">
+      Psi<span>Cerca</span>
     </a>
 
-    <button
-      class="btn secondary"
-      type="button"
-      onclick="logout()"
-    >
-      Cerrar sesión
-    </button>
+    <nav class="navlinks">
 
-  </nav>
+      <a href="profesionales.html">
+        Directorio
+      </a>
 
-</div>
-```
-
-  </header>
-
-  <!-- ============================== -->
-
-  <!-- PANEL -->
-
-  <!-- ============================== -->
-
-  <main class="dashboard">
-
-```
-<div class="container">
-
-  <!-- CABECERA DEL PANEL -->
-
-  <div class="dash-head">
-
-    <div>
-
-      <span class="eyebrow">
-        Área profesional
-      </span>
-
-      <h1>
-        Mi panel
-      </h1>
-
-      <p
-        id="welcome"
-        class="small"
+      <button
+        class="btn secondary"
+        type="button"
+        onclick="logout()"
       >
-        Cargando…
-      </p>
+        Cerrar sesión
+      </button>
+
+    </nav>
+
+  </div>
+</header>
+
+
+<main class="dashboard">
+
+  <div class="container">
+
+    <div class="dash-head">
+
+      <div>
+
+        <span class="eyebrow">
+          Área profesional
+        </span>
+
+        <h1>
+          Mi panel
+        </h1>
+
+        <p
+          id="welcome"
+          class="small"
+        >
+          Cargando…
+        </p>
+
+      </div>
+
+      <a
+        class="btn primary"
+        href="profesionales.html"
+      >
+        Ver directorio
+      </a>
 
     </div>
 
-    <a
-      class="btn primary"
-      href="profesionales.html"
-    >
-      Ver directorio
-    </a>
 
-  </div>
+    <div class="dash-grid">
 
+      <aside class="side">
 
-  <!-- ============================== -->
-  <!-- CONTENIDO -->
-  <!-- ============================== -->
+        <a
+          class="active"
+          href="#perfil"
+        >
+          Mi perfil
+        </a>
 
-  <div class="dash-grid">
+        <a href="#perfil">
+          Información profesional
+        </a>
 
+        <a href="#proximamente">
+          Agenda
+          <small>(próximamente)</small>
+        </a>
 
-    <!-- MENÚ LATERAL -->
+        <a href="#proximamente">
+          Estadísticas
+          <small>(próximamente)</small>
+        </a>
 
-    <aside class="side">
-
-      <a
-        class="active"
-        href="#perfil"
-      >
-        Mi perfil
-      </a>
-
-      <a href="#perfil">
-        Información profesional
-      </a>
-
-      <a href="#proximamente">
-        Agenda
-        <small>
-          (próximamente)
-        </small>
-      </a>
-
-      <a href="#proximamente">
-        Estadísticas
-        <small>
-          (próximamente)
-        </small>
-      </a>
-
-    </aside>
+      </aside>
 
 
-    <!-- ============================== -->
-    <!-- FORMULARIO -->
-    <!-- ============================== -->
-
-    <section
-      class="panel"
-      id="perfil"
-    >
-
-      <h2>
-        Mi perfil profesional
-      </h2>
-
-      <p class="small">
-        Completá tu información. Solo se mostrará
-        públicamente cuando actives “Publicar perfil”.
-      </p>
-
-
-      <form
-        id="profileForm"
-        class="profile-form"
+      <section
+        class="panel"
+        id="perfil"
       >
 
+        <h2>
+          Mi perfil profesional
+        </h2>
 
-        <!-- ============================== -->
-        <!-- FOTO -->
-        <!-- ============================== -->
+        <p class="small">
+          Completá tu información. Solo se mostrará públicamente cuando actives “Publicar perfil”.
+        </p>
 
-        <div class="field span-2">
 
-          <label for="photo">
-            Foto de perfil
-          </label>
+        <form
+          id="profileForm"
+          class="profile-form"
+        >
 
-          <div class="photo-upload">
+          <div class="field span-2">
 
-            <div
-              id="photoPreview"
-              class="avatar"
-              style="overflow:hidden;"
-            >
-              PS
-            </div>
+            <label for="photo">
+              Foto de perfil
+            </label>
 
-            <div>
+            <div class="photo-upload">
 
-              <input
-                id="photo"
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
+              <div
+                id="photoPreview"
+                class="avatar"
+                style="overflow:hidden;"
               >
+                PS
+              </div>
 
-              <p class="small">
-                JPG, PNG o WEBP · Máximo 2 MB
-              </p>
+              <div>
+
+                <input
+                  id="photo"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                >
+
+                <p class="small">
+                  JPG, PNG o WEBP · Máximo 2 MB
+                </p>
+
+              </div>
 
             </div>
 
           </div>
 
-        </div>
 
+          <div class="field">
 
-        <!-- ============================== -->
-        <!-- NOMBRE -->
-        <!-- ============================== -->
-
-        <div class="field">
-
-          <label for="display_name">
-            Nombre profesional
-          </label>
-
-          <input
-            id="display_name"
-            type="text"
-            required
-          >
-
-        </div>
-
-
-        <!-- ============================== -->
-        <!-- JURISDICCIÓN -->
-        <!-- ============================== -->
-
-        <div class="field">
-
-          <label for="jurisdiction">
-            Jurisdicción
-          </label>
-
-          <select id="jurisdiction">
-
-            <option value="Ciudad de Buenos Aires">
-              Ciudad de Buenos Aires
-            </option>
-
-            <option value="Provincia de Buenos Aires">
-              Provincia de Buenos Aires
-            </option>
-
-            <option value="Otra">
-              Otra
-            </option>
-
-          </select>
-
-        </div>
-
-
-        <!-- ============================== -->
-        <!-- MATRÍCULA -->
-        <!-- ============================== -->
-
-        <div class="field">
-
-          <label for="license">
-            Matrícula
-          </label>
-
-          <input
-            id="license"
-            type="text"
-            required
-          >
-
-        </div>
-
-
-        <!-- ============================== -->
-        <!-- ZONA -->
-        <!-- ============================== -->
-
-        <div class="field">
-
-          <label for="zone">
-            Zona / localidad
-          </label>
-
-          <input
-            id="zone"
-            type="text"
-            placeholder="Ej. Lanús"
-          >
-
-        </div>
-
-
-        <!-- ============================== -->
-        <!-- MODALIDAD -->
-        <!-- ============================== -->
-
-        <div class="field">
-
-          <label for="modality">
-            Modalidad
-          </label>
-
-          <select id="modality">
-
-            <option value="">
-              Seleccionar
-            </option>
-
-            <option value="Presencial y online">
-              Presencial y online
-            </option>
-
-            <option value="Solo online">
-              Solo online
-            </option>
-
-            <option value="Solo presencial">
-              Solo presencial
-            </option>
-
-          </select>
-
-        </div>
-
-
-        <!-- ============================== -->
-        <!-- ORIENTACIÓN -->
-        <!-- ============================== -->
-
-        <div class="field">
-
-          <label for="orientation">
-            Orientación
-          </label>
-
-          <input
-            id="orientation"
-            type="text"
-            placeholder="Ej. Psicoanálisis, TCC, sistémica"
-          >
-
-        </div>
-
-
-        <!-- ============================== -->
-        <!-- POBLACIÓN -->
-        <!-- ============================== -->
-
-        <div class="field">
-
-          <label for="population">
-            Población
-          </label>
-
-          <input
-            id="population"
-            type="text"
-            placeholder="Ej. Adultos, adolescentes"
-          >
-
-        </div>
-
-
-        <!-- ============================== -->
-        <!-- WHATSAPP -->
-        <!-- ============================== -->
-
-        <div class="field">
-
-          <label for="whatsapp">
-            WhatsApp público (opcional)
-          </label>
-
-          <input
-            id="whatsapp"
-            type="tel"
-            placeholder="Ej. 5491123456789"
-          >
-
-        </div>
-
-
-        <!-- ============================== -->
-        <!-- PRESENTACIÓN -->
-        <!-- ============================== -->
-
-        <div class="field span-2">
-
-          <label for="bio">
-            Presentación
-          </label>
-
-          <textarea
-            id="bio"
-            maxlength="1000"
-            placeholder="Contá brevemente sobre tu práctica profesional."
-          ></textarea>
-
-        </div>
-
-
-        <!-- ============================== -->
-        <!-- PUBLICAR -->
-        <!-- ============================== -->
-
-        <div class="field span-2">
-
-          <label class="check">
+            <label for="display_name">
+              Nombre profesional
+            </label>
 
             <input
-              id="is_public"
-              type="checkbox"
+              id="display_name"
+              type="text"
+              required
             >
 
-            <span>
-
-              <strong>
-                Publicar perfil
-              </strong>
-
-              <br>
-
-              Al activarlo, tu perfil podrá aparecer
-              en el directorio público.
-
-            </span>
-
-          </label>
-
-        </div>
+          </div>
 
 
-        <!-- ============================== -->
-        <!-- GUARDAR -->
-        <!-- ============================== -->
+          <div class="field">
 
-        <div class="span-2">
+            <label for="jurisdiction">
+              Jurisdicción
+            </label>
 
-          <button
-            class="btn primary"
-            type="submit"
-          >
-            Guardar cambios
-          </button>
+            <select id="jurisdiction">
 
-          <div
-            id="msg"
-            class="message"
-          ></div>
+              <option value="Ciudad de Buenos Aires">
+                Ciudad de Buenos Aires
+              </option>
 
-        </div>
+              <option value="Provincia de Buenos Aires">
+                Provincia de Buenos Aires
+              </option>
 
-      </form>
+              <option value="Otra">
+                Otra
+              </option>
 
-    </section>
+            </select>
+
+          </div>
+
+
+          <div class="field">
+
+            <label for="license">
+              Matrícula
+            </label>
+
+            <input
+              id="license"
+              type="text"
+              required
+            >
+
+          </div>
+
+
+          <div class="field">
+
+            <label for="zone">
+              Zona / localidad
+            </label>
+
+            <input
+              id="zone"
+              type="text"
+              placeholder="Ej. Lanús"
+            >
+
+          </div>
+
+
+          <div class="field">
+
+            <label for="modality">
+              Modalidad
+            </label>
+
+            <select id="modality">
+
+              <option value="">
+                Seleccionar
+              </option>
+
+              <option value="Presencial y online">
+                Presencial y online
+              </option>
+
+              <option value="Solo online">
+                Solo online
+              </option>
+
+              <option value="Solo presencial">
+                Solo presencial
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="field">
+
+            <label for="orientation">
+              Orientación
+            </label>
+
+            <input
+              id="orientation"
+              type="text"
+              placeholder="Ej. Psicoanálisis, TCC, sistémica"
+            >
+
+          </div>
+
+
+          <div class="field">
+
+            <label for="population">
+              Población
+            </label>
+
+            <input
+              id="population"
+              type="text"
+              placeholder="Ej. Adultos, adolescentes"
+            >
+
+          </div>
+
+
+          <div class="field">
+
+            <label for="whatsapp">
+              WhatsApp público (opcional)
+            </label>
+
+            <input
+              id="whatsapp"
+              type="tel"
+              placeholder="Ej. 5491123456789"
+            >
+
+          </div>
+
+
+          <div class="field span-2">
+
+            <label for="bio">
+              Presentación
+            </label>
+
+            <textarea
+              id="bio"
+              maxlength="1000"
+              placeholder="Contá brevemente sobre tu práctica profesional."
+            ></textarea>
+
+          </div>
+
+
+          <div class="field span-2">
+
+            <label class="check">
+
+              <input
+                id="is_public"
+                type="checkbox"
+              >
+
+              <span>
+                <strong>Publicar perfil</strong>
+                <br>
+                Al activarlo, tu perfil podrá aparecer en el directorio público.
+              </span>
+
+            </label>
+
+          </div>
+
+
+          <div class="span-2">
+
+            <button
+              class="btn primary"
+              type="submit"
+            >
+              Guardar cambios
+            </button>
+
+            <div
+              id="msg"
+              class="message"
+            ></div>
+
+          </div>
+
+        </form>
+
+      </section>
+
+    </div>
 
   </div>
 
-</div>
-```
+</main>
 
-  </main>
 
-  <!-- ============================== -->
-
-  <!-- DASHBOARD.JS -->
-
-  <!-- ============================== -->
-
-  <script src="dashboard.js"></script>
+<script src="dashboard.js"></script>
 
 </body>
-
 </html>
