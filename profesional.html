@@ -23,16 +23,26 @@
         Psi<span>Cerca</span>
       </a>
 
-      <a href="profesionales.html" class="btn secondary">
+      <a
+        href="profesionales.html"
+        class="btn secondary"
+      >
         ← Volver al directorio
       </a>
 
     </div>
   </header>
 
-  <main class="form-wrap" style="max-width:760px">
 
-    <div id="profile" class="panel">
+  <main
+    class="form-wrap"
+    style="max-width:760px"
+  >
+
+    <div
+      id="profile"
+      class="panel"
+    >
 
       <div class="empty">
         Cargando perfil…
@@ -41,6 +51,7 @@
     </div>
 
   </main>
+
 
   <footer class="footer">
 
@@ -55,10 +66,14 @@
 
     (async function () {
 
-      const box = document.getElementById('profile');
+      const box =
+        document.getElementById('profile');
 
       const id =
-        new URLSearchParams(window.location.search).get('id');
+        new URLSearchParams(
+          window.location.search
+        ).get('id');
+
 
       if (!id) {
 
@@ -71,11 +86,17 @@
         return;
       }
 
+
       try {
 
-        const sb = requireSupabase();
+        const sb =
+          requireSupabase();
 
-        const { data: p, error } = await sb
+
+        const {
+          data: p,
+          error
+        } = await sb
           .from('profiles')
           .select(`
             display_name,
@@ -93,14 +114,20 @@
           .eq('is_public', true)
           .single();
 
+
         if (error) {
           throw error;
         }
 
+
         if (!p) {
-          throw new Error('Perfil no encontrado');
+          throw new Error(
+            'Perfil no encontrado'
+          );
         }
 
+
+        // Iniciales
         const initials =
           (p.display_name || 'PS')
             .split(' ')
@@ -110,154 +137,293 @@
             .slice(0, 2)
             .toUpperCase();
 
-        const avatar = p.photo_url
-          ? `
-            <div
-              class="avatar"
-              style="width:72px;height:72px;overflow:hidden;"
-            >
-              <img
-                src="${escapeHTML(p.photo_url)}"
-                alt="Foto de ${escapeHTML(p.display_name || 'profesional')}"
-                style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;"
-              >
-            </div>
-          `
-          : `
-            <div
-              class="avatar"
-              style="width:72px;height:72px"
-            >
-              ${escapeHTML(initials)}
-            </div>
-          `;
 
+        // Foto / avatar
+        const avatar =
+          p.photo_url
+
+            ? `
+              <div
+                class="avatar"
+                style="
+                  width:88px;
+                  height:88px;
+                  min-width:88px;
+                  overflow:hidden;
+                "
+              >
+                <img
+                  src="${escapeHTML(p.photo_url)}"
+                  alt="Foto de ${escapeHTML(
+                    p.display_name || 'profesional'
+                  )}"
+                  style="
+                    width:100%;
+                    height:100%;
+                    object-fit:cover;
+                    border-radius:50%;
+                    display:block;
+                  "
+                >
+              </div>
+            `
+
+            : `
+              <div
+                class="avatar"
+                style="
+                  width:88px;
+                  height:88px;
+                  min-width:88px;
+                "
+              >
+                ${escapeHTML(initials)}
+              </div>
+            `;
+
+
+        // WhatsApp
         const whatsapp =
-          (p.whatsapp || '').replace(/\D/g, '');
+          (p.whatsapp || '')
+            .replace(/\D/g, '');
+
+
+        // Chips
+        const chips = [
+          p.orientation,
+          p.population,
+          p.modality,
+          p.zone
+        ]
+          .filter(Boolean)
+          .map(x => `
+            <span class="chip">
+              ${escapeHTML(x)}
+            </span>
+          `)
+          .join('');
+
 
         box.innerHTML = `
 
-          <div class="pro-top">
+          <!-- ENCABEZADO -->
+
+          <div
+            style="
+              display:flex;
+              align-items:center;
+              gap:18px;
+              margin-bottom:28px;
+            "
+          >
 
             ${avatar}
 
-            <div>
+            <div style="min-width:0;">
 
               <span class="eyebrow">
                 Perfil profesional
               </span>
 
-              <h1>
-                ${escapeHTML(p.display_name || 'Profesional')}
+              <h1
+                style="
+                  margin:4px 0 8px;
+                  font-size:clamp(32px,5vw,48px);
+                "
+              >
+                ${escapeHTML(
+                  p.display_name || 'Profesional'
+                )}
               </h1>
 
-           <div class="small">
-  Matrícula:
-  <strong>${escapeHTML(p.license || '—')}</strong>
-  ·
-  ${escapeHTML(p.jurisdiction || '—')}
-</div>
+              <div class="small">
 
-${
-  p.license
-    ? `
-      <div style="margin-top:12px;">
-        <a
-          href="https://www.argentina.gob.ar/salud/buscador-nacional-de-profesionales-de-la-salud"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="btn secondary"
-          style="font-size:13px;"
-        >
-          🔎 Consultar matrícula en registro oficial
-        </a>
-      </div>
-    `
-    : ''
-}
-          </div>
+                Matrícula:
+                <strong>
+                  ${escapeHTML(
+                    p.license || '—'
+                  )}
+                </strong>
 
+                ·
 
-          <div
-            class="chips"
-            style="margin-top:25px"
-          >
+                ${escapeHTML(
+                  p.jurisdiction || '—'
+                )}
 
-            ${
-              [
-                p.orientation,
-                p.population,
-                p.modality,
-                p.zone
-              ]
-              .filter(Boolean)
-              .map(x =>
-                `<span class="chip">
-                  ${escapeHTML(x)}
-                </span>`
-              )
-              .join('')
-            }
+              </div>
+
+            </div>
 
           </div>
 
 
-          <h2>
-            Sobre mi práctica
-          </h2>
-
-          <p>
-            ${
-              escapeHTML(
-                p.bio ||
-                'El profesional todavía no agregó una presentación.'
-              )
-            }
-          </p>
-
+          <!-- VERIFICACIÓN EXTERNA -->
 
           ${
-            whatsapp
+            p.license
               ? `
-                <a
-                  class="btn primary"
-                  target="_blank"
-                  rel="noopener"
-                  href="https://wa.me/${whatsapp}"
+                <div
+                  style="
+                    background:var(--soft);
+                    border-radius:16px;
+                    padding:16px 18px;
+                    margin-bottom:28px;
+                  "
                 >
-                  Contactar por WhatsApp
-                </a>
+
+                  <div
+                    style="
+                      font-weight:700;
+                      margin-bottom:5px;
+                    "
+                  >
+                    🔎 ¿Querés comprobar la matrícula?
+                  </div>
+
+                  <p
+                    class="small"
+                    style="
+                      margin:0 0 12px;
+                    "
+                  >
+                    Podés consultar esta matrícula
+                    directamente en el registro oficial
+                    del Ministerio de Salud.
+                  </p>
+
+                  <a
+                    href="https://www.argentina.gob.ar/salud/buscador-nacional-de-profesionales-de-la-salud"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="btn secondary"
+                    style="
+                      font-size:13px;
+                    "
+                  >
+                    Consultar matrícula en registro oficial
+                  </a>
+
+                </div>
               `
               : ''
           }
 
 
-        <p
-  class="small"
-  style="margin-top:20px"
->
-  La información de matrícula es declarada por el profesional.
-  PsiCerca recomienda verificarla en el
-  <a
-    href="https://www.argentina.gob.ar/salud/buscador-nacional-de-profesionales-de-la-salud"
-    target="_blank"
-    rel="noopener noreferrer"
-    style="color:var(--accent);font-weight:700;"
-  >
-    registro oficial del Ministerio de Salud
-  </a>.
-</p>
+          <!-- INFORMACIÓN PROFESIONAL -->
 
-<p
-  class="small"
-  style="margin-top:10px"
->
-  PsiCerca facilita el contacto y no determina
-  qué profesional es clínicamente adecuado
-  para una persona.
-</p>
+          ${
+            chips
+              ? `
+                <div
+                  class="chips"
+                  style="
+                    margin:0 0 32px;
+                  "
+                >
+                  ${chips}
+                </div>
+              `
+              : ''
+          }
+
+
+          <!-- PRESENTACIÓN -->
+
+          <section>
+
+            <h2>
+              Sobre mi práctica
+            </h2>
+
+            <p
+              style="
+                white-space:pre-line;
+                margin-bottom:28px;
+              "
+            >
+              ${
+                escapeHTML(
+                  p.bio ||
+                  'El profesional todavía no agregó una presentación.'
+                )
+              }
+            </p>
+
+          </section>
+
+
+          <!-- CONTACTO -->
+
+          ${
+            whatsapp
+              ? `
+                <div
+                  style="
+                    margin-top:8px;
+                    padding-top:24px;
+                    border-top:1px solid var(--line);
+                  "
+                >
+
+                  <a
+                    class="btn primary"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href="https://wa.me/${whatsapp}"
+                  >
+                    Contactar por WhatsApp
+                  </a>
+
+                </div>
+              `
+              : ''
+          }
+
+
+          <!-- ACLARACIONES -->
+
+          <div
+            style="
+              margin-top:32px;
+              padding-top:20px;
+              border-top:1px solid var(--line);
+            "
+          >
+
+            <p
+              class="small"
+              style="margin:0 0 10px;"
+            >
+              La información de matrícula es declarada
+              por el profesional. PsiCerca recomienda
+              verificarla en el
+              <a
+                href="https://www.argentina.gob.ar/salud/buscador-nacional-de-profesionales-de-la-salud"
+                target="_blank"
+                rel="noopener noreferrer"
+                style="
+                  color:var(--accent);
+                  font-weight:700;
+                "
+              >
+                registro oficial del Ministerio de Salud
+              </a>.
+            </p>
+
+            <p
+              class="small"
+              style="margin:0;"
+            >
+              PsiCerca facilita el contacto y no determina
+              qué profesional es clínicamente adecuado
+              para una persona.
+            </p>
+
+          </div>
 
         `;
+
 
       } catch (error) {
 
@@ -268,7 +434,8 @@ ${
 
         box.innerHTML = `
           <div class="empty">
-            Este perfil no está disponible o no es público.
+            Este perfil no está disponible
+            o no es público.
           </div>
         `;
 
