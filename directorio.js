@@ -267,7 +267,7 @@ async function loadProfiles() {
 // LIMPIAR FILTROS
 // ==============================
 
-function clearFilters() {
+window.clearFilters = function () {
 
   document.getElementById('q').value = '';
   document.getElementById('zone').value = '';
@@ -275,8 +275,7 @@ function clearFilters() {
   document.getElementById('population').value = '';
 
   loadProfiles();
-}
-
+};
 
 // ==============================
 // CARGA INICIAL
