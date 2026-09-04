@@ -155,9 +155,13 @@
 
         updatePopulationValue();
 
-        const selectedPopulation =
-          document.getElementById('population').value;
+        const populationField = document.getElementById('population');
 
+if (!populationField) {
+  throw new Error('No se encontró el campo de población.');
+}
+
+const selectedPopulation = populationField.value;
         let photoUrl = currentProfile?.photo_url || null;
 
         // Eliminar foto si corresponde
