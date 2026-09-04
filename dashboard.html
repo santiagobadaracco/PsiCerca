@@ -1,374 +1,482 @@
-(async () => {
-  try {
-    const user = await requireUser();
-
-    if (!user) return;
-
-    const welcome = document.getElementById('welcome');
+<!doctype html>
 
-    if (welcome) {
-      welcome.textContent = 'Sesión iniciada como ' + user.email;
-    }
+<html lang="es">
 
-    const sb = requireSupabase();
-
-    // ==============================
-    // BUSCAR PERFIL
-    // ==============================
-
-    const { data: profile, error: profileError } = await sb
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .maybeSingle();
-
-    if (profileError) {
-      throw profileError;
-    }
-
-    const meta = user.user_metadata || {};
-
-    const currentProfile = profile || {
-      id: user.id,
-      display_name: meta.full_name || '',
-      license: meta.license || '',
-      jurisdiction: meta.jurisdiction || '',
-      zone: '',
-      modality: '',
-      orientation: '',
-      population: '',
-      whatsapp: '',
-      bio: '',
-      is_public: false,
-      photo_url: ''
-    };
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    // ==============================
-    // CARGAR DATOS
-    // ==============================
+  <title>Panel profesional — PsiCerca</title>
 
-    const fields = [
-      'display_name',
-      'license',
-      'jurisdiction',
-      'zone',
-      'modality',
-      'orientation',
-      'population',
-      'whatsapp',
-      'bio'
-    ];
+  <link rel="stylesheet" href="styles.css">
 
-    fields.forEach(field => {
-      const element = document.getElementById(field);
+  <!-- Supabase -->
 
-      if (element) {
-        element.value = currentProfile[field] || '';
-      }
-    });
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    const publicCheckbox = document.getElementById('is_public');
+  <!-- Configuración -->
 
-    if (publicCheckbox) {
-      publicCheckbox.checked = !!currentProfile.is_public;
-    }
+  <script src="config.js"></script>
 
-    // ==============================
-    // FOTO
-    // ==============================
+  <!-- Cliente Supabase -->
 
-    const photoInput = document.getElementById('photo');
-    const photoPreview = document.getElementById('photoPreview');
+  <script src="supabase.js"></script>
 
-    function mostrarFoto(url) {
+  <!-- Autenticación -->
 
-      if (!photoPreview) return;
+  <script src="auth.js"></script>
 
-      photoPreview.innerHTML = '';
+</head>
 
-      const imagen = document.createElement('img');
+<body>
 
-      imagen.src = url;
-      imagen.alt = 'Foto de perfil';
+  <!-- ============================== -->
 
-      imagen.style.width = '100%';
-      imagen.style.height = '100%';
-      imagen.style.objectFit = 'cover';
-      imagen.style.borderRadius = '50%';
-      imagen.style.display = 'block';
+  <!-- ENCABEZADO -->
 
-      photoPreview.appendChild(imagen);
-    }
+  <!-- ============================== -->
 
-    function mostrarIniciales() {
+  <header>
+    <div class="container nav">
 
-      if (!photoPreview) return;
+```
+  <a class="logo" href="index.html">
+    Psi<span>Cerca</span>
+  </a>
 
-      const nombre = currentProfile.display_name || 'PS';
+  <nav class="navlinks">
 
-      const iniciales = nombre
-        .split(' ')
-        .filter(Boolean)
-        .map(nombre => nombre.charAt(0))
-        .join('')
-        .substring(0, 2)
-        .toUpperCase();
+    <a href="profesionales.html">
+      Directorio
+    </a>
 
-      photoPreview.innerHTML = '';
-      photoPreview.textContent = iniciales;
-    }
+    <button
+      class="btn secondary"
+      type="button"
+      onclick="logout()"
+    >
+      Cerrar sesión
+    </button>
 
-    // Mostrar foto ya guardada
-    if (currentProfile.photo_url) {
-      mostrarFoto(currentProfile.photo_url);
-    } else {
-      mostrarIniciales();
-    }
+  </nav>
 
-    // ==============================
-    // MOSTRAR FOTO AL SELECCIONARLA
-    // ==============================
+</div>
+```
 
-    if (photoInput) {
+  </header>
 
-      photoInput.addEventListener('change', function () {
+  <!-- ============================== -->
 
-        const archivo = this.files[0];
+  <!-- PANEL -->
 
-        if (!archivo) return;
+  <!-- ============================== -->
 
-        // Tamaño máximo
-        if (archivo.size > 2 * 1024 * 1024) {
+  <main class="dashboard">
 
-          showMessage(
-            'msg',
-            'La foto no puede superar los 2 MB.',
-            true
-          );
+```
+<div class="container">
 
-          this.value = '';
+  <!-- CABECERA DEL PANEL -->
 
-          return;
-        }
+  <div class="dash-head">
 
-        // Formatos permitidos
-        const formatosPermitidos = [
-          'image/jpeg',
-          'image/png',
-          'image/webp'
-        ];
+    <div>
 
-        if (!formatosPermitidos.includes(archivo.type)) {
+      <span class="eyebrow">
+        Área profesional
+      </span>
 
-          showMessage(
-            'msg',
-            'La foto debe ser JPG, PNG o WEBP.',
-            true
-          );
+      <h1>
+        Mi panel
+      </h1>
 
-          this.value = '';
+      <p
+        id="welcome"
+        class="small"
+      >
+        Cargando…
+      </p>
 
-          return;
-        }
+    </div>
 
-        // ==============================
-        // VISTA PREVIA INMEDIATA
-        // ==============================
+    <a
+      class="btn primary"
+      href="profesionales.html"
+    >
+      Ver directorio
+    </a>
 
-        const lector = new FileReader();
+  </div>
 
-        lector.onload = function (evento) {
 
-          mostrarFoto(evento.target.result);
+  <!-- ============================== -->
+  <!-- CONTENIDO -->
+  <!-- ============================== -->
 
-        };
+  <div class="dash-grid">
 
-        lector.readAsDataURL(archivo);
 
-      });
-    }
+    <!-- MENÚ LATERAL -->
 
-    // ==============================
-    // GUARDAR PERFIL
-    // ==============================
+    <aside class="side">
 
-    const form = document.getElementById('profileForm');
+      <a
+        class="active"
+        href="#perfil"
+      >
+        Mi perfil
+      </a>
 
-    if (!form) {
-      throw new Error('No se encontró el formulario del perfil.');
-    }
+      <a href="#perfil">
+        Información profesional
+      </a>
 
-    form.addEventListener('submit', async function (event) {
+      <a href="#proximamente">
+        Agenda
+        <small>
+          (próximamente)
+        </small>
+      </a>
 
-      event.preventDefault();
+      <a href="#proximamente">
+        Estadísticas
+        <small>
+          (próximamente)
+        </small>
+      </a>
 
-      const button = form.querySelector('button[type="submit"]');
+    </aside>
 
-      if (button) {
-        button.disabled = true;
-        button.textContent = 'Guardando…';
-      }
 
-      try {
+    <!-- ============================== -->
+    <!-- FORMULARIO -->
+    <!-- ============================== -->
 
-        let photoURL = currentProfile.photo_url || '';
+    <section
+      class="panel"
+      id="perfil"
+    >
 
-        // ==============================
-        // SUBIR FOTO A SUPABASE
-        // ==============================
+      <h2>
+        Mi perfil profesional
+      </h2>
 
-        const archivo = photoInput &&
-                        photoInput.files &&
-                        photoInput.files[0];
+      <p class="small">
+        Completá tu información. Solo se mostrará
+        públicamente cuando actives “Publicar perfil”.
+      </p>
 
-        if (archivo) {
 
-          const extension = archivo.name
-            .split('.')
-            .pop()
-            .toLowerCase();
+      <form
+        id="profileForm"
+        class="profile-form"
+      >
 
-          const ruta = user.id + '/profile.' + extension;
 
-          const subida = await sb.storage
-            .from('profile-photos')
-            .upload(
-              ruta,
-              archivo,
-              {
-                cacheControl: '3600',
-                upsert: true,
-                contentType: archivo.type
-              }
-            );
+        <!-- ============================== -->
+        <!-- FOTO -->
+        <!-- ============================== -->
 
-          if (subida.error) {
-            throw subida.error;
-          }
+        <div class="field span-2">
 
-          const publicURL = sb.storage
-            .from('profile-photos')
-            .getPublicUrl(ruta);
+          <label for="photo">
+            Foto de perfil
+          </label>
 
-          photoURL = publicURL.data.publicUrl;
-        }
+          <div class="photo-upload">
 
-        // ==============================
-        // DATOS
-        // ==============================
+            <div
+              id="photoPreview"
+              class="avatar"
+              style="overflow:hidden;"
+            >
+              PS
+            </div>
 
-        const payload = {
+            <div>
 
-          id: user.id,
+              <input
+                id="photo"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+              >
 
-          display_name:
-            document.getElementById('display_name').value.trim(),
+              <p class="small">
+                JPG, PNG o WEBP · Máximo 2 MB
+              </p>
 
-          license:
-            document.getElementById('license').value.trim(),
+            </div>
 
-          jurisdiction:
-            document.getElementById('jurisdiction').value,
+          </div>
 
-          zone:
-            document.getElementById('zone').value.trim(),
+        </div>
 
-          modality:
-            document.getElementById('modality').value,
 
-          orientation:
-            document.getElementById('orientation').value.trim(),
+        <!-- ============================== -->
+        <!-- NOMBRE -->
+        <!-- ============================== -->
 
-          population:
-            document.getElementById('population').value.trim(),
+        <div class="field">
 
-          whatsapp:
-            document.getElementById('whatsapp').value.trim(),
+          <label for="display_name">
+            Nombre profesional
+          </label>
 
-          bio:
-            document.getElementById('bio').value.trim(),
+          <input
+            id="display_name"
+            type="text"
+            required
+          >
 
-          is_public:
-            document.getElementById('is_public').checked,
+        </div>
 
-          photo_url:
-            photoURL,
 
-          updated_at:
-            new Date().toISOString()
-        };
+        <!-- ============================== -->
+        <!-- JURISDICCIÓN -->
+        <!-- ============================== -->
 
-        // ==============================
-        // GUARDAR EN SUPABASE
-        // ==============================
+        <div class="field">
 
-        const resultado = await sb
-          .from('profiles')
-          .upsert(
-            payload,
-            {
-              onConflict: 'id'
-            }
-          );
+          <label for="jurisdiction">
+            Jurisdicción
+          </label>
 
-        if (resultado.error) {
-          throw resultado.error;
-        }
+          <select id="jurisdiction">
 
-        // Actualizar datos locales
-        currentProfile.photo_url = photoURL;
-        currentProfile.display_name = payload.display_name;
-        currentProfile.is_public = payload.is_public;
+            <option value="Ciudad de Buenos Aires">
+              Ciudad de Buenos Aires
+            </option>
 
-        // Mostrar la foto guardada
-        if (photoURL) {
-          mostrarFoto(photoURL);
-        }
+            <option value="Provincia de Buenos Aires">
+              Provincia de Buenos Aires
+            </option>
 
-        showMessage(
-          'msg',
-          'Perfil guardado correctamente.'
-        );
+            <option value="Otra">
+              Otra
+            </option>
 
-      } catch (error) {
+          </select>
 
-        console.error(
-          'Error guardando perfil:',
-          error
-        );
+        </div>
 
-        showMessage(
-          'msg',
-          error.message ||
-          'No se pudieron guardar los cambios.',
-          true
-        );
 
-      } finally {
+        <!-- ============================== -->
+        <!-- MATRÍCULA -->
+        <!-- ============================== -->
 
-        if (button) {
-          button.disabled = false;
-          button.textContent = 'Guardar cambios';
-        }
+        <div class="field">
 
-      }
+          <label for="license">
+            Matrícula
+          </label>
 
-    });
+          <input
+            id="license"
+            type="text"
+            required
+          >
 
-  } catch (error) {
+        </div>
 
-    console.error(
-      'Error en dashboard:',
-      error
-    );
 
-    showMessage(
-      'msg',
-      error.message ||
-      'Ocurrió un error.',
-      true
-    );
+        <!-- ============================== -->
+        <!-- ZONA -->
+        <!-- ============================== -->
 
-  }
+        <div class="field">
 
-})();
+          <label for="zone">
+            Zona / localidad
+          </label>
+
+          <input
+            id="zone"
+            type="text"
+            placeholder="Ej. Lanús"
+          >
+
+        </div>
+
+
+        <!-- ============================== -->
+        <!-- MODALIDAD -->
+        <!-- ============================== -->
+
+        <div class="field">
+
+          <label for="modality">
+            Modalidad
+          </label>
+
+          <select id="modality">
+
+            <option value="">
+              Seleccionar
+            </option>
+
+            <option value="Presencial y online">
+              Presencial y online
+            </option>
+
+            <option value="Solo online">
+              Solo online
+            </option>
+
+            <option value="Solo presencial">
+              Solo presencial
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <!-- ============================== -->
+        <!-- ORIENTACIÓN -->
+        <!-- ============================== -->
+
+        <div class="field">
+
+          <label for="orientation">
+            Orientación
+          </label>
+
+          <input
+            id="orientation"
+            type="text"
+            placeholder="Ej. Psicoanálisis, TCC, sistémica"
+          >
+
+        </div>
+
+
+        <!-- ============================== -->
+        <!-- POBLACIÓN -->
+        <!-- ============================== -->
+
+        <div class="field">
+
+          <label for="population">
+            Población
+          </label>
+
+          <input
+            id="population"
+            type="text"
+            placeholder="Ej. Adultos, adolescentes"
+          >
+
+        </div>
+
+
+        <!-- ============================== -->
+        <!-- WHATSAPP -->
+        <!-- ============================== -->
+
+        <div class="field">
+
+          <label for="whatsapp">
+            WhatsApp público (opcional)
+          </label>
+
+          <input
+            id="whatsapp"
+            type="tel"
+            placeholder="Ej. 5491123456789"
+          >
+
+        </div>
+
+
+        <!-- ============================== -->
+        <!-- PRESENTACIÓN -->
+        <!-- ============================== -->
+
+        <div class="field span-2">
+
+          <label for="bio">
+            Presentación
+          </label>
+
+          <textarea
+            id="bio"
+            maxlength="1000"
+            placeholder="Contá brevemente sobre tu práctica profesional."
+          ></textarea>
+
+        </div>
+
+
+        <!-- ============================== -->
+        <!-- PUBLICAR -->
+        <!-- ============================== -->
+
+        <div class="field span-2">
+
+          <label class="check">
+
+            <input
+              id="is_public"
+              type="checkbox"
+            >
+
+            <span>
+
+              <strong>
+                Publicar perfil
+              </strong>
+
+              <br>
+
+              Al activarlo, tu perfil podrá aparecer
+              en el directorio público.
+
+            </span>
+
+          </label>
+
+        </div>
+
+
+        <!-- ============================== -->
+        <!-- GUARDAR -->
+        <!-- ============================== -->
+
+        <div class="span-2">
+
+          <button
+            class="btn primary"
+            type="submit"
+          >
+            Guardar cambios
+          </button>
+
+          <div
+            id="msg"
+            class="message"
+          ></div>
+
+        </div>
+
+      </form>
+
+    </section>
+
+  </div>
+
+</div>
+```
+
+  </main>
+
+  <!-- ============================== -->
+
+  <!-- DASHBOARD.JS -->
+
+  <!-- ============================== -->
+
+  <script src="dashboard.js"></script>
+
+</body>
+
+</html>
