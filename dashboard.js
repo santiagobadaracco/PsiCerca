@@ -227,19 +227,19 @@ const selectedPopulation = populationField.value;
         }
 
         const payload = {
-          id: user.id,
-          display_name: document.getElementById('display_name').value.trim(),
-          license: document.getElementById('license').value.trim(),
-          jurisdiction: document.getElementById('jurisdiction').value,
-          zone: document.getElementById('zone').value.trim(),
-          modality: document.getElementById('modality').value,
-          orientation: document.getElementById('orientation').value.trim(),
-          population: selectedPopulation,
-          whatsapp: document.getElementById('whatsapp').value.trim(),
-          bio: document.getElementById('bio').value.trim(),
-          is_public: document.getElementById('is_public').checked,
-          photo_url: photoUrl
-        };
+  id: user.id,
+  display_name: document.getElementById('display_name')?.value.trim() || '',
+  license: document.getElementById('license')?.value.trim() || '',
+  jurisdiction: document.getElementById('jurisdiction')?.value || '',
+  zone: document.getElementById('zone')?.value.trim() || '',
+  modality: document.getElementById('modality')?.value || '',
+  orientation: document.getElementById('orientation')?.value.trim() || '',
+  population: selectedPopulation,
+  whatsapp: document.getElementById('whatsapp')?.value.trim() || '',
+  bio: document.getElementById('bio')?.value.trim() || '',
+  is_public: document.getElementById('is_public')?.checked || false,
+  photo_url: photoUrl
+};
 
         const { data: savedProfile, error: saveError } = await sb
           .from('profiles')
