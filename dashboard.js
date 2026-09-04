@@ -12,7 +12,6 @@
 
     const sb = requireSupabase();
 
-    // Buscar perfil existente
     const { data: profile, error: profileError } = await sb
       .from('profiles')
       .select('*')
@@ -41,7 +40,7 @@
     };
 
     // ==============================
-    // CARGAR DATOS DEL FORMULARIO
+    // CARGAR DATOS
     // ==============================
 
     const fields = [
@@ -77,26 +76,50 @@
     const photoInput = document.getElementById('photo');
     const photoPreview = document.getElementById('photoPreview');
 
-    const initials = (currentProfile.display_name || 'PS')
-      .split(' ')
-      .map(x => x[0])
-      .join('')
-      .slice(0, 2)
-      .toUpperCase();
+    function getInitials(name) {
+      return (name || 'PS')
+        .split(' ')
+        .filter(Boolean)
+        .map(x => x[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase();
+    }
 
-    if (photoPreview) {
-      if (currentProfile.photo_url) {
-        photoPreview.innerHTML =
-          '<img src="' +
-          currentProfile.photo_url +
-          '" alt="Foto de perfil" style="width:100%;height:100%;object-fit:cover;">';
+    function showPhoto(url) {
+      if (!photoPreview) return;
+
+      if (url) {
+        photoPreview.innerHTML = '';
+
+        const img = document.createElement('img');
+
+        img.src = url;
+        img.alt = 'Foto de perfil';
+
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+        img.style.borderRadius = '50%';
+
+        photoPreview.appendChild(img);
+
       } else {
-        photoPreview.textContent = initials;
+        photoPreview.innerHTML = '';
+        photoPreview.textContent =
+          getInitials(currentProfile.display_name);
       }
     }
 
-    // Vista previa
-    if (photoInput && photoPreview) {
+    // Mostrar foto guardada
+    showPhoto(currentProfile.photo_url);
+
+    // ==============================
+    // VISTA PREVIA
+    // ==============================
+
+    if (photoInput) {
+
       photoInput.addEventListener('change', () => {
 
         const file = photoInput.files[0];
@@ -104,6 +127,7 @@
         if (!file) return;
 
         if (file.size > 2 * 1024 * 1024) {
+
           showMessage(
             'msg',
             'La foto no puede superar los 2 MB.',
@@ -121,6 +145,7 @@
         ];
 
         if (!allowedTypes.includes(file.type)) {
+
           showMessage(
             'msg',
             'La foto debe ser JPG, PNG o WEBP.',
@@ -133,10 +158,7 @@
 
         const previewURL = URL.createObjectURL(file);
 
-        photoPreview.innerHTML =
-          '<img src="' +
-          previewURL +
-          '" alt="Vista previa" style="width:100%;height:100%;object-fit:cover;">';
+        showPhoto(previewURL);
       });
     }
 
@@ -180,7 +202,8 @@
             .pop()
             .toLowerCase();
 
-          const filePath = user.id + '/profile.' + extension;
+          const filePath =
+            user.id + '/profile.' + extension;
 
           const uploadResult = await sb.storage
             .from('profile-photos')
@@ -206,62 +229,48 @@
         }
 
         // ==============================
-        // DATOS DEL PERFIL
+        // DATOS
         // ==============================
 
         const payload = {
+
           id: user.id,
 
-          display_name: document
-            .getElementById('display_name')
-            .value
-            .trim(),
+          display_name:
+            document.getElementById('display_name').value.trim(),
 
-          license: document
-            .getElementById('license')
-            .value
-            .trim(),
+          license:
+            document.getElementById('license').value.trim(),
 
-          jurisdiction: document
-            .getElementById('jurisdiction')
-            .value,
+          jurisdiction:
+            document.getElementById('jurisdiction').value,
 
-          zone: document
-            .getElementById('zone')
-            .value
-            .trim(),
+          zone:
+            document.getElementById('zone').value.trim(),
 
-          modality: document
-            .getElementById('modality')
-            .value,
+          modality:
+            document.getElementById('modality').value,
 
-          orientation: document
-            .getElementById('orientation')
-            .value
-            .trim(),
+          orientation:
+            document.getElementById('orientation').value.trim(),
 
-          population: document
-            .getElementById('population')
-            .value
-            .trim(),
+          population:
+            document.getElementById('population').value.trim(),
 
-          whatsapp: document
-            .getElementById('whatsapp')
-            .value
-            .trim(),
+          whatsapp:
+            document.getElementById('whatsapp').value.trim(),
 
-          bio: document
-            .getElementById('bio')
-            .value
-            .trim(),
+          bio:
+            document.getElementById('bio').value.trim(),
 
-          is_public: document
-            .getElementById('is_public')
-            .checked,
+          is_public:
+            document.getElementById('is_public').checked,
 
-          photo_url: photoURL,
+          photo_url:
+            photoURL,
 
-          updated_at: new Date().toISOString()
+          updated_at:
+            new Date().toISOString()
         };
 
         // ==============================
@@ -278,8 +287,13 @@
           throw result.error;
         }
 
+        // Actualizar datos locales
         currentProfile.photo_url = photoURL;
+        currentProfile.display_name = payload.display_name;
         currentProfile.is_public = payload.is_public;
+
+        // MOSTRAR FOTO GUARDADA
+        showPhoto(photoURL);
 
         showMessage(
           'msg',
@@ -288,11 +302,15 @@
 
       } catch (error) {
 
-        console.error('Error guardando perfil:', error);
+        console.error(
+          'Error guardando perfil:',
+          error
+        );
 
         showMessage(
           'msg',
-          error.message || 'No se pudieron guardar los cambios.',
+          error.message ||
+          'No se pudieron guardar los cambios.',
           true
         );
 
@@ -309,11 +327,15 @@
 
   } catch (error) {
 
-    console.error('Error en dashboard:', error);
+    console.error(
+      'Error en dashboard:',
+      error
+    );
 
     showMessage(
       'msg',
-      error.message || 'Ocurrió un error.',
+      error.message ||
+      'Ocurrió un error.',
       true
     );
   }
