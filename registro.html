@@ -71,6 +71,7 @@
             required
             autocomplete="new-password"
           >
+
           <div class="small">
             Mínimo 8 caracteres.
           </div>
@@ -78,9 +79,11 @@
 
         <div class="field">
           <label>Matrícula</label>
+
           <input
             id="license"
             required
+            autocomplete="off"
           >
         </div>
 
@@ -127,12 +130,16 @@
   </main>
 
   <script>
+
     document.addEventListener('DOMContentLoaded', () => {
 
-      const form = document.getElementById('registerForm');
+      const form =
+        document.getElementById('registerForm');
 
       if (!form) {
-        console.error('No se encontró el formulario registerForm.');
+        console.error(
+          'No se encontró el formulario registerForm.'
+        );
         return;
       }
 
@@ -140,22 +147,36 @@
 
         e.preventDefault();
 
-        const button = form.querySelector('button');
+        const button =
+          form.querySelector('button');
 
         const fullName =
-          document.getElementById('fullName').value.trim();
+          document
+            .getElementById('fullName')
+            .value
+            .trim();
 
         const email =
-          document.getElementById('email').value.trim();
+          document
+            .getElementById('email')
+            .value
+            .trim();
 
         const password =
-          document.getElementById('password').value;
+          document
+            .getElementById('password')
+            .value;
 
         const license =
-          document.getElementById('license').value.trim();
+          document
+            .getElementById('license')
+            .value
+            .trim();
 
         const jurisdiction =
-          document.getElementById('jurisdiction').value;
+          document
+            .getElementById('jurisdiction')
+            .value;
 
         button.disabled = true;
         button.textContent = 'Creando…';
@@ -164,49 +185,75 @@
 
           const sb = requireSupabase();
 
-          const { data, error } = await sb.auth.signUp({
+          const { data, error } =
+            await sb.auth.signUp({
 
-            email: email,
+              email: email,
 
-            password: password,
+              password: password,
 
-            options: {
+              options: {
 
-              emailRedirectTo:
-                'https://santiagobadaracco.github.io/PsiCerca/login.html',
+                emailRedirectTo:
+                  'https://santiagobadaracco.github.io/PsiCerca/login.html',
 
-              data: {
-                full_name: fullName,
-                license: license,
-                jurisdiction: jurisdiction
+                data: {
+                  full_name: fullName,
+                  license: license,
+                  jurisdiction: jurisdiction
+                }
+
               }
+
+            });
+
+          if (error) {
+
+            const errorText =
+              `${error.message || ''} ${error.code || ''}`
+                .toLowerCase();
+
+            if (
+              errorText.includes('matrícula') ||
+              errorText.includes('matricula') ||
+              errorText.includes('already registered') ||
+              errorText.includes('duplicate')
+            ) {
+
+              throw new Error(
+                'Esta matrícula ya está registrada en PsiCerca para esa jurisdicción. Si considerás que se trata de un error, contactanos.'
+              );
 
             }
 
-          });
-
-          if (error) {
             throw error;
           }
 
           if (data.session) {
 
-            window.location.href = 'dashboard.html';
+            window.location.href =
+              'dashboard.html';
 
           } else {
 
             showMessage(
               'msg',
-              'Cuenta creada. Revisá tu email para confirmar la cuenta y luego iniciá sesión.'
+              'Cuenta creada correctamente. Revisá tu email para confirmar la cuenta y luego iniciá sesión.'
             );
 
           }
 
         } catch (err) {
 
+          console.error(
+            'Error durante el registro:',
+            err
+          );
+
           showMessage(
             'msg',
-            err.message || 'No se pudo crear la cuenta.',
+            err.message ||
+              'No se pudo crear la cuenta.',
             true
           );
 
@@ -220,6 +267,7 @@
       });
 
     });
+
   </script>
 
 </body>
