@@ -8,39 +8,35 @@
 
     const sb = requireSupabase();
 
-    let { data: profile, error } = await sb
+    // Buscar perfil existente
+    const { data: profile, error: profileError } = await sb
       .from('profiles')
       .select('*')
       .eq('id', user.id)
       .maybeSingle();
 
-    if (error) throw error;
-
-    // Si todavía no existe un perfil, lo creamos
-    if (!profile) {
-      const meta = user.user_metadata || {};
-      
-console.log('USUARIO DASHBOARD:', user.id, user.email);
-      
-      const payload = {
-        id: user.id,
-        display_name: meta.full_name || '',
-        license: meta.license || '',
-        jurisdiction: meta.jurisdiction || ''
-      };
-
-      const res = await sb
-        .from('profiles')
-        .insert(payload)
-        .select()
-        .single();
-
-      if (res.error) throw res.error;
-
-      profile = res.data;
+    if (profileError) {
+      throw profileError;
     }
 
-    // Cargar datos del perfil en el formulario
+    // Datos iniciales provenientes del registro
+    const meta = user.user_metadata || {};
+
+    const currentProfile = profile || {
+      id: user.id,
+      display_name: meta.full_name || '',
+      license: meta.license || '',
+      jurisdiction: meta.jurisdiction || '',
+      zone: '',
+      modality: '',
+      orientation: '',
+      population: '',
+      whatsapp: '',
+      bio: '',
+      is_public: false
+    };
+
+    // Cargar datos en el formulario
     const fields = [
       'display_name',
       'license',
@@ -57,14 +53,17 @@ console.log('USUARIO DASHBOARD:', user.id, user.email);
       const element = document.getElementById(field);
 
       if (element) {
-        element.value = profile[field] ?? '';
+        element.value = currentProfile[field] ?? '';
       }
     });
 
-    document.getElementById('is_public').checked =
-      !!profile.is_public;
+    const publicCheckbox = document.getElementById('is_public');
 
-    // Guardar cambios
+    if (publicCheckbox) {
+      publicCheckbox.checked = !!currentProfile.is_public;
+    }
+
+    // Guardar perfil
     document
       .getElementById('profileForm')
       .addEventListener('submit', async e => {
@@ -77,26 +76,52 @@ console.log('USUARIO DASHBOARD:', user.id, user.email);
         button.textContent = 'Guardando…';
 
         try {
+
           const payload = {
             id: user.id,
-            display_name: document.getElementById('display_name').value.trim(),
-            license: document.getElementById('license').value.trim(),
-            jurisdiction: document.getElementById('jurisdiction').value,
-            zone: document.getElementById('zone').value.trim(),
-            modality: document.getElementById('modality').value,
-            orientation: document.getElementById('orientation').value.trim(),
-            population: document.getElementById('population').value.trim(),
-            whatsapp: document.getElementById('whatsapp').value.trim(),
-            bio: document.getElementById('bio').value.trim(),
-            is_public: document.getElementById('is_public').checked,
-            updated_at: new Date().toISOString()
+            display_name:
+              document.getElementById('display_name').value.trim(),
+
+            license:
+              document.getElementById('license').value.trim(),
+
+            jurisdiction:
+              document.getElementById('jurisdiction').value,
+
+            zone:
+              document.getElementById('zone').value.trim(),
+
+            modality:
+              document.getElementById('modality').value,
+
+            orientation:
+              document.getElementById('orientation').value.trim(),
+
+            population:
+              document.getElementById('population').value.trim(),
+
+            whatsapp:
+              document.getElementById('whatsapp').value.trim(),
+
+            bio:
+              document.getElementById('bio').value.trim(),
+
+            is_public:
+              document.getElementById('is_public').checked,
+
+            updated_at:
+              new Date().toISOString()
           };
 
           const { error } = await sb
             .from('profiles')
-            .upsert(payload);
+            .upsert(payload, {
+              onConflict: 'id'
+            });
 
-          if (error) throw error;
+          if (error) {
+            throw error;
+          }
 
           showMessage(
             'msg',
@@ -104,18 +129,27 @@ console.log('USUARIO DASHBOARD:', user.id, user.email);
           );
 
         } catch (error) {
+
+          console.error('Error guardando perfil:', error);
+
           showMessage(
             'msg',
             error.message || 'No se pudieron guardar los cambios.',
             true
           );
+
         } finally {
+
           button.disabled = false;
           button.textContent = 'Guardar cambios';
+
         }
       });
 
   } catch (error) {
+
+    console.error('Error en dashboard:', error);
+
     showMessage(
       'msg',
       error.message || 'Ocurrió un error.',
