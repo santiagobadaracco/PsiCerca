@@ -14,14 +14,13 @@ async function loadProfiles() {
 
   const sb = requireSupabase();
 
-  const { data, error } = await sb
+  const { data: profiles, error: profilesError } = await sb
     .from('profiles')
     .select(`
       id,
       display_name,
       license,
       jurisdiction,
-      zone,
       modality,
       orientation,
       population,
@@ -31,43 +30,152 @@ async function loadProfiles() {
     .eq('is_public', true)
     .order('display_name', { ascending: true });
 
-  if (error) {
-    console.error(error);
-    box.innerHTML = '<div class="empty">No se pudieron cargar los profesionales.</div>';
+  if (profilesError) {
+    console.error(profilesError);
+    box.innerHTML = `
+      <div class="empty">
+        No se pudieron cargar los profesionales.
+      </div>
+    `;
     count.textContent = '';
     return;
   }
 
-  const q = normalizeText(document.getElementById('q').value);
-  const zone = normalizeText(document.getElementById('zone').value);
-  const modality = document.getElementById('modality').value;
-  const population = normalizeText(document.getElementById('population').value);
+  if (!profiles || !profiles.length) {
+    box.innerHTML = `
+      <div class="empty">
+        No hay profesionales publicados todavía.
+      </div>
+    `;
+    count.textContent = '';
+    return;
+  }
 
-  const filtered = data.filter(profile => {
+  const profileIds = profiles.map(profile => profile.id);
+
+  const { data: locations, error: locationsError } = await sb
+    .from('professional_locations')
+    .select(`
+      profile_id,
+      province,
+      party,
+      locality,
+      neighborhood
+    `)
+    .in('profile_id', profileIds);
+
+  if (locationsError) {
+    console.error(locationsError);
+  }
+
+  const locationsByProfile = {};
+
+  (locations || []).forEach(location => {
+
+    if (!locationsByProfile[location.profile_id]) {
+      locationsByProfile[location.profile_id] = [];
+    }
+
+    locationsByProfile[location.profile_id].push(location);
+
+  });
+
+  const q = normalizeText(
+    document.getElementById('q').value
+  );
+
+  const zone = normalizeText(
+    document.getElementById('zone').value
+  );
+
+  const modality =
+    document.getElementById('modality').value;
+
+  const population =
+    normalizeText(
+      document.getElementById('population').value
+    );
+
+
+  const filtered = profiles.filter(profile => {
+
+    const profileLocations =
+      locationsByProfile[profile.id] || [];
+
+
+    /*
+     * TEXTO BUSCABLE
+     */
+
+    const locationText = profileLocations
+      .map(location => [
+        location.province,
+        location.party,
+        location.locality,
+        location.neighborhood
+      ].join(' '))
+      .join(' ');
+
 
     const searchableText = normalizeText([
       profile.display_name,
       profile.orientation,
-      profile.population
+      profile.population,
+      locationText
     ].join(' '));
 
-    const profileZone = normalizeText(profile.zone);
-    const profilePopulation = normalizeText(profile.population);
+
+    /*
+     * BÚSQUEDA GENERAL
+     */
 
     const matchesQuery =
       !q || searchableText.includes(q);
 
+
+    /*
+     * FILTRO POR ZONA
+     */
+
     const matchesZone =
-      !zone || profileZone.includes(zone);
+      !zone ||
+      profileLocations.some(location => {
+
+        const completeLocation = normalizeText([
+          location.province,
+          location.party,
+          location.locality,
+          location.neighborhood
+        ].join(' '));
+
+        return completeLocation.includes(zone);
+
+      });
+
+
+    /*
+     * FILTRO POR MODALIDAD
+     */
 
     const matchesModality =
-      !modality || profile.modality === modality;
+      !modality ||
+      profile.modality === modality;
+
+
+    /*
+     * FILTRO POR POBLACIÓN
+     */
+
+    const profilePopulation =
+      normalizeText(profile.population);
 
     const matchesPopulation =
-      !population || profilePopulation
+      !population ||
+      profilePopulation
         .split(',')
         .map(item => normalizeText(item))
         .some(item => item === population);
+
 
     return (
       matchesQuery &&
@@ -75,37 +183,66 @@ async function loadProfiles() {
       matchesModality &&
       matchesPopulation
     );
+
   });
+
+
+  /*
+   * CONTADOR
+   */
 
   count.textContent =
     filtered.length === 1
       ? '1 profesional encontrado'
       : `${filtered.length} profesionales encontrados`;
 
+
+  /*
+   * SIN RESULTADOS
+   */
+
   if (!filtered.length) {
+
     box.innerHTML = `
       <div class="empty">
         No encontramos profesionales con esos criterios.
       </div>
     `;
+
     return;
   }
 
+
+  /*
+   * TARJETAS
+   */
+
   box.innerHTML = filtered.map(profile => {
 
-    const initials = (profile.display_name || 'P')
-      .split(' ')
-      .map(word => word[0])
-      .slice(0, 2)
-      .join('')
-      .toUpperCase();
+    const initials =
+      (profile.display_name || 'P')
+        .split(' ')
+        .map(word => word[0])
+        .slice(0, 2)
+        .join('')
+        .toUpperCase();
+
+
+    /*
+     * FOTO
+     */
 
     const avatar = profile.photo_url
       ? `
         <img
           src="${escapeHTML(profile.photo_url)}"
           alt="${escapeHTML(profile.display_name)}"
-          style="width:52px;height:52px;border-radius:50%;object-fit:cover;"
+          style="
+            width:52px;
+            height:52px;
+            border-radius:50%;
+            object-fit:cover;
+          "
         >
       `
       : `
@@ -114,11 +251,44 @@ async function loadProfiles() {
         </div>
       `;
 
+
+    /*
+     * ZONAS
+     */
+
+    const profileLocations =
+      locationsByProfile[profile.id] || [];
+
+
+    const locationLabels =
+      profileLocations.map(location => {
+
+        if (location.neighborhood) {
+          return location.neighborhood;
+        }
+
+        if (location.locality) {
+          return location.locality;
+        }
+
+        if (location.party) {
+          return location.party;
+        }
+
+        return location.province;
+
+      });
+
+
+    /*
+     * CHIPS
+     */
+
     const chips = [
       profile.orientation,
-      profile.zone,
       profile.modality,
-      profile.population
+      profile.population,
+      ...locationLabels
     ]
       .filter(Boolean)
       .map(item => `
@@ -128,6 +298,11 @@ async function loadProfiles() {
       `)
       .join('');
 
+
+    /*
+     * TARJETA
+     */
+
     return `
       <article class="pro-card">
 
@@ -136,27 +311,41 @@ async function loadProfiles() {
           ${avatar}
 
           <div>
+
             <h3>
-              ${escapeHTML(profile.display_name || 'Profesional')}
+              ${escapeHTML(
+                profile.display_name ||
+                'Profesional'
+              )}
             </h3>
 
             <p>
-              ${escapeHTML(profile.license || '')}
+              ${escapeHTML(
+                profile.license || ''
+              )}
             </p>
+
           </div>
 
         </div>
 
+
         <div class="chips">
+
           ${chips}
+
         </div>
 
+
         <p>
+
           ${escapeHTML(
             profile.bio ||
             'Profesional de la salud mental.'
           )}
+
         </p>
+
 
         <a
           class="btn primary full"
@@ -167,8 +356,15 @@ async function loadProfiles() {
 
       </article>
     `;
+
   }).join('');
+
 }
+
+
+/*
+ * LIMPIAR FILTROS
+ */
 
 window.clearFilters = function () {
 
@@ -178,6 +374,8 @@ window.clearFilters = function () {
   document.getElementById('population').value = '';
 
   loadProfiles();
+
 };
+
 
 loadProfiles();
