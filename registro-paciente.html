@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  >
+
+  <title>Crear cuenta — PsiCerca</title>
+
+  <link
+    rel="stylesheet"
+    href="styles.css"
+  >
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
+
+</head>
+
+
+<body>
+
+
+  <header>
+
+    <div class="container nav">
+
+      <a
+        class="logo"
+        href="index.html"
+      >
+        Psi<span>Cerca</span>
+      </a>
+
+
+      <a
+        href="login.html"
+        class="btn secondary"
+      >
+        Iniciar sesión
+      </a>
+
+    </div>
+
+  </header>
+
+
+  <main class="form-wrap">
+
+    <div class="form-card">
+
+
+      <span class="eyebrow">
+        Crear cuenta
+      </span>
+
+
+      <h1>
+        Encontrá tu profesional
+      </h1>
+
+
+      <p class="small">
+        Creá una cuenta gratuita para poder contactar a los profesionales
+        de PsiCerca y gestionar tus futuras interacciones.
+      </p>
+
+
+      <form id="patientRegisterForm">
+
+
+        <div class="field">
+
+          <label for="fullName">
+            Nombre y apellido
+          </label>
+
+          <input
+            id="fullName"
+            type="text"
+            required
+            autocomplete="name"
+            placeholder="Ej. Juan Pérez"
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="email">
+            Email
+          </label>
+
+          <input
+            id="email"
+            type="email"
+            required
+            autocomplete="email"
+            placeholder="tuemail@ejemplo.com"
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="password">
+            Contraseña
+          </label>
+
+          <input
+            id="password"
+            type="password"
+            minlength="8"
+            required
+            autocomplete="new-password"
+          >
+
+          <div class="small">
+            Mínimo 8 caracteres.
+          </div>
+
+        </div>
+
+
+        <label class="check">
+
+          <input
+            id="terms"
+            type="checkbox"
+            required
+          >
+
+          <span>
+            Acepto los términos de uso y la política de privacidad
+            de PsiCerca.
+          </span>
+
+        </label>
+
+
+        <button
+          class="btn primary full"
+          type="submit"
+        >
+          Crear cuenta
+        </button>
+
+
+        <div
+          id="msg"
+          class="message"
+        ></div>
+
+
+      </form>
+
+
+      <p
+        class="small"
+        style="margin-top:20px;text-align:center"
+      >
+
+        ¿Ya tenés una cuenta?
+
+        <a
+          href="login.html"
+          style="color:var(--accent);font-weight:700"
+        >
+          Iniciá sesión
+        </a>
+
+      </p>
+
+
+    </div>
+
+  </main>
+
+
+  <script>
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      () => {
+
+
+        const form =
+          document.getElementById(
+            'patientRegisterForm'
+          );
+
+
+        form.addEventListener(
+          'submit',
+          async e => {
+
+            e.preventDefault();
+
+
+            const button =
+              form.querySelector('button');
+
+
+            const fullName =
+              document
+                .getElementById('fullName')
+                .value
+                .trim();
+
+
+            const email =
+              document
+                .getElementById('email')
+                .value
+                .trim();
+
+
+            const password =
+              document
+                .getElementById('password')
+                .value;
+
+
+            button.disabled = true;
+
+            button.textContent =
+              'Creando…';
+
+
+            try {
+
+
+              const sb =
+                requireSupabase();
+
+
+              const {
+                data,
+                error
+              } =
+                await sb.auth.signUp({
+
+                  email: email,
+
+                  password: password,
+
+                  options: {
+
+                    emailRedirectTo:
+                      'https://santiagobadaracco.github.io/PsiCerca/login.html',
+
+                    data: {
+
+                      full_name:
+                        fullName,
+
+                      role:
+                        'patient'
+
+                    }
+
+                  }
+
+                });
+
+
+              if(error){
+
+                const errorText =
+                  `${error.message || ''} ${error.code || ''}`
+                    .toLowerCase();
+
+
+                if(
+                  errorText.includes(
+                    'already registered'
+                  ) ||
+                  errorText.includes(
+                    'user already registered'
+                  )
+                ){
+
+                  throw new Error(
+                    'Ya existe una cuenta con ese email. Si es tu cuenta, iniciá sesión.'
+                  );
+
+                }
+
+
+                throw error;
+
+              }
+
+
+              if(data.session){
+
+                window.location.href =
+                  'index.html';
+
+              }else{
+
+                showMessage(
+                  'msg',
+                  'Cuenta creada correctamente. Revisá tu email para confirmar la cuenta y luego iniciá sesión.'
+                );
+
+              }
+
+
+            }catch(err){
+
+              console.error(
+                'Error durante el registro del paciente:',
+                err
+              );
+
+
+              showMessage(
+                'msg',
+                err.message ||
+                  'No se pudo crear la cuenta.',
+                true
+              );
+
+
+            }finally{
+
+              button.disabled =
+                false;
+
+              button.textContent =
+                'Crear cuenta';
+
+            }
+
+          }
+        );
+
+      }
+    );
+
+  </script>
+
+
+</body>
+
+</html>
