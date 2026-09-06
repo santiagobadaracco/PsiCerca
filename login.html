@@ -6,11 +6,10 @@
 
   <meta charset="utf-8">
 
-<meta
-name="viewport"
-content="width=device-width,initial-scale=1"
-
->
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  >
 
   <title>Iniciar sesión — PsiCerca</title>
 
@@ -35,159 +34,157 @@ content="width=device-width,initial-scale=1"
 
   <div class="container nav">
 
-```
-<a
-  class="logo"
-  href="index.html"
->
-  Psi<span>Cerca</span>
-</a>
+    <a
+      class="logo"
+      href="index.html"
+    >
+      Psi<span>Cerca</span>
+    </a>
 
 
-<a
-  href="registro-paciente.html"
-  class="btn secondary"
->
-  Crear cuenta
-</a>
-```
+    <a
+      href="registro-paciente.html"
+      class="btn secondary"
+    >
+      Crear cuenta
+    </a>
 
   </div>
 
 </header>
 
+
 <main class="form-wrap">
 
   <div class="form-card">
 
-```
-<span class="eyebrow">
-  PsiCerca
-</span>
+    <span class="eyebrow">
+      PsiCerca
+    </span>
 
 
-<h1>
-  Iniciar sesión
-</h1>
+    <h1>
+      Iniciar sesión
+    </h1>
 
 
-<p class="small">
-  Accedé a tu cuenta de PsiCerca.
-</p>
+    <p class="small">
+      Accedé a tu cuenta de PsiCerca.
+    </p>
 
 
-<form id="loginForm">
+    <form id="loginForm">
 
 
-  <div class="field">
+      <div class="field">
 
-    <label for="email">
-      Email
-    </label>
+        <label for="email">
+          Email
+        </label>
 
-    <input
-      id="email"
-      type="email"
-      required
-      autocomplete="email"
-    >
+        <input
+          id="email"
+          type="email"
+          required
+          autocomplete="email"
+        >
 
-  </div>
-
-
-  <div class="field">
-
-    <label for="password">
-      Contraseña
-    </label>
-
-    <input
-      id="password"
-      type="password"
-      required
-      autocomplete="current-password"
-    >
-
-  </div>
+      </div>
 
 
-  <div
-    style="
-      text-align:right;
-      margin-top:-8px;
-      margin-bottom:16px;
-    "
-  >
+      <div class="field">
 
-    <a
-      href="recuperar.html"
+        <label for="password">
+          Contraseña
+        </label>
+
+        <input
+          id="password"
+          type="password"
+          required
+          autocomplete="current-password"
+        >
+
+      </div>
+
+
+      <div
+        style="
+          text-align:right;
+          margin-top:-8px;
+          margin-bottom:16px;
+        "
+      >
+
+        <a
+          href="recuperar.html"
+          style="
+            color:var(--accent);
+            font-weight:700;
+            font-size:.92rem;
+          "
+        >
+          ¿Olvidaste tu contraseña?
+        </a>
+
+      </div>
+
+
+      <button
+        class="btn primary full"
+        type="submit"
+      >
+        Ingresar
+      </button>
+
+
+      <div
+        id="msg"
+        class="message"
+      ></div>
+
+
+    </form>
+
+
+    <div
       style="
-        color:var(--accent);
-        font-weight:700;
-        font-size:.92rem;
+        margin-top:24px;
+        padding-top:20px;
+        border-top:1px solid var(--line);
       "
     >
-      ¿Olvidaste tu contraseña?
-    </a>
 
-  </div>
-
-
-  <button
-    class="btn primary full"
-    type="submit"
-  >
-    Ingresar
-  </button>
+      <p
+        class="small"
+        style="margin-bottom:10px"
+      >
+        ¿Todavía no tenés cuenta?
+      </p>
 
 
-  <div
-    id="msg"
-    class="message"
-  ></div>
+      <a
+        href="registro-paciente.html"
+        class="btn secondary full"
+      >
+        Crear cuenta como paciente
+      </a>
 
 
-</form>
+      <a
+        href="registro.html"
+        class="btn secondary full"
+        style="margin-top:10px"
+      >
+        Crear cuenta profesional
+      </a>
 
-
-<div
-  style="
-    margin-top:24px;
-    padding-top:20px;
-    border-top:1px solid var(--line);
-  "
->
-
-  <p
-    class="small"
-    style="margin-bottom:10px"
-  >
-    ¿Todavía no tenés cuenta?
-  </p>
-
-
-  <a
-    href="registro-paciente.html"
-    class="btn secondary full"
-  >
-    Crear cuenta como paciente
-  </a>
-
-
-  <a
-    href="registro.html"
-    class="btn secondary full"
-    style="margin-top:10px"
-  >
-    Crear cuenta profesional
-  </a>
-
-</div>
-```
+    </div>
 
   </div>
 
 </main>
+
 
 <script>
 
@@ -247,7 +244,7 @@ document
           });
 
 
-        if(error){
+        if (error) {
           throw error;
         }
 
@@ -256,25 +253,48 @@ document
           data.user;
 
 
+        /*
+         * =====================================================
+         * REDIRECCIÓN SEGÚN TIPO DE USUARIO
+         * =====================================================
+         */
+
         const role =
           user?.user_metadata?.role;
 
 
-        if(role === 'patient'){
+        if (role === 'patient') {
 
           window.location.href =
-            'profesionales.html';
+            'perfil-paciente.html';
 
           return;
 
         }
 
 
-        window.location.href =
-          'dashboard.html';
+        if (role === 'professional') {
+
+          window.location.href =
+            'dashboard.html';
+
+          return;
+
+        }
 
 
-      }catch(err){
+        /*
+         * Si por algún motivo la cuenta no tiene
+         * un rol reconocido, mostramos un error.
+         */
+
+        throw new Error(
+          'No se pudo determinar el tipo de cuenta.'
+        );
+
+
+      } catch (err) {
+
 
         console.error(
           'Error durante el login:',
@@ -287,11 +307,11 @@ document
           'No se pudo iniciar sesión.';
 
 
-        if(
+        if (
           message
             .toLowerCase()
             .includes('invalid login credentials')
-        ){
+        ) {
 
           message =
             'El email o la contraseña son incorrectos.';
@@ -306,10 +326,12 @@ document
         );
 
 
-      }finally{
+      } finally {
+
 
         button.disabled =
           false;
+
 
         button.textContent =
           'Ingresar';
