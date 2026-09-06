@@ -1,9 +1,15 @@
+```html
 <!doctype html>
 <html lang="es">
 
 <head>
+
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
 
   <title>Perfil profesional — PsiCerca</title>
 
@@ -12,439 +18,782 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
   <script src="supabase.js"></script>
+  <script src="auth.js"></script>
+
 </head>
+
 
 <body>
 
-  <header>
-    <div class="container nav">
 
-      <a class="logo" href="index.html">
-        Psi<span>Cerca</span>
-      </a>
+<header>
 
-      <a
-        href="profesionales.html"
-        class="btn secondary"
-      >
-        ← Volver al directorio
-      </a>
+  <div class="container nav">
 
-    </div>
-  </header>
+    <a
+      class="logo"
+      href="index.html"
+    >
+      Psi<span>Cerca</span>
+    </a>
 
 
-  <main
-    class="form-wrap"
-    style="max-width:760px"
+    <a
+      href="profesionales.html"
+      class="btn secondary"
+    >
+      ← Volver al directorio
+    </a>
+
+  </div>
+
+</header>
+
+
+<main
+  class="form-wrap"
+  style="max-width:760px"
+>
+
+  <div
+    id="profile"
+    class="panel"
   >
 
-    <div
-      id="profile"
-      class="panel"
-    >
+    <div class="empty">
+      Cargando perfil…
+    </div>
 
+  </div>
+
+</main>
+
+
+<footer class="footer">
+
+  <div class="container">
+
+    PsiCerca · Plataforma tecnológica · 2026
+
+  </div>
+
+</footer>
+
+
+<script>
+
+(async function () {
+
+
+  const box =
+    document.getElementById('profile');
+
+
+  const id =
+    new URLSearchParams(
+      window.location.search
+    ).get('id');
+
+
+  if (!id) {
+
+    box.innerHTML = `
       <div class="empty">
-        Cargando perfil…
+        Perfil no encontrado.
       </div>
+    `;
 
-    </div>
+    return;
 
-  </main>
-
-
-  <footer class="footer">
-
-    <div class="container">
-      PsiCerca · Plataforma tecnológica · 2026
-    </div>
-
-  </footer>
+  }
 
 
-  <script>
-
-    (async function () {
-
-      const box =
-        document.getElementById('profile');
-
-      const id =
-        new URLSearchParams(
-          window.location.search
-        ).get('id');
+  try {
 
 
-      if (!id) {
-
-        box.innerHTML = `
-          <div class="empty">
-            Perfil no encontrado.
-          </div>
-        `;
-
-        return;
-      }
+    const sb =
+      requireSupabase();
 
 
-      try {
+    /*
+     * Primero obtenemos solamente
+     * la información pública del perfil.
+     *
+     * IMPORTANTE:
+     * No obtenemos WhatsApp todavía.
+     */
 
-        const sb =
-          requireSupabase();
+    const {
+      data: p,
+      error
+    } = await sb
 
+      .from('profiles')
 
-        const {
-          data: p,
-          error
-        } = await sb
-          .from('profiles')
-          .select(`
-            display_name,
-            license,
-            jurisdiction,
-            zone,
-            modality,
-            orientation,
-            population,
-            bio,
-            whatsapp,
-            photo_url
-          `)
-          .eq('id', id)
-          .eq('is_public', true)
-          .single();
+      .select(`
+        id,
+        display_name,
+        license,
+        jurisdiction,
+        zone,
+        modality,
+        orientation,
+        population,
+        bio,
+        photo_url
+      `)
 
+      .eq('id', id)
 
-        if (error) {
-          throw error;
-        }
+      .eq('is_public', true)
 
-
-        if (!p) {
-          throw new Error(
-            'Perfil no encontrado'
-          );
-        }
+      .single();
 
 
-        // Iniciales
-        const initials =
-          (p.display_name || 'PS')
-            .split(' ')
-            .filter(Boolean)
-            .map(x => x[0])
-            .join('')
-            .slice(0, 2)
-            .toUpperCase();
+    if (error) {
+      throw error;
+    }
 
 
-        // Foto / avatar
-        const avatar =
-          p.photo_url
+    if (!p) {
 
-            ? `
-              <div
-                class="avatar"
-                style="
-                  width:88px;
-                  height:88px;
-                  min-width:88px;
-                  overflow:hidden;
-                "
-              >
-                <img
-                  src="${escapeHTML(p.photo_url)}"
-                  alt="Foto de ${escapeHTML(
-                    p.display_name || 'profesional'
-                  )}"
-                  style="
-                    width:100%;
-                    height:100%;
-                    object-fit:cover;
-                    border-radius:50%;
-                    display:block;
-                  "
-                >
-              </div>
-            `
+      throw new Error(
+        'Perfil no encontrado'
+      );
 
-            : `
-              <div
-                class="avatar"
-                style="
-                  width:88px;
-                  height:88px;
-                  min-width:88px;
-                "
-              >
-                ${escapeHTML(initials)}
-              </div>
-            `;
+    }
 
 
-        // WhatsApp
-        const whatsapp =
-          (p.whatsapp || '')
-            .replace(/\D/g, '');
+    /*
+     * Iniciales
+     */
+
+    const initials =
+      (p.display_name || 'PS')
+
+        .split(' ')
+
+        .filter(Boolean)
+
+        .map(x => x[0])
+
+        .join('')
+
+        .slice(0, 2)
+
+        .toUpperCase();
 
 
-        // Chips
-        const chips = [
-          p.orientation,
-          p.population,
-          p.modality,
-          p.zone
-        ]
-          .filter(Boolean)
-          .map(x => `
-            <span class="chip">
-              ${escapeHTML(x)}
-            </span>
-          `)
-          .join('');
+    /*
+     * Foto / avatar
+     */
 
+    const avatar =
 
-        box.innerHTML = `
+      p.photo_url
 
-          <!-- ENCABEZADO -->
+        ? `
 
           <div
+            class="avatar"
             style="
-              display:flex;
-              align-items:center;
-              gap:18px;
-              margin-bottom:28px;
+              width:88px;
+              height:88px;
+              min-width:88px;
+              overflow:hidden;
             "
           >
 
-            ${avatar}
-
-            <div style="min-width:0;">
-
-              <span class="eyebrow">
-                Perfil profesional
-              </span>
-
-              <h1
-                style="
-                  margin:4px 0 8px;
-                  font-size:clamp(32px,5vw,48px);
-                "
-              >
-                ${escapeHTML(
-                  p.display_name || 'Profesional'
-                )}
-              </h1>
-
-              <div class="small">
-
-                Matrícula:
-                <strong>
-                  ${escapeHTML(
-                    p.license || '—'
-                  )}
-                </strong>
-
-                ·
-
-                ${escapeHTML(
-                  p.jurisdiction || '—'
-                )}
-
-              </div>
-
-            </div>
+            <img
+              src="${escapeHTML(p.photo_url)}"
+              alt="Foto de ${escapeHTML(
+                p.display_name || 'profesional'
+              )}"
+              style="
+                width:100%;
+                height:100%;
+                object-fit:cover;
+                border-radius:50%;
+                display:block;
+              "
+            >
 
           </div>
 
+        `
 
-          <!-- VERIFICACIÓN EXTERNA -->
+        : `
 
-          ${
-            p.license
-              ? `
-                <div
-                  style="
-                    background:var(--soft);
-                    border-radius:16px;
-                    padding:16px 18px;
-                    margin-bottom:28px;
-                  "
-                >
+          <div
+            class="avatar"
+            style="
+              width:88px;
+              height:88px;
+              min-width:88px;
+            "
+          >
 
-                  <div
-                    style="
-                      font-weight:700;
-                      margin-bottom:5px;
-                    "
-                  >
-                    🔎 ¿Querés comprobar la matrícula?
-                  </div>
+            ${escapeHTML(initials)}
 
-                  <p
-                    class="small"
-                    style="
-                      margin:0 0 12px;
-                    "
-                  >
-                    Podés consultar esta matrícula
-                    directamente en el registro oficial
-                    del Ministerio de Salud.
-                  </p>
+          </div>
 
-                  <a
-                    href="https://www.argentina.gob.ar/salud/buscador-nacional-de-profesionales-de-la-salud"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="btn secondary"
-                    style="
-                      font-size:13px;
-                    "
-                  >
-                    Consultar matrícula en registro oficial
-                  </a>
-
-                </div>
-              `
-              : ''
-          }
+        `;
 
 
-          <!-- INFORMACIÓN PROFESIONAL -->
+    /*
+     * Chips
+     */
 
-          ${
-            chips
-              ? `
-                <div
-                  class="chips"
-                  style="
-                    margin:0 0 32px;
-                  "
-                >
-                  ${chips}
-                </div>
-              `
-              : ''
-          }
+    const chips = [
+
+      p.orientation,
+
+      p.population,
+
+      p.modality,
+
+      p.zone
+
+    ]
+
+      .filter(Boolean)
+
+      .map(x => `
+
+        <span class="chip">
+
+          ${escapeHTML(x)}
+
+        </span>
+
+      `)
+
+      .join('');
 
 
-          <!-- PRESENTACIÓN -->
+    /*
+     * Cargamos primero el perfil
+     */
 
-          <section>
+    box.innerHTML = `
 
-            <h2>
-              Sobre mi práctica
-            </h2>
 
-            <p
+      <!-- ENCABEZADO -->
+
+      <div
+        style="
+          display:flex;
+          align-items:center;
+          gap:18px;
+          margin-bottom:28px;
+        "
+      >
+
+        ${avatar}
+
+
+        <div style="min-width:0;">
+
+          <span class="eyebrow">
+            Perfil profesional
+          </span>
+
+
+          <h1
+            style="
+              margin:4px 0 8px;
+              font-size:clamp(32px,5vw,48px);
+            "
+          >
+
+            ${escapeHTML(
+              p.display_name || 'Profesional'
+            )}
+
+          </h1>
+
+
+          <div class="small">
+
+            Matrícula:
+
+            <strong>
+
+              ${escapeHTML(
+                p.license || '—'
+              )}
+
+            </strong>
+
+            ·
+
+            ${escapeHTML(
+              p.jurisdiction || '—'
+            )}
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- VERIFICACIÓN EXTERNA -->
+
+      ${
+        p.license
+
+          ? `
+
+            <div
               style="
-                white-space:pre-line;
+                background:var(--soft);
+                border-radius:16px;
+                padding:16px 18px;
                 margin-bottom:28px;
               "
             >
-              ${
-                escapeHTML(
-                  p.bio ||
-                  'El profesional todavía no agregó una presentación.'
-                )
-              }
-            </p>
 
-          </section>
+              <div
+                style="
+                  font-weight:700;
+                  margin-bottom:5px;
+                "
+              >
 
+                🔎 ¿Querés comprobar la matrícula?
 
-          <!-- CONTACTO -->
-
-          ${
-            whatsapp
-              ? `
-                <div
-                  style="
-                    margin-top:8px;
-                    padding-top:24px;
-                    border-top:1px solid var(--line);
-                  "
-                >
-
-                  <a
-                    class="btn primary"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    href="https://wa.me/${whatsapp}"
-                  >
-                    Contactar por WhatsApp
-                  </a>
-
-                </div>
-              `
-              : ''
-          }
+              </div>
 
 
-          <!-- ACLARACIONES -->
+              <p
+                class="small"
+                style="
+                  margin:0 0 12px;
+                "
+              >
 
-          <div
-            style="
-              margin-top:32px;
-              padding-top:20px;
-              border-top:1px solid var(--line);
-            "
-          >
+                Podés consultar esta matrícula
+                directamente en el registro oficial
+                del Ministerio de Salud.
 
-            <p
-              class="small"
-              style="margin:0 0 10px;"
-            >
-              La información de matrícula es declarada
-              por el profesional. PsiCerca recomienda
-              verificarla en el
+              </p>
+
+
               <a
                 href="https://www.argentina.gob.ar/salud/buscador-nacional-de-profesionales-de-la-salud"
                 target="_blank"
                 rel="noopener noreferrer"
-                style="
-                  color:var(--accent);
-                  font-weight:700;
-                "
+                class="btn secondary"
+                style="font-size:13px;"
               >
-                registro oficial del Ministerio de Salud
-              </a>.
-            </p>
 
-            <p
-              class="small"
-              style="margin:0;"
-            >
-              PsiCerca facilita el contacto y no determina
-              qué profesional es clínicamente adecuado
-              para una persona.
-            </p>
+                Consultar matrícula en registro oficial
 
-          </div>
+              </a>
 
-        `;
+            </div>
 
+          `
 
-      } catch (error) {
-
-        console.error(
-          'Error cargando perfil:',
-          error
-        );
-
-        box.innerHTML = `
-          <div class="empty">
-            Este perfil no está disponible
-            o no es público.
-          </div>
-        `;
+          : ''
 
       }
 
-    })();
 
-  </script>
+      <!-- INFORMACIÓN PROFESIONAL -->
+
+      ${
+        chips
+
+          ? `
+
+            <div
+              class="chips"
+              style="
+                margin:0 0 32px;
+              "
+            >
+
+              ${chips}
+
+            </div>
+
+          `
+
+          : ''
+
+      }
+
+
+      <!-- PRESENTACIÓN -->
+
+      <section>
+
+        <h2>
+          Sobre mi práctica
+        </h2>
+
+
+        <p
+          style="
+            white-space:pre-line;
+            margin-bottom:28px;
+          "
+        >
+
+          ${
+            escapeHTML(
+              p.bio ||
+              'El profesional todavía no agregó una presentación.'
+            )
+          }
+
+        </p>
+
+      </section>
+
+
+      <!-- CONTACTO -->
+
+      <div
+        id="contactArea"
+        style="
+          margin-top:8px;
+          padding-top:24px;
+          border-top:1px solid var(--line);
+        "
+      >
+
+        <div class="small">
+          Verificando acceso al contacto…
+        </div>
+
+      </div>
+
+
+      <!-- ACLARACIONES -->
+
+      <div
+        style="
+          margin-top:32px;
+          padding-top:20px;
+          border-top:1px solid var(--line);
+        "
+      >
+
+        <p
+          class="small"
+          style="margin:0 0 10px;"
+        >
+
+          La información de matrícula es declarada
+          por el profesional. PsiCerca recomienda
+          verificarla en el
+
+          <a
+            href="https://www.argentina.gob.ar/salud/buscador-nacional-de-profesionales-de-la-salud"
+            target="_blank"
+            rel="noopener noreferrer"
+            style="
+              color:var(--accent);
+              font-weight:700;
+            "
+          >
+
+            registro oficial del Ministerio de Salud
+
+          </a>.
+
+        </p>
+
+
+        <p
+          class="small"
+          style="margin:0;"
+        >
+
+          PsiCerca facilita el contacto y no determina
+          qué profesional es clínicamente adecuado
+          para una persona.
+
+        </p>
+
+      </div>
+
+    `;
+
+
+    /*
+     * =====================================================
+     * CONTROL DE ACCESO AL CONTACTO
+     * =====================================================
+     */
+
+
+    const contactArea =
+      document.getElementById(
+        'contactArea'
+      );
+
+
+    /*
+     * Buscamos la sesión actual.
+     */
+
+    const {
+      data: {
+        user
+      }
+    } =
+      await sb.auth.getUser();
+
+
+    /*
+     * Si no hay usuario:
+     * mostramos invitación a registrarse.
+     */
+
+    if (!user) {
+
+      contactArea.innerHTML = `
+
+        <div
+          style="
+            background:var(--soft);
+            border-radius:16px;
+            padding:18px;
+          "
+        >
+
+          <div
+            style="
+              font-weight:700;
+              margin-bottom:6px;
+            "
+          >
+
+            🔐 ¿Querés contactar a este profesional?
+
+          </div>
+
+
+          <p
+            class="small"
+            style="
+              margin:0 0 15px;
+            "
+          >
+
+            Creá una cuenta gratuita para
+            poder contactar a profesionales
+            a través de PsiCerca.
+
+          </p>
+
+
+          <div
+            style="
+              display:flex;
+              gap:10px;
+              flex-wrap:wrap;
+            "
+          >
+
+            <a
+              href="registro-paciente.html"
+              class="btn primary"
+            >
+
+              Crear cuenta
+
+            </a>
+
+
+            <a
+              href="login.html"
+              class="btn secondary"
+            >
+
+              Iniciar sesión
+
+            </a>
+
+          </div>
+
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+
+    /*
+     * Determinamos el tipo de cuenta.
+     *
+     * Actualmente los pacientes tienen
+     * role = patient en user_metadata.
+     */
+
+    const role =
+      user.user_metadata?.role;
+
+
+    /*
+     * Si es paciente, buscamos el WhatsApp
+     * solamente después de comprobar que
+     * tiene una sesión.
+     */
+
+    if (role === 'patient') {
+
+
+      const {
+        data: contact,
+        error: contactError
+      } = await sb
+
+        .from('profiles')
+
+        .select('whatsapp')
+
+        .eq('id', id)
+
+        .eq('is_public', true)
+
+        .single();
+
+
+      if (
+        contactError ||
+        !contact ||
+        !contact.whatsapp
+      ) {
+
+        contactArea.innerHTML = `
+
+          <div
+            class="small"
+            style="
+              background:var(--soft);
+              border-radius:14px;
+              padding:15px;
+            "
+          >
+
+            Este profesional todavía no
+            agregó un medio de contacto.
+
+          </div>
+
+        `;
+
+        return;
+
+      }
+
+
+      const whatsapp =
+        String(
+          contact.whatsapp
+        ).replace(/\D/g, '');
+
+
+      if (!whatsapp) {
+
+        contactArea.innerHTML = `
+
+          <div class="small">
+
+            Este profesional todavía no
+            agregó un medio de contacto.
+
+          </div>
+
+        `;
+
+        return;
+
+      }
+
+
+      contactArea.innerHTML = `
+
+        <a
+          class="btn primary"
+          target="_blank"
+          rel="noopener noreferrer"
+          href="https://wa.me/${escapeHTML(whatsapp)}"
+        >
+
+          Contactar por WhatsApp
+
+        </a>
+
+      `;
+
+
+      return;
+
+    }
+
+
+    /*
+     * Si es profesional:
+     * no mostramos el contacto como paciente.
+     */
+
+    contactArea.innerHTML = `
+
+      <div
+        class="small"
+        style="
+          background:var(--soft);
+          border-radius:14px;
+          padding:15px;
+        "
+      >
+
+        Iniciaste sesión como profesional.
+        Para contactar a este profesional
+        necesitás utilizar una cuenta de paciente.
+
+      </div>
+
+    `;
+
+
+  } catch (error) {
+
+
+    console.error(
+      'Error cargando perfil:',
+      error
+    );
+
+
+    box.innerHTML = `
+
+      <div class="empty">
+
+        Este perfil no está disponible
+        o no es público.
+
+      </div>
+
+    `;
+
+  }
+
+
+})();
+
+</script>
+
 
 </body>
 
 </html>
+```
