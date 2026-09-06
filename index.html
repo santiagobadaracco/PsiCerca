@@ -1,598 +1,408 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 
 <head>
 
-<meta charset="UTF-8">
-
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1.0"
->
-
-<meta
-  name="description"
-  content="PsiCerca conecta personas con profesionales de salud mental."
->
-
-<title>PsiCerca — Encontrá tu psicólogo</title>
-
-
-<!-- FUENTES -->
-
-<link
-  rel="preconnect"
-  href="https://fonts.googleapis.com"
->
-
-<link
-  rel="preconnect"
-  href="https://fonts.gstatic.com"
-  crossorigin
->
-
-<link
-  href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap"
-  rel="stylesheet"
->
-
-
-<!-- SUPABASE -->
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script src="config.js"></script>
-
-<script src="supabase.js"></script>
-
-
-<style>
-
-:root{
-  --ink:#17232b;
-  --muted:#63727a;
-  --line:#dce5e8;
-  --bg:#f7faf9;
-  --card:#fff;
-  --accent:#287d72;
-  --accent-dark:#1f625a;
-  --soft:#e8f3f0;
-  --warm:#f5efe5;
-  --shadow:0 18px 55px rgba(23,35,43,.09);
-  --radius:24px
-}
-
-*{
-  box-sizing:border-box
-}
-
-html{
-  scroll-behavior:smooth
-}
-
-body{
-  margin:0;
-  color:var(--ink);
-  font-family:'DM Sans',sans-serif;
-  background:var(--bg);
-  line-height:1.55
-}
-
-a{
-  text-decoration:none;
-  color:inherit
-}
-
-.container{
-  width:min(1120px,calc(100% - 40px));
-  margin:auto
-}
-
-.nav{
-  height:78px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between
-}
-
-.logo{
-  font-family:Manrope,sans-serif;
-  font-size:25px;
-  font-weight:800;
-  letter-spacing:-1px
-}
-
-.logo span{
-  color:var(--accent)
-}
-
-.navlinks{
-  display:flex;
-  gap:28px;
-  align-items:center;
-  font-size:14px;
-  color:var(--muted)
-}
-
-.navcta{
-  padding:11px 17px;
-  border:1px solid var(--line);
-  border-radius:999px;
-  background:#fff;
-  font-weight:600;
-  color:var(--ink)
-}
-
-.hero{
-  padding:68px 0 82px;
-  display:grid;
-  grid-template-columns:1.05fr .95fr;
-  gap:70px;
-  align-items:center
-}
-
-.eyebrow{
-  display:inline-flex;
-  gap:8px;
-  align-items:center;
-  background:var(--soft);
-  color:var(--accent-dark);
-  padding:8px 13px;
-  border-radius:999px;
-  font-size:13px;
-  font-weight:700;
-  margin-bottom:20px
-}
-
-.dot{
-  width:7px;
-  height:7px;
-  border-radius:50%;
-  background:var(--accent)
-}
-
-h1,h2,h3{
-  font-family:Manrope,sans-serif;
-  line-height:1.08;
-  letter-spacing:-1.5px;
-  margin:0
-}
-
-h1{
-  font-size:clamp(44px,6vw,72px);
-  max-width:700px
-}
-
-h1 em{
-  font-style:normal;
-  color:var(--accent)
-}
-
-.hero p{
-  font-size:19px;
-  color:var(--muted);
-  max-width:610px;
-  margin:24px 0 31px
-}
-
-.actions{
-  display:flex;
-  gap:12px;
-  flex-wrap:wrap
-}
-
-.btn{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  padding:14px 21px;
-  border-radius:13px;
-  font-weight:700;
-  border:1px solid transparent;
-  cursor:pointer
-}
-
-.primary{
-  background:var(--accent);
-  color:#fff
-}
-
-.primary:hover{
-  background:var(--accent-dark)
-}
-
-.secondary{
-  background:#fff;
-  border-color:var(--line)
-}
-
-.hero-card{
-  background:var(--card);
-  border:1px solid var(--line);
-  border-radius:30px;
-  padding:24px;
-  box-shadow:var(--shadow);
-  transform:rotate(1deg)
-}
-
-.searchbox{
-  border:1px solid var(--line);
-  border-radius:18px;
-  padding:17px;
-  background:#fbfcfc
-}
-
-.searchbox small{
-  color:var(--muted);
-  font-weight:600
-}
-
-.fake-input{
-  margin-top:8px;
-  padding:13px 14px;
-  border-radius:11px;
-  background:#f3f7f6;
-  color:#829097
-}
-
-
-/* PROFESIONALES DE LA PORTADA */
-
-.home-professionals{
-  margin-top:8px
-}
-
-.home-professional{
-  display:flex;
-  gap:14px;
-  align-items:center;
-  padding:17px 0;
-  border-bottom:1px solid var(--line);
-  transition:transform .2s ease
-}
-
-.home-professional:hover{
-  transform:translateX(3px)
-}
-
-.home-professional-avatar{
-  width:48px;
-  height:48px;
-  min-width:48px;
-  border-radius:50%;
-  background:var(--warm);
-  display:grid;
-  place-items:center;
-  font-weight:800;
-  overflow:hidden
-}
-
-.home-professional-avatar img{
-  width:100%;
-  height:100%;
-  object-fit:cover
-}
-
-.home-professional-info{
-  min-width:0
-}
-
-.home-professional-info strong{
-  display:block;
-  font-size:15px;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis
-}
-
-.home-professional-info span{
-  display:block;
-  font-size:13px;
-  color:var(--muted);
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis
-}
-
-.home-professional-tag{
-  margin-left:auto;
-  background:var(--soft);
-  color:var(--accent-dark);
-  padding:6px 9px;
-  border-radius:999px;
-  font-size:11px;
-  font-weight:700;
-  white-space:nowrap
-}
-
-.home-professional-empty{
-  padding:25px 0 10px;
-  color:var(--muted);
-  font-size:14px
-}
-
-
-.section{
-  padding:92px 0
-}
-
-.section.alt{
-  background:#fff
-}
-
-.sectionhead{
-  max-width:680px;
-  margin-bottom:42px
-}
-
-.sectionhead p{
-  color:var(--muted);
-  font-size:17px
-}
-
-.cards{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:18px
-}
-
-.card{
-  background:var(--card);
-  border:1px solid var(--line);
-  border-radius:var(--radius);
-  padding:27px
-}
-
-.card h3{
-  font-size:21px;
-  margin:19px 0 10px
-}
-
-.card p{
-  margin:0;
-  color:var(--muted)
-}
-
-.icon{
-  width:45px;
-  height:45px;
-  border-radius:14px;
-  background:var(--soft);
-  display:grid;
-  place-items:center;
-  color:var(--accent-dark);
-  font-weight:800
-}
-
-.steps{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:20px
-}
-
-.step{
-  padding:25px 0;
-  border-top:1px solid var(--line)
-}
-
-.num{
-  font-size:13px;
-  color:var(--accent);
-  font-weight:800
-}
-
-.step h3{
-  margin:10px 0
-}
-
-.step p{
-  color:var(--muted)
-}
-
-.pro{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:25px
-}
-
-.procard{
-  border-radius:28px;
-  padding:36px;
-  border:1px solid var(--line);
-  background:var(--bg)
-}
-
-.procard.feature{
-  background:var(--soft);
-  border-color:#cfe4df
-}
-
-.procard h3{
-  font-size:30px
-}
-
-.procard ul{
-  padding:0;
-  margin:22px 0 28px;
-  list-style:none
-}
-
-.procard li{
-  padding:9px 0;
-  border-bottom:1px solid rgba(99,114,122,.15)
-}
-
-.faq{
-  max-width:800px
-}
-
-.faq details{
-  border-top:1px solid var(--line);
-  padding:19px 0
-}
-
-.faq summary{
-  cursor:pointer;
-  font-weight:700
-}
-
-.faq p{
-  color:var(--muted);
-  max-width:720px
-}
-
-.form-section{
-  background:var(--ink);
-  color:#fff;
-  padding:88px 0
-}
-
-.form-grid{
-  display:grid;
-  grid-template-columns:.8fr 1.2fr;
-  gap:60px;
-  align-items:start
-}
-
-.form-section p{
-  color:#b9c5c9
-}
-
-.form{
-  background:#fff;
-  color:var(--ink);
-  padding:28px;
-  border-radius:24px
-}
-
-.field{
-  margin-bottom:15px
-}
-
-.field label{
-  display:block;
-  font-size:13px;
-  font-weight:700;
-  margin-bottom:7px
-}
-
-.field input,
-.field select,
-.field textarea{
-  width:100%;
-  border:1px solid var(--line);
-  border-radius:11px;
-  padding:12px 13px;
-  font:inherit;
-  background:#fff
-}
-
-.field textarea{
-  min-height:90px;
-  resize:vertical
-}
-
-.form .btn{
-  width:100%
-}
-
-.check{
-  display:flex;
-  gap:9px;
-  align-items:flex-start;
-  font-size:12px;
-  color:var(--muted);
-  margin:12px 0 17px
-}
-
-.check input{
-  margin-top:4px
-}
-
-.notice{
-  font-size:12px;
-  color:#7a878d;
-  margin-top:12px
-}
-
-.footer{
-  padding:30px 0;
-  color:var(--muted);
-  font-size:13px
-}
-
-.footerin{
-  display:flex;
-  justify-content:space-between;
-  gap:20px;
-  border-top:1px solid var(--line);
-  padding-top:25px
-}
-
-.legal{
-  max-width:900px;
-  margin:0 auto;
-  padding:0 0 50px;
-  color:#7a878d;
-  font-size:12px
-}
-
-.toast{
-  position:fixed;
-  right:20px;
-  bottom:20px;
-  background:#fff;
-  color:var(--ink);
-  border:1px solid var(--line);
-  box-shadow:var(--shadow);
-  padding:15px 18px;
-  border-radius:14px;
-  display:none;
-  max-width:340px
-}
-
-.toast.show{
-  display:block
-}
-
-
-@media(max-width:800px){
-
-  .navlinks{
-    display:none
-  }
-
-  .hero,
-  .form-grid,
-  .pro{
-    grid-template-columns:1fr
-  }
-
-  .hero{
-    padding-top:40px;
-    gap:35px
-  }
-
-  .cards,
-  .steps{
-    grid-template-columns:1fr
-  }
-
-  .section{
-    padding:65px 0
-  }
-
-  .hero-card{
-    transform:none
-  }
-
-  .footerin{
-    flex-direction:column
-  }
-
-}
-
-</style>
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <title>PsiCerca — Encontrá tu profesional de salud mental</title>
+
+  <meta
+    name="description"
+    content="PsiCerca conecta personas que buscan atención en salud mental con profesionales de la psicología."
+  >
+
+  <link rel="stylesheet" href="styles.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="supabase.js"></script>
+
+  <style>
+
+    /*
+     * =====================================================
+     * ESTILOS ESPECÍFICOS DEL INICIO
+     * =====================================================
+     */
+
+    .home-hero {
+      padding: 80px 0 70px;
+    }
+
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns:
+        minmax(0, 1.15fr)
+        minmax(320px, .85fr);
+
+      gap: 60px;
+
+      align-items: center;
+    }
+
+
+    .hero-copy h1 {
+      font-size: clamp(42px, 6vw, 72px);
+      line-height: .98;
+      letter-spacing: -2.8px;
+      margin: 14px 0 24px;
+    }
+
+
+    .hero-copy > p {
+      max-width: 650px;
+      font-size: 19px;
+      line-height: 1.65;
+      color: var(--muted);
+    }
+
+
+    .hero-card {
+      background: var(--soft);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      padding: 28px;
+      box-shadow: 0 20px 50px rgba(0,0,0,.06);
+    }
+
+
+    .searchbox {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 22px;
+    }
+
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 30px;
+    }
+
+
+    .trust-row {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-top: 28px;
+    }
+
+
+    .trust-item {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+
+    .trust-item strong {
+      color: var(--text);
+    }
+
+
+    .section-intro {
+      max-width: 720px;
+      margin-bottom: 38px;
+    }
+
+
+    .section-intro p {
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.65;
+    }
+
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+      gap: 20px;
+    }
+
+
+    .feature-card {
+      padding: 28px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: white;
+    }
+
+
+    .feature-number {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      background: var(--soft);
+      color: var(--accent);
+
+      font-weight: 800;
+
+      margin-bottom: 20px;
+    }
+
+
+    .feature-card h3 {
+      margin-bottom: 10px;
+    }
+
+
+    .feature-card p {
+      color: var(--muted);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+
+    .steps {
+      display: grid;
+      grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+      gap: 20px;
+    }
+
+
+    .step {
+      padding: 30px;
+      background: var(--soft);
+      border-radius: 22px;
+    }
+
+
+    .step strong {
+      display: block;
+      font-size: 13px;
+      color: var(--accent);
+      margin-bottom: 10px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+
+    .step h3 {
+      margin-bottom: 10px;
+    }
+
+
+    .step p {
+      color: var(--muted);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+
+    .professional-section {
+      background: var(--soft);
+    }
+
+
+    .pro-grid {
+      display: grid;
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+      gap: 20px;
+    }
+
+
+    .pro-cta {
+      padding: 30px;
+      border-radius: 24px;
+      background: white;
+      border: 1px solid var(--line);
+    }
+
+
+    .pro-cta p {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+
+    .home-professionals {
+      margin-top: 34px;
+    }
+
+
+    .home-professionals-grid {
+      display: grid;
+      grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+      gap: 20px;
+    }
+
+
+    .home-pro-card {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 24px;
+      background: white;
+    }
+
+
+    .home-pro-top {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+
+    .home-pro-photo {
+      width: 58px;
+      height: 58px;
+      min-width: 58px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+
+    .home-pro-avatar {
+      width: 58px;
+      height: 58px;
+      min-width: 58px;
+      border-radius: 50%;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      background: var(--soft);
+      color: var(--accent);
+
+      font-weight: 800;
+    }
+
+
+    .home-pro-card h3 {
+      margin: 0 0 4px;
+      font-size: 18px;
+    }
+
+
+    .home-pro-card .small {
+      margin: 0;
+    }
+
+
+    .home-pro-card p {
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+
+    .faq-list {
+      max-width: 820px;
+    }
+
+
+    .faq-item {
+      border-top: 1px solid var(--line);
+      padding: 22px 0;
+    }
+
+
+    .faq-item:last-child {
+      border-bottom: 1px solid var(--line);
+    }
+
+
+    .faq-item h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+
+    .faq-item p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+
+    .final-cta {
+      text-align: center;
+      padding: 80px 20px;
+    }
+
+
+    .final-cta h2 {
+      max-width: 700px;
+      margin: 0 auto 18px;
+    }
+
+
+    .final-cta p {
+      max-width: 620px;
+      margin: 0 auto 28px;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.6;
+    }
+
+
+    @media (max-width: 850px) {
+
+      .hero-grid {
+        grid-template-columns: 1fr;
+        gap: 35px;
+      }
+
+
+      .feature-grid,
+      .steps,
+      .home-professionals-grid {
+        grid-template-columns: 1fr;
+      }
+
+
+      .pro-grid {
+        grid-template-columns: 1fr;
+      }
+
+
+      .home-hero {
+        padding: 55px 0;
+      }
+
+    }
+
+
+    @media (max-width: 600px) {
+
+      .hero-copy h1 {
+        letter-spacing: -1.8px;
+      }
+
+
+      .actions .btn {
+        width: 100%;
+      }
+
+
+      .hero-card {
+        padding: 18px;
+      }
+
+    }
+
+  </style>
 
 </head>
 
@@ -600,13 +410,21 @@ h1 em{
 <body>
 
 
+<!-- =====================================================
+     HEADER
+     ===================================================== -->
+
 <header>
 
   <div class="container nav">
 
-    <a class="logo" href="#inicio">
+    <a
+      class="logo"
+      href="index.html"
+    >
       Psi<span>Cerca</span>
     </a>
+
 
     <nav class="navlinks">
 
@@ -623,8 +441,15 @@ h1 em{
       </a>
 
       <a
+        href="login.html"
         class="navcta"
+      >
+        Iniciar sesión
+      </a>
+
+      <a
         href="registro.html"
+        class="navcta"
       >
         Soy psicólogo/a
       </a>
@@ -636,79 +461,219 @@ h1 em{
 </header>
 
 
-<main id="inicio">
+<!-- =====================================================
+     HERO
+     ===================================================== -->
+
+<main>
 
 
-<!-- HERO -->
+<section
+  class="home-hero"
+  id="inicio"
+>
 
-<section class="hero container">
+  <div class="container">
 
-  <div>
-
-    <div class="eyebrow">
-
-      <span class="dot"></span>
-
-      Próximamente en Argentina
-
-    </div>
+    <div class="hero-grid">
 
 
-    <h1>
+      <!-- TEXTO -->
 
-      Encontrá un profesional de salud mental
+      <div class="hero-copy">
 
-      <em>
-        cerca tuyo.
-      </em>
+        <div class="eyebrow">
 
-    </h1>
+          <span class="dot"></span>
 
+          Encontrá profesionales en PsiCerca
 
-    <p>
-
-      PsiCerca nace para hacer más simple el encuentro entre personas
-      que buscan atención psicológica y profesionales que quieren hacer
-      crecer su práctica.
-
-    </p>
+        </div>
 
 
-    <div class="actions">
+        <h1>
 
-      <a
-        class="btn primary"
-        href="#pacientes"
-      >
-        Quiero encontrar un profesional
-      </a>
+          Encontrá un profesional de salud mental
+          <span style="color:var(--accent)">
+            cerca tuyo.
+          </span>
+
+        </h1>
 
 
-      <a
-        href="registro.html"
-        class="btn primary"
-      >
-        Soy psicólogo/a
-      </a>
+        <p>
+
+          PsiCerca te ayuda a encontrar profesionales
+          de la psicología según la zona donde atienden,
+          modalidad, orientación y población con la que
+          trabajan.
+
+        </p>
+
+
+        <div class="actions">
+
+          <a
+            class="btn primary"
+            href="profesionales.html"
+          >
+
+            🔎 Buscar un psicólogo
+
+          </a>
+
+
+          <a
+            href="registro.html"
+            class="btn secondary"
+          >
+
+            Soy psicólogo/a
+
+          </a>
+
+        </div>
+
+
+        <div class="trust-row">
+
+          <div class="trust-item">
+
+            ✓ <strong>Directorio público</strong>
+
+          </div>
+
+          <div class="trust-item">
+
+            ✓ <strong>Filtros de búsqueda</strong>
+
+          </div>
+
+          <div class="trust-item">
+
+            ✓ <strong>Contacto directo</strong>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- TARJETA DE BÚSQUEDA -->
+
+      <div class="hero-card">
+
+        <div class="searchbox">
+
+          <small>
+            BUSCÁ TU PROFESIONAL
+          </small>
+
+
+          <div
+            style="
+              font-family:Manrope,sans-serif;
+              font-size:21px;
+              font-weight:800;
+              margin-top:8px;
+              letter-spacing:-.5px;
+            "
+          >
+
+            Encontrá el profesional
+            que necesitás.
+
+          </div>
+
+
+          <p
+            style="
+              margin:8px 0 18px;
+              color:var(--muted);
+              font-size:14px;
+              line-height:1.5;
+            "
+          >
+
+            Buscá por zona, modalidad,
+            orientación y población.
+
+          </p>
+
+
+          <a
+            href="profesionales.html"
+            class="btn primary"
+            style="width:100%;"
+          >
+
+            🔎 Buscar psicólogo
+
+          </a>
+
+        </div>
+
+
+        <div
+          style="
+            margin-top:20px;
+            padding:0 4px;
+          "
+        >
+
+          <p
+            class="small"
+            style="margin:0;"
+          >
+
+            Podés explorar el directorio
+            sin crear una cuenta.
+
+          </p>
+
+        </div>
+
+      </div>
+
 
     </div>
 
   </div>
 
+</section>
 
-  <!-- TARJETA DE PROFESIONALES REALES -->
 
-  <div class="hero-card">
+<!-- =====================================================
+     PROFESIONALES DESTACADOS / REALES
+     ===================================================== -->
 
-    <div class="searchbox">
+<section
+  class="section"
+  id="profesionales"
+>
 
-      <small>
-        Profesionales en PsiCerca
-      </small>
+  <div class="container">
 
-      <div class="fake-input">
-        🔎 Profesionales disponibles
+    <div class="section-intro">
+
+      <div class="eyebrow">
+        Directorio
       </div>
+
+
+      <h2>
+        Profesionales que ya están en PsiCerca
+      </h2>
+
+
+      <p>
+
+        Explorá algunos de los perfiles disponibles.
+        Podés acceder al directorio completo para
+        buscar según tus necesidades.
+
+      </p>
 
     </div>
 
@@ -718,9 +683,28 @@ h1 em{
       class="home-professionals"
     >
 
-      <div class="home-professional-empty">
-        Cargando profesionales...
+      <div class="empty">
+        Cargando profesionales…
       </div>
+
+    </div>
+
+
+    <div
+      style="
+        text-align:center;
+        margin-top:30px;
+      "
+    >
+
+      <a
+        href="profesionales.html"
+        class="btn primary"
+      >
+
+        Ver todos los profesionales
+
+      </a>
 
     </div>
 
@@ -729,294 +713,9 @@ h1 em{
 </section>
 
 
-<!-- PARA PACIENTES -->
-
-<section
-  class="section alt"
-  id="busco"
->
-
-  <div class="container">
-
-    <div class="sectionhead">
-
-      <div class="eyebrow">
-        Para quienes buscan atención
-      </div>
-
-      <h2>
-        Menos vueltas. Más cerca.
-      </h2>
-
-      <p>
-        Estamos construyendo una forma simple de encontrar profesionales
-        según lo que necesitás, sin convertir la búsqueda en un laberinto.
-      </p>
-
-    </div>
-
-
-    <div class="cards">
-
-      <article class="card">
-
-        <div class="icon">
-          01
-        </div>
-
-        <h3>
-          Buscá
-        </h3>
-
-        <p>
-          Filtrá por zona, modalidad, orientación y otros criterios relevantes.
-        </p>
-
-      </article>
-
-
-      <article class="card">
-
-        <div class="icon">
-          02
-        </div>
-
-        <h3>
-          Conocé
-        </h3>
-
-        <p>
-          Consultá el perfil profesional, su información y las modalidades de atención.
-        </p>
-
-      </article>
-
-
-      <article class="card">
-
-        <div class="icon">
-          03
-        </div>
-
-        <h3>
-          Contactá
-        </h3>
-
-        <p>
-          Solicitá un turno o contactá directamente al profesional.
-        </p>
-
-      </article>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- COMO FUNCIONA -->
-
-<section
-  class="section"
-  id="como"
->
-
-  <div class="container">
-
-    <div class="sectionhead">
-
-      <div class="eyebrow">
-        Cómo funciona
-      </div>
-
-      <h2>
-        Una plataforma pensada para conectar.
-      </h2>
-
-    </div>
-
-
-    <div class="steps">
-
-      <div class="step">
-
-        <div class="num">
-          01 — BUSCÁS
-        </div>
-
-        <h3>
-          Contanos qué necesitás
-        </h3>
-
-        <p>
-          Elegís ubicación, modalidad y características del profesional
-          que estás buscando.
-        </p>
-
-      </div>
-
-
-      <div class="step">
-
-        <div class="num">
-          02 — EXPLORÁS
-        </div>
-
-        <h3>
-          Comparás perfiles
-        </h3>
-
-        <p>
-          Ves información profesional clara para decidir con quién
-          querés contactarte.
-        </p>
-
-      </div>
-
-
-      <div class="step">
-
-        <div class="num">
-          03 — CONTACTÁS
-        </div>
-
-        <h3>
-          Coordinás directamente
-        </h3>
-
-        <p>
-          El vínculo profesional se establece entre vos y el psicólogo/a seleccionado.
-        </p>
-
-      </div>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- PROFESIONALES -->
-
-<section
-  class="section alt"
-  id="profesionales"
->
-
-  <div class="container">
-
-    <div class="sectionhead">
-
-      <div class="eyebrow">
-        Para profesionales
-      </div>
-
-      <h2>
-        Tu práctica también merece estar cerca.
-      </h2>
-
-      <p>
-        Creá tu presencia en PsiCerca y, a medida que la plataforma crezca,
-        accedé a herramientas para administrar tu agenda y facilitar el
-        contacto con nuevos pacientes.
-      </p>
-
-    </div>
-
-
-    <div class="pro">
-
-
-      <article class="procard">
-
-        <h3>
-          Perfil profesional
-        </h3>
-
-        <p>
-          Una ficha clara para que potenciales pacientes conozcan tu práctica.
-        </p>
-
-        <ul>
-
-          <li>
-            ✓ Datos profesionales
-          </li>
-
-          <li>
-            ✓ Orientación y población
-          </li>
-
-          <li>
-            ✓ Modalidad y zona
-          </li>
-
-          <li>
-            ✓ Información de contacto
-          </li>
-
-        </ul>
-
-        <a
-          class="btn secondary"
-          href="#registro"
-        >
-          Quiero registrarme
-        </a>
-
-      </article>
-
-
-      <article class="procard feature">
-
-        <h3>
-          Herramientas
-        </h3>
-
-        <p>
-          Estamos evaluando incorporar herramientas simples para facilitar
-          la gestión cotidiana.
-        </p>
-
-        <ul>
-
-          <li>
-            ✓ Agenda online
-          </li>
-
-          <li>
-            ✓ Solicitud y confirmación de turnos
-          </li>
-
-          <li>
-            ✓ Recordatorios
-          </li>
-
-          <li>
-            ✓ Estadísticas de perfil
-          </li>
-
-        </ul>
-
-        <a
-          class="btn primary"
-          href="#registro"
-        >
-          Quiero ser de los primeros
-        </a>
-
-      </article>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- PACIENTES -->
+<!-- =====================================================
+     PARA PACIENTES
+     ===================================================== -->
 
 <section
   class="section"
@@ -1025,469 +724,266 @@ h1 em{
 
   <div class="container">
 
-    <div class="sectionhead">
-
-      <div class="eyebrow">
-        Estamos construyendo PsiCerca
-      </div>
-
-      <h2>
-        ¿Buscás un psicólogo/a?
-      </h2>
-
-      <p>
-        Dejanos qué estás buscando. Esta información nos ayuda a diseñar
-        el buscador y avisarte cuando esté disponible.
-      </p>
-
-    </div>
-
-
-    <form
-      class="form"
-      id="patientForm"
-      style="max-width:760px"
+    <div
+      style="
+        max-width:820px;
+        margin:0 auto;
+        text-align:center;
+      "
     >
 
-      <div class="field">
-
-        <label for="pname">
-          Nombre (opcional)
-        </label>
-
-        <input
-          id="pname"
-          name="nombre"
-        >
-
+      <div class="eyebrow">
+        Para pacientes
       </div>
 
 
-      <div class="field">
-
-        <label for="pemail">
-          Email *
-        </label>
-
-        <input
-          id="pemail"
-          name="email"
-          type="email"
-          required
-        >
-
-      </div>
+      <h2>
+        ¿Estás buscando un psicólogo?
+      </h2>
 
 
-      <div class="field">
-
-        <label for="pzone">
-          Zona/localidad
-        </label>
-
-        <input
-          id="pzone"
-          name="zona"
-          placeholder="Ej. Avellaneda, Lanús, CABA"
-        >
-
-      </div>
-
-
-      <div class="field">
-
-        <label for="pmode">
-          Modalidad preferida
-        </label>
-
-        <select
-          id="pmode"
-          name="modalidad"
-        >
-
-          <option>
-            Indistinto
-          </option>
-
-          <option>
-            Presencial
-          </option>
-
-          <option>
-            Online
-          </option>
-
-        </select>
-
-      </div>
-
-
-      <div class="field">
-
-        <label for="pneed">
-          ¿Qué te resultaría más útil para encontrar profesional?
-        </label>
-
-        <textarea
-          id="pneed"
-          name="necesidad"
-          placeholder="Ej. precio, disponibilidad, zona, orientación, obra social..."
-        ></textarea>
-
-      </div>
-
-
-      <div class="check">
-
-        <input
-          id="pprivacy"
-          type="checkbox"
-          required
-        >
-
-        <label for="pprivacy">
-
-          Acepto que PsiCerca utilice estos datos para contactarme
-          sobre el lanzamiento. No ingreses información clínica ni
-          detalles sobre tu salud.
-
-        </label>
-
-      </div>
-
-
-      <button
-        class="btn primary"
-        type="submit"
+      <p
+        style="
+          color:var(--muted);
+          font-size:18px;
+          max-width:650px;
+          margin:18px auto 28px;
+          line-height:1.6;
+        "
       >
-        Avisarme cuando esté disponible
-      </button>
 
-    </form>
+        Explorá profesionales de PsiCerca y encontrá
+        opciones según la zona, modalidad, orientación
+        y población con la que trabajan.
+
+      </p>
+
+
+      <a
+        href="profesionales.html"
+        class="btn primary"
+      >
+
+        🔎 Buscar un psicólogo
+
+      </a>
+
+    </div>
 
   </div>
 
 </section>
 
 
-<!-- REGISTRO PROFESIONALES -->
+<!-- =====================================================
+     CÓMO FUNCIONA
+     ===================================================== -->
 
 <section
-  class="form-section"
-  id="registro"
+  class="section"
+  id="como"
 >
 
-  <div class="container form-grid">
+  <div class="container">
 
-
-    <div>
+    <div class="section-intro">
 
       <div class="eyebrow">
-        Acceso anticipado
+        Cómo funciona
       </div>
+
+
+      <h2>
+        Encontrar un profesional puede ser más simple.
+      </h2>
+
+
+      <p>
+
+        PsiCerca organiza la información para que
+        puedas explorar distintas opciones y decidir
+        con quién querés ponerte en contacto.
+
+      </p>
+
+    </div>
+
+
+    <div class="steps">
+
+
+      <div class="step">
+
+        <strong>
+          Paso 01
+        </strong>
+
+        <h3>
+          Buscá
+        </h3>
+
+        <p>
+
+          Explorá el directorio y utilizá los filtros
+          para encontrar profesionales según tus
+          necesidades.
+
+        </p>
+
+      </div>
+
+
+      <div class="step">
+
+        <strong>
+          Paso 02
+        </strong>
+
+        <h3>
+          Conocé
+        </h3>
+
+        <p>
+
+          Revisá el perfil profesional, su orientación,
+          modalidad de atención y población con la
+          que trabaja.
+
+        </p>
+
+      </div>
+
+
+      <div class="step">
+
+        <strong>
+          Paso 03
+        </strong>
+
+        <h3>
+          Contactá
+        </h3>
+
+        <p>
+
+          Cuando encuentres una opción que te interese,
+          podés crear una cuenta y contactarte con el
+          profesional.
+
+        </p>
+
+      </div>
+
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =====================================================
+     PARA PROFESIONALES
+     ===================================================== -->
+
+<section
+  class="section professional-section"
+>
+
+  <div class="container">
+
+    <div class="section-intro">
+
+      <div class="eyebrow">
+        Para profesionales
+      </div>
+
 
       <h2>
         ¿Sos psicólogo/a?
       </h2>
 
-      <p>
-        Estamos validando PsiCerca con un primer grupo de profesionales.
-        Dejanos tus datos y te contactaremos cuando abramos el registro.
-      </p>
 
       <p>
-        <strong>
-          No tiene costo registrarse durante esta etapa.
-        </strong>
+
+        Creá tu cuenta profesional y armá un perfil
+        para que las personas puedan conocer tu
+        práctica y contactarte.
+
       </p>
 
     </div>
 
 
-    <form
-      class="form"
-      id="proForm"
-    >
+    <div class="pro-grid">
 
-      <div class="field">
 
-        <label for="name">
-          Nombre y apellido *
-        </label>
+      <div class="pro-cta">
 
-        <input
-          id="name"
-          name="name"
-          required
+        <h3>
+          Creá tu perfil
+        </h3>
+
+
+        <p>
+
+          Completá tus datos profesionales,
+          matrícula, orientación, modalidad,
+          población y zonas de atención.
+
+        </p>
+
+
+        <a
+          href="registro.html"
+          class="btn primary"
         >
 
+          Crear cuenta profesional
+
+        </a>
+
       </div>
 
 
-      <div class="field">
+      <div class="pro-cta">
 
-        <label for="email">
-          Email *
-        </label>
+        <h3>
+          ¿Ya tenés una cuenta?
+        </h3>
 
-        <input
-          id="email"
-          name="email"
-          type="email"
-          required
+
+        <p>
+
+          Ingresá a tu panel para actualizar
+          tu información y administrar la
+          publicación de tu perfil.
+
+        </p>
+
+
+        <a
+          href="login.html"
+          class="btn secondary"
         >
 
-      </div>
+          Iniciar sesión
 
-
-      <div class="field">
-
-        <label for="wa">
-          WhatsApp *
-        </label>
-
-        <input
-          id="wa"
-          name="wa"
-          type="tel"
-          required
-        >
+        </a>
 
       </div>
 
 
-      <div class="field">
-
-        <label for="matricula">
-          Matrícula *
-        </label>
-
-        <input
-          id="matricula"
-          name="matricula"
-          required
-        >
-
-      </div>
-
-
-      <div class="field">
-
-        <label for="jurisdiccion">
-          Jurisdicción de matrícula *
-        </label>
-
-        <select
-          id="jurisdiccion"
-          name="jurisdiccion"
-          required
-        >
-
-          <option value="">
-            Seleccioná una opción
-          </option>
-
-          <option>
-            Ciudad de Buenos Aires
-          </option>
-
-          <option>
-            Provincia de Buenos Aires
-          </option>
-
-          <option>
-            Otra
-          </option>
-
-        </select>
-
-      </div>
-
-
-      <div class="field">
-
-        <label for="modalidad">
-          Modalidad
-        </label>
-
-        <select
-          id="modalidad"
-          name="modalidad"
-        >
-
-          <option>
-            Presencial y online
-          </option>
-
-          <option>
-            Solo online
-          </option>
-
-          <option>
-            Solo presencial
-          </option>
-
-        </select>
-
-      </div>
-
-
-      <div class="field">
-
-        <label for="zona">
-          Zona/localidad principal
-        </label>
-
-        <input
-          id="zona"
-          name="zona"
-          placeholder="Ej. Avellaneda, Lanús, CABA"
-        >
-
-      </div>
-
-
-      <div class="field">
-
-        <label for="orientacion">
-          Orientación / especialidad
-        </label>
-
-        <input
-          id="orientacion"
-          name="orientacion"
-          placeholder="Ej. Psicoanálisis, TCC, sistémica..."
-        >
-
-      </div>
-
-
-      <div class="field">
-
-        <label for="nuevos">
-          ¿Buscás nuevos pacientes?
-        </label>
-
-        <select
-          id="nuevos"
-          name="nuevos"
-        >
-
-          <option>
-            Sí
-          </option>
-
-          <option>
-            No
-          </option>
-
-          <option>
-            Depende de la disponibilidad
-          </option>
-
-        </select>
-
-      </div>
-
-
-      <div class="field">
-
-        <label for="agenda">
-          ¿Te interesaría una agenda online?
-        </label>
-
-        <select
-          id="agenda"
-          name="agenda"
-        >
-
-          <option>
-            Sí
-          </option>
-
-          <option>
-            Tal vez
-          </option>
-
-          <option>
-            No
-          </option>
-
-        </select>
-
-      </div>
-
-
-      <div class="field">
-
-        <label for="pago">
-          Si la plataforma te generara consultas, ¿te interesaría pagar
-          una suscripción por mayor visibilidad y herramientas?
-        </label>
-
-        <select
-          id="pago"
-          name="pago"
-        >
-
-          <option>
-            Sí
-          </option>
-
-          <option>
-            Tal vez
-          </option>
-
-          <option>
-            No
-          </option>
-
-        </select>
-
-      </div>
-
-
-      <div class="check">
-
-        <input
-          id="privacy"
-          type="checkbox"
-          required
-        >
-
-        <label for="privacy">
-
-          Acepto que PsiCerca utilice estos datos para contactarme
-          sobre el lanzamiento y la validación de la plataforma.
-
-        </label>
-
-      </div>
-
-
-      <button
-        class="btn primary"
-        type="submit"
-      >
-        Quiero participar
-      </button>
-
-
-      <div class="notice">
-
-        Esta versión es una prueba de interés. PsiCerca no brinda
-        atención psicológica ni reemplaza el vínculo profesional.
-
-      </div>
-
-    </form>
+    </div>
 
   </div>
 
 </section>
 
 
-<!-- FAQ -->
+<!-- =====================================================
+     PREGUNTAS FRECUENTES
+     ===================================================== -->
 
 <section
   class="section"
@@ -1496,79 +992,148 @@ h1 em{
 
   <div class="container">
 
-    <div class="sectionhead">
+    <div class="section-intro">
 
       <div class="eyebrow">
         Preguntas frecuentes
       </div>
 
+
       <h2>
-        Lo que necesitás saber.
+        Algunas respuestas antes de empezar.
       </h2>
 
     </div>
 
 
-    <div class="faq">
+    <div class="faq-list">
 
-      <details>
 
-        <summary>
+      <div class="faq-item">
+
+        <h3>
+          ¿Necesito una cuenta para buscar profesionales?
+        </h3>
+
+        <p>
+
+          No. Podés explorar el directorio y consultar
+          los perfiles públicos sin registrarte.
+
+        </p>
+
+      </div>
+
+
+      <div class="faq-item">
+
+        <h3>
+          ¿Para qué necesito una cuenta de paciente?
+        </h3>
+
+        <p>
+
+          La cuenta permite acceder a las opciones
+          de contacto de los profesionales.
+
+        </p>
+
+      </div>
+
+
+      <div class="faq-item">
+
+        <h3>
           ¿PsiCerca brinda atención psicológica?
-        </summary>
+        </h3>
 
         <p>
-          No. PsiCerca es una plataforma tecnológica orientada a facilitar
-          el contacto entre personas y profesionales independientes.
+
+          No. PsiCerca es una plataforma tecnológica
+          que facilita la búsqueda y el contacto entre
+          personas y profesionales.
+
         </p>
 
-      </details>
+      </div>
 
 
-      <details>
+      <div class="faq-item">
 
-        <summary>
-          ¿Quiénes podrán publicar un perfil?
-        </summary>
+        <h3>
+          ¿PsiCerca verifica las matrículas?
+        </h3>
 
         <p>
-          La plataforma está pensada para profesionales de Psicología
-          habilitados para ejercer. En una siguiente etapa definiremos
-          el procedimiento de verificación de matrícula.
+
+          La matrícula informada en cada perfil es
+          declarada por el profesional. Recomendamos
+          comprobarla directamente en el registro
+          oficial correspondiente.
+
         </p>
 
-      </details>
+      </div>
 
 
-      <details>
+      <div class="faq-item">
 
-        <summary>
-          ¿El registro tiene costo?
-        </summary>
+        <h3>
+          ¿Puedo encontrar atención presencial y online?
+        </h3>
 
         <p>
-          Durante esta etapa de validación, el registro de interés es gratuito.
-          Las condiciones comerciales futuras todavía no están definidas.
+
+          Sí. El directorio permite filtrar profesionales
+          según la modalidad de atención disponible.
+
         </p>
 
-      </details>
+      </div>
 
-
-      <details>
-
-        <summary>
-          ¿PsiCerca recomienda a un psicólogo determinado?
-        </summary>
-
-        <p>
-          La plataforma busca facilitar la búsqueda y comparación de
-          información profesional. No realiza diagnósticos ni determina
-          qué profesional es clínicamente adecuado para una persona.
-        </p>
-
-      </details>
 
     </div>
+
+  </div>
+
+</section>
+
+
+<!-- =====================================================
+     CTA FINAL
+     ===================================================== -->
+
+<section class="final-cta">
+
+  <div class="container">
+
+    <div class="eyebrow">
+      PsiCerca
+    </div>
+
+
+    <h2>
+      Empezá a buscar tu profesional.
+    </h2>
+
+
+    <p>
+
+      Explorá el directorio y encontrá opciones
+      de profesionales de salud mental según
+      tus necesidades.
+
+    </p>
+
+
+    <a
+      href="profesionales.html"
+      class="btn primary"
+    >
+
+      🔎 Buscar un psicólogo
+
+    </a>
 
   </div>
 
@@ -1578,17 +1143,45 @@ h1 em{
 </main>
 
 
+<!-- =====================================================
+     FOOTER
+     ===================================================== -->
+
 <footer class="footer">
 
-  <div class="container footerin">
+  <div class="container">
 
-    <div>
-      <strong>PsiCerca</strong>
-      · Plataforma de conexión con profesionales de salud mental.
-    </div>
+    <div
+      style="
+        display:flex;
+        justify-content:space-between;
+        gap:20px;
+        flex-wrap:wrap;
+        align-items:center;
+      "
+    >
 
-    <div>
-      © 2026 PsiCerca · Privacidad · Términos
+      <div>
+
+        PsiCerca · Plataforma tecnológica · 2026
+
+      </div>
+
+
+      <div>
+
+        <a href="login.html">
+          Iniciar sesión
+        </a>
+
+        &nbsp;·&nbsp;
+
+        <a href="registro.html">
+          Soy psicólogo/a
+        </a>
+
+      </div>
+
     </div>
 
   </div>
@@ -1596,180 +1189,299 @@ h1 em{
 </footer>
 
 
-<div
-  class="toast"
-  id="toast"
->
-  ¡Gracias! Registramos tu interés.
-</div>
-
+<!-- =====================================================
+     JAVASCRIPT
+     ===================================================== -->
 
 <script>
 
-/* =========================================================
-   PROFESIONALES DE LA PORTADA
-   ========================================================= */
 
-async function loadHomeProfessionals(){
+/*
+ * =====================================================
+ * CARGAR PROFESIONALES EN EL HOME
+ * =====================================================
+ */
 
-  const container =
-    document.getElementById('homeProfessionals');
+async function loadHomeProfessionals() {
 
-  if(!container){
+
+  const box =
+    document.getElementById(
+      'homeProfessionals'
+    );
+
+
+  if (!box) {
     return;
   }
 
 
-  try{
-
-    const sb = requireSupabase();
+  try {
 
 
-    const { data, error } = await sb
+    const sb =
+      requireSupabase();
+
+
+    const {
+      data: profiles,
+      error
+    } = await sb
+
       .from('profiles')
+
       .select(`
         id,
         display_name,
         license,
+        jurisdiction,
         modality,
         orientation,
         population,
+        bio,
         photo_url
       `)
-      .eq('is_public', true)
-      .order('created_at', {
-        ascending: false
-      })
+
+      .eq(
+        'is_public',
+        true
+      )
+
+      .order(
+        'display_name',
+        {
+          ascending:true
+        }
+      )
+
       .limit(3);
 
 
-    if(error){
-
-      console.error(
-        'Error cargando profesionales:',
-        error
-      );
-
-      container.innerHTML = `
-        <div class="home-professional-empty">
-          Próximamente vas a encontrar profesionales registrados en PsiCerca.
-        </div>
-      `;
-
-      return;
+    if (error) {
+      throw error;
     }
 
 
-    if(!data || data.length === 0){
+    if (
+      !profiles ||
+      !profiles.length
+    ) {
 
-      container.innerHTML = `
-        <div class="home-professional-empty">
-          Estamos incorporando los primeros profesionales a PsiCerca.
+      box.innerHTML = `
+
+        <div class="empty">
+
+          Todavía no hay profesionales
+          publicados.
+
         </div>
+
       `;
 
       return;
+
     }
 
 
-    container.innerHTML = data.map(
-      (profile, index) => {
+    box.innerHTML = `
 
-        const initials =
-          (profile.display_name || 'P')
-            .split(' ')
-            .map(word => word[0])
-            .slice(0, 2)
-            .join('')
-            .toUpperCase();
+      <div class="home-professionals-grid">
+
+        ${profiles.map(profile => {
 
 
-        const avatar = profile.photo_url
+          const initials =
 
-          ? `
-            <div class="home-professional-avatar">
+            (profile.display_name || 'P')
 
-              <img
-                src="${escapeHTML(profile.photo_url)}"
-                alt="${escapeHTML(profile.display_name || 'Profesional')}"
+              .split(' ')
+
+              .filter(Boolean)
+
+              .map(
+                word => word[0]
+              )
+
+              .slice(0,2)
+
+              .join('')
+
+              .toUpperCase();
+
+
+          const photo =
+
+            profile.photo_url
+
+              ? `
+
+                <img
+                  class="home-pro-photo"
+                  src="${escapeHTML(
+                    profile.photo_url
+                  )}"
+                  alt="Foto de ${escapeHTML(
+                    profile.display_name ||
+                    'profesional'
+                  )}"
+                >
+
+              `
+
+              : `
+
+                <div class="home-pro-avatar">
+
+                  ${escapeHTML(initials)}
+
+                </div>
+
+              `;
+
+
+          const chips = [
+
+            profile.orientation,
+            profile.modality,
+            profile.population
+
+          ]
+
+            .filter(Boolean)
+
+            .slice(0,3)
+
+            .map(
+              item => `
+
+                <span class="chip">
+
+                  ${escapeHTML(item)}
+
+                </span>
+
+              `
+            )
+
+            .join('');
+
+
+          return `
+
+            <article class="home-pro-card">
+
+
+              <div class="home-pro-top">
+
+                ${photo}
+
+
+                <div>
+
+                  <h3>
+
+                    ${escapeHTML(
+                      profile.display_name ||
+                      'Profesional'
+                    )}
+
+                  </h3>
+
+
+                  <p class="small">
+
+                    ${escapeHTML(
+                      profile.license ||
+                      ''
+                    )}
+
+                    ${
+                      profile.jurisdiction
+                        ? ` · ${escapeHTML(
+                            profile.jurisdiction
+                          )}`
+                        : ''
+                    }
+
+                  </p>
+
+                </div>
+
+              </div>
+
+
+              ${
+                chips
+
+                  ? `
+
+                    <div
+                      class="chips"
+                      style="margin-bottom:15px;"
+                    >
+
+                      ${chips}
+
+                    </div>
+
+                  `
+
+                  : ''
+              }
+
+
+              <p>
+
+                ${escapeHTML(
+                  profile.bio ||
+                  'Profesional de la salud mental.'
+                )}
+
+              </p>
+
+
+              <a
+                href="profesional.html?id=${encodeURIComponent(
+                  profile.id
+                )}"
+                class="btn secondary full"
               >
 
-            </div>
-          `
+                Ver perfil
 
-          : `
-            <div class="home-professional-avatar">
-              ${escapeHTML(initials)}
-            </div>
+              </a>
+
+
+            </article>
+
           `;
 
 
-        const professionalInfo = [
+        }).join('')}
 
-          profile.orientation,
+      </div>
 
-          profile.population,
-
-          profile.modality
-
-        ]
-          .filter(Boolean)
-          .join(' · ');
+    `;
 
 
-        return `
+  } catch (error) {
 
-          <a
-            class="home-professional"
-            href="profesional.html?id=${encodeURIComponent(profile.id)}"
-            ${index === data.length - 1 ? 'style="border-bottom:0"' : ''}
-          >
-
-            ${avatar}
-
-
-            <div class="home-professional-info">
-
-              <strong>
-                ${escapeHTML(
-                  profile.display_name ||
-                  'Profesional'
-                )}
-              </strong>
-
-              <span>
-                ${escapeHTML(
-                  professionalInfo ||
-                  'Profesional de la salud mental'
-                )}
-              </span>
-
-            </div>
-
-
-            <div class="home-professional-tag">
-              Ver perfil
-            </div>
-
-          </a>
-
-        `;
-
-      }
-    ).join('');
-
-
-  }catch(error){
 
     console.error(
-      'Error inesperado:',
+      'Error cargando profesionales del inicio:',
       error
     );
 
-    container.innerHTML = `
-      <div class="home-professional-empty">
-        Próximamente vas a encontrar profesionales registrados en PsiCerca.
+
+    box.innerHTML = `
+
+      <div class="empty">
+
+        No se pudieron cargar
+        los profesionales.
+
       </div>
+
     `;
 
   }
@@ -1777,179 +1489,14 @@ async function loadHomeProfessionals(){
 }
 
 
-/* =========================================================
-   FORMULARIOS
-   ========================================================= */
-
-const FORM_ENDPOINT = "";
-
-const toast =
-  document.getElementById('toast');
-
-
-async function submitLead(data){
-
-  data.createdAt =
-    new Date().toISOString();
-
-
-  if(FORM_ENDPOINT){
-
-    const r = await fetch(
-      FORM_ENDPOINT,
-      {
-        method:'POST',
-        headers:{
-          'Content-Type':
-            'text/plain;charset=utf-8'
-        },
-        body:JSON.stringify(data)
-      }
-    );
-
-
-    if(!r.ok){
-
-      throw new Error(
-        'No se pudo enviar el formulario'
-      );
-
-    }
-
-  }else{
-
-    const existing =
-      JSON.parse(
-        localStorage.getItem(
-          'psicerca_leads'
-        ) || '[]'
-      );
-
-
-    existing.push(data);
-
-
-    localStorage.setItem(
-      'psicerca_leads',
-      JSON.stringify(existing)
-    );
-
-  }
-
-}
-
-
-function bind(formId,tipo){
-
-  const form =
-    document.getElementById(formId);
-
-
-  if(!form){
-    return;
-  }
-
-
-  form.addEventListener(
-    'submit',
-    async e => {
-
-      e.preventDefault();
-
-
-      const data =
-        Object.fromEntries(
-          new FormData(form).entries()
-        );
-
-
-      data.tipo = tipo;
-
-      data.consentimiento = true;
-
-
-      const btn =
-        form.querySelector('button');
-
-
-      btn.disabled = true;
-
-      btn.textContent = 'Enviando…';
-
-
-      try{
-
-        await submitLead(data);
-
-
-        form.reset();
-
-
-        toast.textContent =
-          '¡Gracias! Registramos tu interés.';
-
-
-        toast.classList.add('show');
-
-
-        setTimeout(
-          () =>
-            toast.classList.remove('show'),
-          5000
-        );
-
-
-      }catch(err){
-
-        console.error(err);
-
-
-        toast.textContent =
-          'No pudimos enviar el formulario. Probá nuevamente.';
-
-
-        toast.classList.add('show');
-
-
-        setTimeout(
-          () =>
-            toast.classList.remove('show'),
-          5000
-        );
-
-      }finally{
-
-        btn.disabled = false;
-
-
-        btn.textContent =
-          tipo === 'profesional'
-            ? 'Quiero participar'
-            : 'Avisarme cuando esté disponible';
-
-      }
-
-    }
-  );
-
-}
-
-
-/* =========================================================
-   INICIALIZACIÓN
-   ========================================================= */
+/*
+ * =====================================================
+ * INICIALIZACIÓN
+ * =====================================================
+ */
 
 loadHomeProfessionals();
 
-bind(
-  'proForm',
-  'profesional'
-);
-
-bind(
-  'patientForm',
-  'busqueda'
-);
 
 </script>
 
