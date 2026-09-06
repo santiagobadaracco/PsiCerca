@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Mi perfil — PsiCerca</title>
+
+  <link rel="stylesheet" href="styles.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
+</head>
+
+<body>
+
+<header>
+  <div class="container nav">
+
+    <a class="logo" href="index.html">
+      Psi<span>Cerca</span>
+    </a>
+
+    <nav class="navlinks">
+
+      <a href="profesionales.html">
+        Directorio
+      </a>
+
+      <button
+        class="btn secondary"
+        type="button"
+        onclick="logout()"
+      >
+        Cerrar sesión
+      </button>
+
+    </nav>
+
+  </div>
+</header>
+
+
+<main class="dashboard">
+
+  <div class="container">
+
+    <div class="dash-head">
+
+      <div>
+
+        <span class="eyebrow">
+          Área personal
+        </span>
+
+        <h1>
+          Mi perfil
+        </h1>
+
+        <p
+          id="welcome"
+          class="small"
+        >
+          Cargando…
+        </p>
+
+      </div>
+
+      <a
+        class="btn primary"
+        href="profesionales.html"
+      >
+        Buscar profesionales
+      </a>
+
+    </div>
+
+
+    <div class="dash-grid">
+
+      <aside class="side">
+
+        <a
+          class="active"
+          href="#perfil"
+        >
+          Mi perfil
+        </a>
+
+        <a href="profesionales.html">
+          Directorio
+        </a>
+
+      </aside>
+
+
+      <section
+        class="panel"
+        id="perfil"
+      >
+
+        <h2>
+          Datos de mi cuenta
+        </h2>
+
+        <p class="small">
+          Esta información corresponde a tu cuenta personal de PsiCerca.
+        </p>
+
+
+        <!-- NOMBRE -->
+
+        <div class="field">
+
+          <label>
+            Nombre
+          </label>
+
+          <input
+            id="full_name"
+            type="text"
+            disabled
+          >
+
+        </div>
+
+
+        <!-- EMAIL -->
+
+        <div class="field">
+
+          <label>
+            Email
+          </label>
+
+          <input
+            id="email"
+            type="email"
+            disabled
+          >
+
+        </div>
+
+
+        <!-- INFORMACIÓN -->
+
+        <div
+          class="field span-2"
+          style="margin-top:10px;"
+        >
+
+          <p class="small">
+            Desde tu cuenta podés consultar el directorio y contactar a los profesionales disponibles.
+          </p>
+
+        </div>
+
+
+        <!-- ELIMINAR CUENTA -->
+
+        <div
+          class="span-2"
+          style="
+            margin-top:32px;
+            padding-top:24px;
+            border-top:1px solid var(--line);
+          "
+        >
+
+          <h3>
+            Eliminar mi cuenta
+          </h3>
+
+          <p class="small">
+            Esta acción eliminará permanentemente tu cuenta de PsiCerca y todos los datos asociados.
+            No se puede deshacer.
+          </p>
+
+          <button
+            id="deleteAccount"
+            class="btn secondary"
+            type="button"
+            style="
+              margin-top:10px;
+              border-color:#b91c1c;
+              color:#b91c1c;
+            "
+          >
+            Eliminar mi cuenta
+          </button>
+
+          <div
+            id="deleteAccountMsg"
+            class="message"
+          ></div>
+
+        </div>
+
+      </section>
+
+    </div>
+
+  </div>
+
+</main>
+
+
+<script>
+
+document.addEventListener('DOMContentLoaded', async () => {
+
+  const sb = requireSupabase();
+
+  const user = await requireUser();
+
+  if (!user) {
+    return;
+  }
+
+
+  // ============================================================
+  // VERIFICAR QUE SEA PACIENTE
+  // ============================================================
+
+  const role =
+    user.user_metadata?.role;
+
+  if (role !== 'patient') {
+
+    window.location.href =
+      'dashboard.html';
+
+    return;
+
+  }
+
+
+  // ============================================================
+  // MOSTRAR DATOS
+  // ============================================================
+
+  const fullName =
+    user.user_metadata?.full_name ||
+    'Paciente';
+
+  const email =
+    user.email ||
+    '';
+
+
+  document.getElementById(
+    'full_name'
+  ).value = fullName;
+
+
+  document.getElementById(
+    'email'
+  ).value = email;
+
+
+  document.getElementById(
+    'welcome'
+  ).textContent =
+    `Hola, ${fullName}`;
+
+
+  // ============================================================
+  // ELIMINAR CUENTA
+  // ============================================================
+
+  const deleteAccountButton =
+    document.getElementById(
+      'deleteAccount'
+    );
+
+  const deleteAccountMsg =
+    document.getElementById(
+      'deleteAccountMsg'
+    );
+
+
+  deleteAccountButton.addEventListener(
+    'click',
+    async () => {
+
+      const firstConfirmation =
+        confirm(
+          '¿Estás seguro de que querés eliminar tu cuenta de PsiCerca?\n\n' +
+          'Se eliminarán permanentemente tus datos asociados a la cuenta.\n\n' +
+          'Esta acción NO se puede deshacer.'
+        );
+
+
+      if (!firstConfirmation) {
+        return;
+      }
+
+
+      const confirmationText =
+        prompt(
+          'Para confirmar la eliminación, escribí exactamente:\n\nELIMINAR'
+        );
+
+
+      if (confirmationText !== 'ELIMINAR') {
+
+        showMessage(
+          'deleteAccountMsg',
+          'Eliminación cancelada.',
+          true
+        );
+
+        return;
+
+      }
+
+
+      try {
+
+        deleteAccountButton.disabled =
+          true;
+
+        deleteAccountButton.textContent =
+          'Eliminando cuenta…';
+
+
+        showMessage(
+          'deleteAccountMsg',
+          'Eliminando tu cuenta...'
+        );
+
+
+        // ========================================================
+        // ELIMINAR CUENTA
+        // ========================================================
+
+        const {
+          error: deleteError
+        } = await sb.rpc(
+          'delete_my_account'
+        );
+
+
+        if (deleteError) {
+          throw deleteError;
+        }
+
+
+        // ========================================================
+        // CERRAR SESIÓN
+        // ========================================================
+
+        await sb.auth.signOut();
+
+
+        window.location.href =
+          'index.html';
+
+
+      } catch (error) {
+
+        console.error(
+          'Error al eliminar la cuenta:',
+          error
+        );
+
+
+        deleteAccountButton.disabled =
+          false;
+
+        deleteAccountButton.textContent =
+          'Eliminar mi cuenta';
+
+
+        showMessage(
+          'deleteAccountMsg',
+          'No se pudo eliminar la cuenta. Intentá nuevamente.',
+          true
+        );
+
+      }
+
+    }
+  );
+
+});
+
+</script>
+
+</body>
+</html>
