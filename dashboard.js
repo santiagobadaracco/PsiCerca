@@ -29,7 +29,6 @@
       'jurisdiction',
       'modality',
       'orientation',
-      'whatsapp',
       'bio',
       'is_public'
     ];
@@ -57,7 +56,6 @@
       'Mataderos',
       'Monte Castro',
       'Monserrat',
-      'Monte Castro',
       'Nueva Pompeya',
       'Núñez',
       'Palermo',
@@ -114,6 +112,24 @@
 
 
     // ============================================================
+    // CARGAR CONTACTO PRIVADO
+    // ============================================================
+
+    const {
+      data: contact,
+      error: contactError
+    } = await sb
+      .from('professional_contacts')
+      .select('whatsapp')
+      .eq('profile_id', user.id)
+      .maybeSingle();
+
+    if (contactError) {
+      throw contactError;
+    }
+
+
+    // ============================================================
     // CARGAR DATOS BÁSICOS
     // ============================================================
 
@@ -139,6 +155,21 @@
         }
 
       });
+
+
+      // ==========================================================
+      // WHATSAPP PRIVADO
+      // ==========================================================
+
+      const whatsappField =
+        document.getElementById('whatsapp');
+
+      if (whatsappField) {
+
+        whatsappField.value =
+          contact?.whatsapp || '';
+
+      }
 
 
       // ==========================================================
@@ -1573,6 +1604,17 @@
 
 
           // ======================================================
+          // WHATSAPP PRIVADO
+          // ======================================================
+
+          const whatsapp =
+            document
+              .getElementById('whatsapp')
+              ?.value
+              .trim() || '';
+
+
+          // ======================================================
           // GUARDAR PERFIL PRINCIPAL
           // ======================================================
 
@@ -1612,14 +1654,6 @@
 
             population:
               selectedPopulation,
-
-            whatsapp:
-              document
-                .getElementById(
-                  'whatsapp'
-                )
-                ?.value
-                .trim() || '',
 
             bio:
               document
@@ -1662,6 +1696,62 @@
 
           currentProfile =
             savedProfile;
+
+
+          // ======================================================
+          // GUARDAR WHATSAPP PRIVADO
+          // ======================================================
+
+          if (whatsapp) {
+
+            const {
+              error: contactSaveError
+            } =
+              await sb
+                .from('professional_contacts')
+                .upsert(
+                  {
+                    profile_id:
+                      user.id,
+
+                    whatsapp:
+                      whatsapp,
+
+                    updated_at:
+                      new Date().toISOString()
+                  },
+                  {
+                    onConflict:
+                      'profile_id'
+                  }
+                );
+
+            if (contactSaveError) {
+
+              throw contactSaveError;
+
+            }
+
+          } else {
+
+            const {
+              error: contactDeleteError
+            } =
+              await sb
+                .from('professional_contacts')
+                .delete()
+                .eq(
+                  'profile_id',
+                  user.id
+                );
+
+            if (contactDeleteError) {
+
+              throw contactDeleteError;
+
+            }
+
+          }
 
 
           // ======================================================
