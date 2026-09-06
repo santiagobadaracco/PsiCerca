@@ -1,4 +1,3 @@
-```html
 <!doctype html>
 <html lang="es">
 
@@ -116,12 +115,17 @@
 
 
     /*
-     * Primero obtenemos solamente
-     * la información pública del perfil.
+     * =====================================================
+     * PERFIL PÚBLICO
+     * =====================================================
      *
      * IMPORTANTE:
-     * No obtenemos WhatsApp todavía.
+     * WhatsApp NO forma parte de esta consulta.
+     *
+     * El contacto profesional está separado
+     * en professional_contacts.
      */
+
 
     const {
       data: p,
@@ -272,7 +276,9 @@
 
 
     /*
-     * Cargamos primero el perfil
+     * =====================================================
+     * RENDER DEL PERFIL
+     * =====================================================
      */
 
     box.innerHTML = `
@@ -538,7 +544,7 @@
 
 
     /*
-     * Buscamos la sesión actual.
+     * Obtener usuario actual
      */
 
     const {
@@ -550,8 +556,9 @@
 
 
     /*
-     * Si no hay usuario:
-     * mostramos invitación a registrarse.
+     * =====================================================
+     * SIN SESIÓN
+     * =====================================================
      */
 
     if (!user) {
@@ -631,45 +638,60 @@
 
 
     /*
-     * Determinamos el tipo de cuenta.
+     * =====================================================
+     * PACIENTE
+     * =====================================================
      *
-     * Actualmente los pacientes tienen
-     * role = patient en user_metadata.
+     * El role se utiliza solamente para decidir
+     * qué interfaz mostrar.
+     *
+     * LA SEGURIDAD REAL NO DEPENDE DE ESTO.
+     *
+     * La función RPC de Supabase verifica el rol
+     * directamente en la base de datos.
      */
+
 
     const role =
       user.user_metadata?.role;
 
 
-    /*
-     * Si es paciente, buscamos el WhatsApp
-     * solamente después de comprobar que
-     * tiene una sesión.
-     */
-
     if (role === 'patient') {
 
 
+      /*
+       * Solicitamos el WhatsApp mediante
+       * la función segura de PostgreSQL.
+       *
+       * Ya NO hacemos:
+       *
+       * .from('profiles')
+       * .select('whatsapp')
+       *
+       */
+
+
       const {
-        data: contact,
+        data: contacts,
         error: contactError
-      } = await sb
+      } = await sb.rpc(
+        'get_professional_contact',
+        {
+          target_profile_id: id
+        }
+      );
 
-        .from('profiles')
 
-        .select('whatsapp')
-
-        .eq('id', id)
-
-        .eq('is_public', true)
-
-        .single();
-
+      /*
+       * Si la función rechaza el acceso
+       * o no encuentra contacto.
+       */
 
       if (
         contactError ||
-        !contact ||
-        !contact.whatsapp
+        !contacts ||
+        !contacts.length ||
+        !contacts[0].whatsapp
       ) {
 
         contactArea.innerHTML = `
@@ -697,7 +719,7 @@
 
       const whatsapp =
         String(
-          contact.whatsapp
+          contacts[0].whatsapp
         ).replace(/\D/g, '');
 
 
@@ -741,8 +763,9 @@
 
 
     /*
-     * Si es profesional:
-     * no mostramos el contacto como paciente.
+     * =====================================================
+     * PROFESIONAL
+     * =====================================================
      */
 
     contactArea.innerHTML = `
@@ -796,4 +819,3 @@
 </body>
 
 </html>
-```
