@@ -1,0 +1,283 @@
+<!doctype html>
+
+<html lang="es">
+
+<head>
+
+  <meta charset="utf-8">
+
+<meta
+name="viewport"
+content="width=device-width,initial-scale=1"
+
+>
+
+  <title>Nueva contraseña — PsiCerca</title>
+
+  <link
+    rel="stylesheet"
+    href="styles.css"
+  >
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script src="config.js"></script>
+
+  <script src="supabase.js"></script>
+
+  <script src="auth.js"></script>
+
+</head>
+
+<body>
+
+<header>
+
+  <div class="container nav">
+
+```
+<a
+  class="logo"
+  href="index.html"
+>
+  Psi<span>Cerca</span>
+</a>
+```
+
+  </div>
+
+</header>
+
+<main class="form-wrap">
+
+  <div class="form-card">
+
+```
+<span class="eyebrow">
+  Seguridad
+</span>
+
+
+<h1>
+  Nueva contraseña
+</h1>
+
+
+<p class="small">
+  Elegí una nueva contraseña para tu cuenta de PsiCerca.
+</p>
+
+
+<form id="passwordForm">
+
+
+  <div class="field">
+
+    <label for="password">
+      Nueva contraseña
+    </label>
+
+    <input
+      id="password"
+      type="password"
+      minlength="8"
+      required
+      autocomplete="new-password"
+    >
+
+    <div class="small">
+      Mínimo 8 caracteres.
+    </div>
+
+  </div>
+
+
+  <div class="field">
+
+    <label for="passwordConfirm">
+      Repetir contraseña
+    </label>
+
+    <input
+      id="passwordConfirm"
+      type="password"
+      minlength="8"
+      required
+      autocomplete="new-password"
+    >
+
+  </div>
+
+
+  <button
+    class="btn primary full"
+    type="submit"
+  >
+    Cambiar contraseña
+  </button>
+
+
+  <div
+    id="msg"
+    class="message"
+  ></div>
+
+
+</form>
+```
+
+  </div>
+
+</main>
+
+<script>
+
+document
+  .getElementById('passwordForm')
+  .addEventListener(
+    'submit',
+    async e => {
+
+      e.preventDefault();
+
+
+      const form =
+        e.target;
+
+
+      const button =
+        form.querySelector('button');
+
+
+      const password =
+        document
+          .getElementById('password')
+          .value;
+
+
+      const passwordConfirm =
+        document
+          .getElementById('passwordConfirm')
+          .value;
+
+
+      if(password !== passwordConfirm){
+
+        showMessage(
+          'msg',
+          'Las contraseñas no coinciden.',
+          true
+        );
+
+        return;
+
+      }
+
+
+      if(password.length < 8){
+
+        showMessage(
+          'msg',
+          'La contraseña debe tener al menos 8 caracteres.',
+          true
+        );
+
+        return;
+
+      }
+
+
+      button.disabled = true;
+
+      button.textContent =
+        'Guardando…';
+
+
+      try {
+
+        const sb =
+          requireSupabase();
+
+
+        const {
+          data: {
+            session
+          }
+        } =
+          await sb.auth.getSession();
+
+
+        if(!session){
+
+          throw new Error(
+            'El enlace de recuperación no es válido o ya venció. Solicitá un nuevo enlace.'
+          );
+
+        }
+
+
+        const {
+          error
+        } =
+          await sb.auth.updateUser({
+
+            password:
+              password
+
+          });
+
+
+        if(error){
+          throw error;
+        }
+
+
+        showMessage(
+          'msg',
+          'Contraseña actualizada correctamente. Ahora podés iniciar sesión.'
+        );
+
+
+        setTimeout(
+          () => {
+            window.location.href =
+              'login.html';
+          },
+          1800
+        );
+
+
+      }catch(err){
+
+        console.error(
+          'Error al cambiar la contraseña:',
+          err
+        );
+
+
+        showMessage(
+          'msg',
+          err.message ||
+            'No se pudo cambiar la contraseña.',
+          true
+        );
+
+
+      }finally{
+
+        button.disabled =
+          false;
+
+        button.textContent =
+          'Cambiar contraseña';
+
+      }
+
+    }
+  );
+
+</script>
+
+</body>
+
+</html>
