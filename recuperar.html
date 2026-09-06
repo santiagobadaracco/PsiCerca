@@ -1,0 +1,228 @@
+<!doctype html>
+
+<html lang="es">
+
+<head>
+
+  <meta charset="utf-8">
+
+<meta
+name="viewport"
+content="width=device-width,initial-scale=1"
+
+>
+
+  <title>Recuperar contraseña — PsiCerca</title>
+
+  <link
+    rel="stylesheet"
+    href="styles.css"
+  >
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script src="config.js"></script>
+
+  <script src="supabase.js"></script>
+
+  <script src="auth.js"></script>
+
+</head>
+
+<body>
+
+<header>
+
+  <div class="container nav">
+
+```
+<a
+  class="logo"
+  href="index.html"
+>
+  Psi<span>Cerca</span>
+</a>
+```
+
+  </div>
+
+</header>
+
+<main class="form-wrap">
+
+  <div class="form-card">
+
+```
+<span class="eyebrow">
+  Seguridad
+</span>
+
+
+<h1>
+  Recuperar contraseña
+</h1>
+
+
+<p class="small">
+  Ingresá tu email y te enviaremos un enlace para recuperar
+  el acceso a tu cuenta.
+</p>
+
+
+<form id="recoverForm">
+
+
+  <div class="field">
+
+    <label for="email">
+      Email
+    </label>
+
+    <input
+      id="email"
+      type="email"
+      required
+      autocomplete="email"
+      placeholder="tuemail@ejemplo.com"
+    >
+
+  </div>
+
+
+  <button
+    class="btn primary full"
+    type="submit"
+  >
+    Enviar enlace
+  </button>
+
+
+  <div
+    id="msg"
+    class="message"
+  ></div>
+
+
+</form>
+
+
+<p
+  class="small"
+  style="
+    margin-top:20px;
+    text-align:center;
+  "
+>
+
+  <a
+    href="login.html"
+    style="
+      color:var(--accent);
+      font-weight:700;
+    "
+  >
+    Volver a iniciar sesión
+  </a>
+
+</p>
+```
+
+  </div>
+
+</main>
+
+<script>
+
+document
+  .getElementById('recoverForm')
+  .addEventListener(
+    'submit',
+    async e => {
+
+      e.preventDefault();
+
+
+      const form =
+        e.target;
+
+
+      const button =
+        form.querySelector('button');
+
+
+      const email =
+        document
+          .getElementById('email')
+          .value
+          .trim();
+
+
+      button.disabled = true;
+
+      button.textContent =
+        'Enviando…';
+
+
+      try {
+
+        const sb =
+          requireSupabase();
+
+
+        const {
+          error
+        } =
+          await sb.auth.resetPasswordForEmail(
+            email,
+            {
+              redirectTo:
+                'https://santiagobadaracco.github.io/PsiCerca/nueva-contrasena.html'
+            }
+          );
+
+
+        if(error){
+          throw error;
+        }
+
+
+        showMessage(
+          'msg',
+          'Si existe una cuenta asociada a ese email, recibirás un enlace para recuperar tu contraseña.'
+        );
+
+
+      }catch(err){
+
+        console.error(
+          'Error durante la recuperación:',
+          err
+        );
+
+
+        showMessage(
+          'msg',
+          err.message ||
+            'No se pudo enviar el enlace.',
+          true
+        );
+
+
+      }finally{
+
+        button.disabled =
+          false;
+
+        button.textContent =
+          'Enviar enlace';
+
+      }
+
+    }
+  );
+
+</script>
+
+</body>
+
+</html>
