@@ -24,9 +24,7 @@
 
 </head>
 
-
 <body>
-
 
   <header>
 
@@ -39,7 +37,6 @@
         Psi<span>Cerca</span>
       </a>
 
-
       <a
         href="login.html"
         class="btn secondary"
@@ -51,30 +48,24 @@
 
   </header>
 
-
   <main class="form-wrap">
 
     <div class="form-card">
-
 
       <span class="eyebrow">
         Crear cuenta
       </span>
 
-
       <h1>
         Encontrá tu profesional
       </h1>
-
 
       <p class="small">
         Creá una cuenta gratuita para poder contactar a los profesionales
         de PsiCerca y gestionar tus futuras interacciones.
       </p>
 
-
       <form id="patientRegisterForm">
-
 
         <div class="field">
 
@@ -92,7 +83,6 @@
 
         </div>
 
-
         <div class="field">
 
           <label for="email">
@@ -108,7 +98,6 @@
           >
 
         </div>
-
 
         <div class="field">
 
@@ -130,7 +119,6 @@
 
         </div>
 
-
         <label class="check">
 
           <input
@@ -146,7 +134,6 @@
 
         </label>
 
-
         <button
           class="btn primary full"
           type="submit"
@@ -154,15 +141,12 @@
           Crear cuenta
         </button>
 
-
         <div
           id="msg"
           class="message"
         ></div>
 
-
       </form>
-
 
       <p
         class="small"
@@ -180,11 +164,9 @@
 
       </p>
 
-
     </div>
 
   </main>
-
 
   <script>
 
@@ -192,12 +174,17 @@
       'DOMContentLoaded',
       () => {
 
-
         const form =
           document.getElementById(
             'patientRegisterForm'
           );
 
+        if (!form) {
+          console.error(
+            'No se encontró el formulario patientRegisterForm.'
+          );
+          return;
+        }
 
         form.addEventListener(
           'submit',
@@ -205,10 +192,8 @@
 
             e.preventDefault();
 
-
             const button =
               form.querySelector('button');
-
 
             const fullName =
               document
@@ -216,32 +201,26 @@
                 .value
                 .trim();
 
-
             const email =
               document
                 .getElementById('email')
                 .value
                 .trim();
 
-
             const password =
               document
                 .getElementById('password')
                 .value;
-
 
             button.disabled = true;
 
             button.textContent =
               'Creando…';
 
-
             try {
-
 
               const sb =
                 requireSupabase();
-
 
               const {
                 data,
@@ -272,22 +251,20 @@
 
                 });
 
-
-              if(error){
+              if (error) {
 
                 const errorText =
                   `${error.message || ''} ${error.code || ''}`
                     .toLowerCase();
 
-
-                if(
+                if (
                   errorText.includes(
                     'already registered'
                   ) ||
                   errorText.includes(
                     'user already registered'
                   )
-                ){
+                ) {
 
                   throw new Error(
                     'Ya existe una cuenta con ese email. Si es tu cuenta, iniciá sesión.'
@@ -295,18 +272,16 @@
 
                 }
 
-
                 throw error;
 
               }
 
+              if (data.session) {
 
-              if(data.session){
-  window.location.href =
-    'profesionales.html';
-}
+                window.location.href =
+                  'profesionales.html';
 
-              }else{
+              } else {
 
                 showMessage(
                   'msg',
@@ -315,14 +290,12 @@
 
               }
 
-
-            }catch(err){
+            } catch (err) {
 
               console.error(
                 'Error durante el registro del paciente:',
                 err
               );
-
 
               showMessage(
                 'msg',
@@ -331,8 +304,7 @@
                 true
               );
 
-
-            }finally{
+            } finally {
 
               button.disabled =
                 false;
@@ -349,7 +321,6 @@
     );
 
   </script>
-
 
 </body>
 
