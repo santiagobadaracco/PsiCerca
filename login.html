@@ -1,3 +1,318 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Iniciar sesión — PsiCerca</title><link rel="stylesheet" href="styles.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js"></script>
-<script src="supabase.js"></script>
-<script src="auth.js"></script></head><body><header><div class="container nav"><a class="logo" href="index.html">Psi<span>Cerca</span></a><a href="registro.html" class="btn secondary">Crear cuenta</a></div></header><main class="form-wrap"><div class="form-card"><span class="eyebrow">Área profesional</span><h1>Iniciar sesión</h1><p class="small">Accedé a tu panel de PsiCerca.</p><form id="loginForm"><div class="field"><label>Email</label><input id="email" type="email" required autocomplete="email"></div><div class="field"><label>Contraseña</label><input id="password" type="password" required autocomplete="current-password"></div><button class="btn primary full" type="submit">Ingresar</button><div id="msg" class="message"></div></form><p class="small">¿Todavía no tenés cuenta? <a href="registro.html" style="color:var(--accent);font-weight:700">Registrate</a></p></div></main><script>document.getElementById('loginForm').addEventListener('submit',async e=>{e.preventDefault();const b=e.target.querySelector('button');b.disabled=true;b.textContent='Ingresando…';try{const sb=requireSupabase();const {error}=await sb.auth.signInWithPassword({email:email.value,password:password.value});if(error)throw error;location.href='dashboard.html'}catch(err){showMessage('msg',err.message||'No se pudo iniciar sesión.',true)}finally{b.disabled=false;b.textContent='Ingresar'}})</script></body></html>
+```html
+<!doctype html>
+<html lang="es">
+
+<head>
+
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  >
+
+  <title>Iniciar sesión — PsiCerca</title>
+
+  <link
+    rel="stylesheet"
+    href="styles.css"
+  >
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
+
+</head>
+
+
+<body>
+
+
+<header>
+
+  <div class="container nav">
+
+    <a
+      class="logo"
+      href="index.html"
+    >
+      Psi<span>Cerca</span>
+    </a>
+
+
+    <a
+      href="registro-paciente.html"
+      class="btn secondary"
+    >
+      Crear cuenta
+    </a>
+
+  </div>
+
+</header>
+
+
+<main class="form-wrap">
+
+  <div class="form-card">
+
+
+    <span class="eyebrow">
+      PsiCerca
+    </span>
+
+
+    <h1>
+      Iniciar sesión
+    </h1>
+
+
+    <p class="small">
+      Accedé a tu cuenta de PsiCerca.
+    </p>
+
+
+    <form id="loginForm">
+
+
+      <div class="field">
+
+        <label for="email">
+          Email
+        </label>
+
+        <input
+          id="email"
+          type="email"
+          required
+          autocomplete="email"
+        >
+
+      </div>
+
+
+      <div class="field">
+
+        <label for="password">
+          Contraseña
+        </label>
+
+        <input
+          id="password"
+          type="password"
+          required
+          autocomplete="current-password"
+        >
+
+      </div>
+
+
+      <button
+        class="btn primary full"
+        type="submit"
+      >
+        Ingresar
+      </button>
+
+
+      <div
+        id="msg"
+        class="message"
+      ></div>
+
+
+    </form>
+
+
+    <div
+      style="
+        margin-top:24px;
+        padding-top:20px;
+        border-top:1px solid var(--line);
+      "
+    >
+
+      <p
+        class="small"
+        style="margin-bottom:10px"
+      >
+        ¿Todavía no tenés cuenta?
+      </p>
+
+
+      <a
+        href="registro-paciente.html"
+        class="btn secondary full"
+      >
+        Crear cuenta como paciente
+      </a>
+
+
+      <a
+        href="registro.html"
+        class="btn secondary full"
+        style="margin-top:10px"
+      >
+        Crear cuenta profesional
+      </a>
+
+    </div>
+
+
+  </div>
+
+</main>
+
+
+<script>
+
+document
+  .getElementById('loginForm')
+  .addEventListener(
+    'submit',
+    async e => {
+
+      e.preventDefault();
+
+
+      const form =
+        e.target;
+
+
+      const button =
+        form.querySelector('button');
+
+
+      const email =
+        document
+          .getElementById('email')
+          .value
+          .trim();
+
+
+      const password =
+        document
+          .getElementById('password')
+          .value;
+
+
+      button.disabled = true;
+
+      button.textContent =
+        'Ingresando…';
+
+
+      try {
+
+
+        const sb =
+          requireSupabase();
+
+
+        const {
+          data,
+          error
+        } =
+          await sb.auth.signInWithPassword({
+
+            email: email,
+
+            password: password
+
+          });
+
+
+        if(error){
+          throw error;
+        }
+
+
+        const user =
+          data.user;
+
+
+        /*
+         * Identificamos automáticamente
+         * el tipo de cuenta.
+         */
+
+        const role =
+          user?.user_metadata?.role;
+
+
+        if(role === 'patient'){
+
+          window.location.href =
+            'index.html';
+
+          return;
+
+        }
+
+
+        /*
+         * Las cuentas profesionales
+         * existentes pueden no tener
+         * role todavía.
+         *
+         * Por eso, si no son pacientes,
+         * las enviamos al dashboard.
+         */
+
+        window.location.href =
+          'dashboard.html';
+
+
+      }catch(err){
+
+        console.error(
+          'Error durante el login:',
+          err
+        );
+
+
+        let message =
+          err.message ||
+          'No se pudo iniciar sesión.';
+
+
+        if(
+          message
+            .toLowerCase()
+            .includes('invalid login credentials')
+        ){
+
+          message =
+            'El email o la contraseña son incorrectos.';
+
+        }
+
+
+        showMessage(
+          'msg',
+          message,
+          true
+        );
+
+
+      }finally{
+
+        button.disabled =
+          false;
+
+        button.textContent =
+          'Ingresar';
+
+      }
+
+    }
+  );
+
+</script>
+
+
+</body>
+
+</html>
+```
