@@ -11,6 +11,12 @@
     const photoPreview = document.getElementById('photoPreview');
     const msg = document.getElementById('msg');
 
+    const deleteAccountButton =
+      document.getElementById('deleteAccount');
+
+    const deleteAccountMsg =
+      document.getElementById('deleteAccountMsg');
+
     const licensesContainer =
       document.getElementById('licensesContainer');
 
@@ -89,6 +95,168 @@
 
     welcome.textContent =
       user.email || 'Profesional';
+
+
+    // ============================================================
+    // ELIMINAR CUENTA
+    // ============================================================
+
+    if (deleteAccountButton) {
+
+      deleteAccountButton.addEventListener(
+        'click',
+        async () => {
+
+          const firstConfirmation =
+            confirm(
+              '¿Estás seguro de que querés eliminar tu cuenta de PsiCerca?\n\n' +
+              'Se eliminarán permanentemente tu perfil profesional, matrículas, zonas de atención, contacto y demás datos asociados.\n\n' +
+              'Esta acción NO se puede deshacer.'
+            );
+
+          if (!firstConfirmation) {
+            return;
+          }
+
+
+          const confirmationText =
+            prompt(
+              'Para confirmar la eliminación, escribí exactamente:\n\nELIMINAR'
+            );
+
+          if (confirmationText !== 'ELIMINAR') {
+
+            if (deleteAccountMsg) {
+
+              showMessage(
+                'deleteAccountMsg',
+                'Eliminación cancelada.',
+                true
+              );
+
+            }
+
+            return;
+
+          }
+
+
+          try {
+
+            deleteAccountButton.disabled =
+              true;
+
+            deleteAccountButton.textContent =
+              'Eliminando cuenta…';
+
+
+            if (deleteAccountMsg) {
+
+              showMessage(
+                'deleteAccountMsg',
+                'Eliminando tu cuenta...'
+              );
+
+            }
+
+
+            // ======================================================
+            // ELIMINAR FOTO DEL STORAGE
+            // ======================================================
+
+            const extensions = [
+              'jpg',
+              'jpeg',
+              'png',
+              'webp'
+            ];
+
+
+            const photoPaths =
+              extensions.map(
+                extension =>
+                  `${user.id}/profile.${extension}`
+              );
+
+
+            const {
+              error: photoDeleteError
+            } =
+              await sb.storage
+                .from('profile-photos')
+                .remove(photoPaths);
+
+
+            if (photoDeleteError) {
+
+              console.warn(
+                'No se pudo eliminar la foto del perfil:',
+                photoDeleteError
+              );
+
+            }
+
+
+            // ======================================================
+            // ELIMINAR CUENTA
+            // ======================================================
+
+            const {
+              error: deleteError
+            } =
+              await sb.rpc(
+                'delete_my_account'
+              );
+
+
+            if (deleteError) {
+
+              throw deleteError;
+
+            }
+
+
+            // ======================================================
+            // CERRAR SESIÓN
+            // ======================================================
+
+            await sb.auth.signOut();
+
+
+            window.location.href =
+              'index.html';
+
+          } catch (error) {
+
+            console.error(
+              'Error al eliminar la cuenta:',
+              error
+            );
+
+
+            deleteAccountButton.disabled =
+              false;
+
+            deleteAccountButton.textContent =
+              'Eliminar mi cuenta';
+
+
+            if (deleteAccountMsg) {
+
+              showMessage(
+                'deleteAccountMsg',
+                'No se pudo eliminar la cuenta. Intentá nuevamente.',
+                true
+              );
+
+            }
+
+          }
+
+        }
+      );
+
+    }
 
 
     // ============================================================
