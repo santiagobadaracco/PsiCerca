@@ -237,31 +237,20 @@ document
          * el tipo de cuenta.
          */
 
-        const role =
-          user?.user_metadata?.role;
+      const role =
+  user?.user_metadata?.role;
 
+if(role === 'patient'){
 
-        if(role === 'patient'){
+  window.location.href =
+    'profesionales.html';
 
-          window.location.href =
-            'index.html';
+  return;
 
-          return;
+}
 
-        }
-
-
-        /*
-         * Las cuentas profesionales
-         * existentes pueden no tener
-         * role todavía.
-         *
-         * Por eso, si no son pacientes,
-         * las enviamos al dashboard.
-         */
-
-        window.location.href =
-          'dashboard.html';
+window.location.href =
+  'dashboard.html';
 
 
       }catch(err){
