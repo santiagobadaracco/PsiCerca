@@ -83,7 +83,6 @@
 
 (async function () {
 
-
   const box =
     document.getElementById('profile');
 
@@ -109,7 +108,6 @@
 
   try {
 
-
     const sb =
       requireSupabase();
 
@@ -118,14 +116,7 @@
      * =====================================================
      * PERFIL PÚBLICO
      * =====================================================
-     *
-     * IMPORTANTE:
-     * WhatsApp NO forma parte de esta consulta.
-     *
-     * El contacto profesional está separado
-     * en professional_contacts.
      */
-
 
     const {
       data: p,
@@ -169,7 +160,9 @@
 
 
     /*
-     * Iniciales
+     * =====================================================
+     * INICIALES
+     * =====================================================
      */
 
     const initials =
@@ -189,7 +182,9 @@
 
 
     /*
-     * Foto / avatar
+     * =====================================================
+     * FOTO / AVATAR
+     * =====================================================
      */
 
     const avatar =
@@ -245,7 +240,9 @@
 
 
     /*
-     * Chips
+     * =====================================================
+     * CHIPS
+     * =====================================================
      */
 
     const chips = [
@@ -282,7 +279,6 @@
      */
 
     box.innerHTML = `
-
 
       <!-- ENCABEZADO -->
 
@@ -478,6 +474,20 @@
       </div>
 
 
+      <!-- CONSULTA -->
+
+      <div
+        id="inquiryArea"
+        style="
+          margin-top:32px;
+          padding-top:28px;
+          border-top:1px solid var(--line);
+        "
+      >
+
+      </div>
+
+
       <!-- ACLARACIONES -->
 
       <div
@@ -532,10 +542,9 @@
 
     /*
      * =====================================================
-     * CONTROL DE ACCESO AL CONTACTO
+     * ELEMENTOS
      * =====================================================
      */
-
 
     const contactArea =
       document.getElementById(
@@ -543,8 +552,16 @@
       );
 
 
+    const inquiryArea =
+      document.getElementById(
+        'inquiryArea'
+      );
+
+
     /*
-     * Obtener usuario actual
+     * =====================================================
+     * USUARIO ACTUAL
+     * =====================================================
      */
 
     const {
@@ -632,6 +649,43 @@
 
       `;
 
+
+      inquiryArea.innerHTML = `
+
+        <div
+          style="
+            background:var(--soft);
+            border-radius:16px;
+            padding:18px;
+          "
+        >
+
+          <div
+            style="
+              font-weight:700;
+              margin-bottom:6px;
+            "
+          >
+
+            💬 Enviar una consulta
+
+          </div>
+
+
+          <p
+            class="small"
+            style="margin:0;"
+          >
+
+            Iniciá sesión o creá una cuenta de paciente
+            para enviar una consulta.
+
+          </p>
+
+        </div>
+
+      `;
+
       return;
 
     }
@@ -639,37 +693,28 @@
 
     /*
      * =====================================================
-     * PACIENTE
+     * ROL
      * =====================================================
-     *
-     * El role se utiliza solamente para decidir
-     * qué interfaz mostrar.
-     *
-     * LA SEGURIDAD REAL NO DEPENDE DE ESTO.
-     *
-     * La función RPC de Supabase verifica el rol
-     * directamente en la base de datos.
      */
-
 
     const role =
       user.user_metadata?.role;
 
 
+    /*
+     * =====================================================
+     * PACIENTE
+     * =====================================================
+     */
+
     if (role === 'patient') {
 
 
       /*
-       * Solicitamos el WhatsApp mediante
-       * la función segura de PostgreSQL.
-       *
-       * Ya NO hacemos:
-       *
-       * .from('profiles')
-       * .select('whatsapp')
-       *
+       * ---------------------------------------------------
+       * WHATSAPP
+       * ---------------------------------------------------
        */
-
 
       const {
         data: contacts,
@@ -681,11 +726,6 @@
         }
       );
 
-
-      /*
-       * Si la función rechaza el acceso
-       * o no encuentra contacto.
-       */
 
       if (
         contactError ||
@@ -712,49 +752,546 @@
 
         `;
 
-        return;
+      } else {
+
+        const whatsapp =
+          String(
+            contacts[0].whatsapp
+          ).replace(/\D/g, '');
+
+
+        if (whatsapp) {
+
+          contactArea.innerHTML = `
+
+            <a
+              class="btn primary"
+              target="_blank"
+              rel="noopener noreferrer"
+              href="https://wa.me/${escapeHTML(whatsapp)}"
+            >
+
+              Contactar por WhatsApp
+
+            </a>
+
+          `;
+
+        }
 
       }
 
 
-      const whatsapp =
-        String(
-          contacts[0].whatsapp
-        ).replace(/\D/g, '');
+      /*
+       * ---------------------------------------------------
+       * FORMULARIO DE CONSULTA
+       * ---------------------------------------------------
+       */
+
+      inquiryArea.innerHTML = `
+
+        <div>
+
+          <span class="eyebrow">
+            Contacto
+          </span>
 
 
-      if (!whatsapp) {
-
-        contactArea.innerHTML = `
-
-          <div class="small">
-
-            Este profesional todavía no
-            agregó un medio de contacto.
-
-          </div>
-
-        `;
-
-        return;
-
-      }
+          <h2
+            style="
+              margin:5px 0 8px;
+            "
+          >
+            Enviar consulta
+          </h2>
 
 
-      contactArea.innerHTML = `
+          <p
+            class="small"
+            style="
+              margin:0 0 22px;
+            "
+          >
 
-        <a
-          class="btn primary"
-          target="_blank"
-          rel="noopener noreferrer"
-          href="https://wa.me/${escapeHTML(whatsapp)}"
-        >
+            Podés enviarle una consulta inicial a este
+            profesional. No incluyas diagnósticos,
+            historias clínicas ni información sensible
+            innecesaria.
 
-          Contactar por WhatsApp
+          </p>
 
-        </a>
+
+          <form
+            id="inquiryForm"
+          >
+
+            <div
+              style="
+                display:grid;
+                grid-template-columns:
+                  repeat(auto-fit,minmax(220px,1fr));
+                gap:16px;
+              "
+            >
+
+              <label>
+
+                <span class="small">
+                  Nombre
+                </span>
+
+                <input
+                  id="inquiryName"
+                  type="text"
+                  required
+                  maxlength="100"
+                  placeholder="Tu nombre"
+                >
+
+              </label>
+
+
+              <label>
+
+                <span class="small">
+                  Edad
+                </span>
+
+                <input
+                  id="inquiryAge"
+                  type="number"
+                  min="1"
+                  max="120"
+                  placeholder="Edad"
+                >
+
+              </label>
+
+
+              <label>
+
+                <span class="small">
+                  Modalidad
+                </span>
+
+                <select id="inquiryModality">
+
+                  <option value="">
+                    Seleccionar
+                  </option>
+
+                  <option value="Presencial">
+                    Presencial
+                  </option>
+
+                  <option value="Virtual">
+                    Virtual
+                  </option>
+
+                  <option value="Indistinta">
+                    Indistinta
+                  </option>
+
+                </select>
+
+              </label>
+
+
+              <label>
+
+                <span class="small">
+                  Zona
+                </span>
+
+                <input
+                  id="inquiryZone"
+                  type="text"
+                  maxlength="100"
+                  placeholder="Ej.: Avellaneda"
+                >
+
+              </label>
+
+            </div>
+
+
+            <label
+              style="
+                display:block;
+                margin-top:16px;
+              "
+            >
+
+              <span class="small">
+                Disponibilidad
+              </span>
+
+              <input
+                id="inquiryAvailability"
+                type="text"
+                maxlength="150"
+                placeholder="Ej.: lunes y miércoles por la tarde"
+              >
+
+            </label>
+
+
+            <label
+              style="
+                display:block;
+                margin-top:16px;
+              "
+            >
+
+              <span class="small">
+                Motivo general
+              </span>
+
+              <select id="inquiryReason">
+
+                <option value="">
+                  Seleccionar
+                </option>
+
+                <option value="Inicio de proceso">
+                  Inicio de proceso
+                </option>
+
+                <option value="Orientación">
+                  Orientación
+                </option>
+
+                <option value="Consulta personal">
+                  Consulta personal
+                </option>
+
+                <option value="Consulta de pareja">
+                  Consulta de pareja
+                </option>
+
+                <option value="Consulta familiar">
+                  Consulta familiar
+                </option>
+
+                <option value="Otro">
+                  Otro
+                </option>
+
+              </select>
+
+            </label>
+
+
+            <label
+              style="
+                display:block;
+                margin-top:16px;
+              "
+            >
+
+              <span class="small">
+                Mensaje
+              </span>
+
+              <textarea
+                id="inquiryMessage"
+                required
+                maxlength="1000"
+                rows="6"
+                placeholder="Contale brevemente qué estás buscando y qué necesitás."
+              ></textarea>
+
+            </label>
+
+
+            <div
+              style="
+                margin-top:12px;
+                padding:14px;
+                background:var(--soft);
+                border-radius:12px;
+              "
+            >
+
+              <p
+                class="small"
+                style="margin:0;"
+              >
+
+                Por privacidad, evitá incluir diagnósticos,
+                antecedentes clínicos detallados, medicación
+                o historias clínicas en este primer contacto.
+
+              </p>
+
+            </div>
+
+
+            <div
+              style="
+                display:flex;
+                align-items:center;
+                gap:12px;
+                flex-wrap:wrap;
+                margin-top:18px;
+              "
+            >
+
+              <button
+                type="submit"
+                class="btn primary"
+                id="sendInquiryButton"
+              >
+
+                Enviar consulta
+
+              </button>
+
+
+              <span
+                id="inquiryMessageStatus"
+                class="small"
+              ></span>
+
+            </div>
+
+
+          </form>
+
+        </div>
 
       `;
+
+
+      /*
+       * ---------------------------------------------------
+       * ENVÍO DE CONSULTA
+       * ---------------------------------------------------
+       */
+
+      const inquiryForm =
+        document.getElementById(
+          'inquiryForm'
+        );
+
+
+      const sendButton =
+        document.getElementById(
+          'sendInquiryButton'
+        );
+
+
+      const inquiryStatus =
+        document.getElementById(
+          'inquiryMessageStatus'
+        );
+
+
+      inquiryForm.addEventListener(
+        'submit',
+        async function (event) {
+
+          event.preventDefault();
+
+
+          sendButton.disabled = true;
+
+          sendButton.textContent =
+            'Enviando…';
+
+          inquiryStatus.textContent =
+            '';
+
+
+          try {
+
+            /*
+             * Verificamos nuevamente
+             * que siga existiendo la sesión.
+             */
+
+            const {
+              data: {
+                user: currentUser
+              }
+            } =
+              await sb.auth.getUser();
+
+
+            if (!currentUser) {
+
+              throw new Error(
+                'Tu sesión expiró. Iniciá sesión nuevamente.'
+              );
+
+            }
+
+
+            const patientName =
+              document.getElementById(
+                'inquiryName'
+              ).value.trim();
+
+
+            const ageValue =
+              document.getElementById(
+                'inquiryAge'
+              ).value;
+
+
+            const patientAge =
+              ageValue
+                ? Number(ageValue)
+                : null;
+
+
+            const modality =
+              document.getElementById(
+                'inquiryModality'
+              ).value;
+
+
+            const availability =
+              document.getElementById(
+                'inquiryAvailability'
+              ).value.trim();
+
+
+            const zone =
+              document.getElementById(
+                'inquiryZone'
+              ).value.trim();
+
+
+            const reason =
+              document.getElementById(
+                'inquiryReason'
+              ).value;
+
+
+            const message =
+              document.getElementById(
+                'inquiryMessage'
+              ).value.trim();
+
+
+            if (!patientName) {
+
+              throw new Error(
+                'Ingresá tu nombre.'
+              );
+
+            }
+
+
+            if (!message) {
+
+              throw new Error(
+                'Escribí un mensaje antes de enviar la consulta.'
+              );
+
+            }
+
+
+            /*
+             * Insertamos la consulta.
+             *
+             * patient_id se toma directamente
+             * del usuario autenticado.
+             */
+
+            const {
+              error: insertError
+            } = await sb
+
+              .from('professional_inquiries')
+
+              .insert({
+
+                professional_id: id,
+
+                patient_id: currentUser.id,
+
+                patient_name: patientName,
+
+                patient_age: patientAge,
+
+                modality:
+                  modality || null,
+
+                availability:
+                  availability || null,
+
+                zone:
+                  zone || null,
+
+                reason:
+                  reason || null,
+
+                message
+
+              });
+
+
+            if (insertError) {
+
+              console.error(
+                'Error creando consulta:',
+                insertError
+              );
+
+              throw insertError;
+
+            }
+
+
+            /*
+             * ÉXITO
+             */
+
+            inquiryForm.reset();
+
+
+            inquiryStatus.textContent =
+              '✓ Consulta enviada correctamente.';
+
+
+            inquiryStatus.style.color =
+              'var(--accent)';
+
+
+            sendButton.textContent =
+              'Consulta enviada';
+
+
+          } catch (error) {
+
+            console.error(
+              'Error enviando consulta:',
+              error
+            );
+
+
+            inquiryStatus.textContent =
+              error.message ||
+              'No se pudo enviar la consulta.';
+
+
+            inquiryStatus.style.color =
+              '#b42318';
+
+
+            sendButton.disabled =
+              false;
+
+
+            sendButton.textContent =
+              'Enviar consulta';
+
+          }
+
+        }
+      );
 
 
       return;
@@ -788,8 +1325,26 @@
     `;
 
 
-  } catch (error) {
+    inquiryArea.innerHTML = `
 
+      <div
+        class="small"
+        style="
+          background:var(--soft);
+          border-radius:14px;
+          padding:15px;
+        "
+      >
+
+        Las consultas desde PsiCerca están
+        disponibles para cuentas de paciente.
+
+      </div>
+
+    `;
+
+
+  } catch (error) {
 
     console.error(
       'Error cargando perfil:',
