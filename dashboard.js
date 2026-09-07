@@ -160,7 +160,10 @@
             plan,
             status,
             started_at,
-            expires_at
+            expires_at,
+            next_payment_at,
+            last_payment_at,
+            mercado_pago_subscription_id
           `)
           .eq('profile_id', user.id)
           .maybeSingle();
@@ -205,16 +208,28 @@
           ? new Date(subscription.expires_at)
           : null;
 
+      const nextPaymentAt =
+        subscription?.next_payment_at
+          ? new Date(subscription.next_payment_at)
+          : null;
 
-      const isExpired =
-        expiresAt &&
-        expiresAt.getTime() <= Date.now();
 
+      /*
+       * IMPORTANTE:
+       *
+       * El estado PRO depende de la suscripción real:
+       *
+       * plan = pro
+       * status = active
+       *
+       * No usamos expires_at para bloquear PRO porque
+       * Mercado Pago administra la renovación mediante
+       * next_payment_at.
+       */
 
       const isPro =
         plan === 'pro' &&
-        status === 'active' &&
-        !isExpired;
+        status === 'active';
 
 
       // ==========================================================
@@ -237,11 +252,11 @@
 
           if (
             plan === 'pro' &&
-            isExpired
+            status === 'cancelled'
           ) {
 
             subscriptionDescription.textContent =
-              'Tu suscripción PRO está vencida. Podés renovarla desde Suscripción.';
+              'Tu suscripción PRO fue cancelada. Podés volver a contratarla desde Suscripción.';
 
           } else if (
             plan === 'pro' &&
@@ -408,10 +423,10 @@
 
       if (subscriptionDescription) {
 
-        if (expiresAt) {
+        if (nextPaymentAt) {
 
           const formattedDate =
-            expiresAt.toLocaleDateString(
+            nextPaymentAt.toLocaleDateString(
               'es-AR',
               {
                 day: '2-digit',
@@ -421,7 +436,7 @@
             );
 
           subscriptionDescription.textContent =
-            `Tu suscripción PRO está activa. Renovación: ${formattedDate}.`;
+            `Tu suscripción PRO está activa. Próximo pago: ${formattedDate}.`;
 
         } else {
 
@@ -432,9 +447,10 @@
 
       }
 
+
       if (subscriptionButton) {
         subscriptionButton.textContent =
-          'Administrar suscripción';
+          'Ver suscripción';
 
         subscriptionButton.href =
           '#suscripcion';
@@ -448,13 +464,13 @@
       if (subscriptionDetails) {
 
         let renewalText =
-          'Suscripción activa.';
+          'Suscripción PRO activa.';
 
-        if (expiresAt) {
+        if (nextPaymentAt) {
 
           renewalText =
-            `Próxima renovación: ${
-              expiresAt.toLocaleDateString(
+            `Próximo pago: ${
+              nextPaymentAt.toLocaleDateString(
                 'es-AR',
                 {
                   day: '2-digit',
@@ -635,8 +651,8 @@
           </strong>
 
           <p class="small">
-            Próximamente vas a poder recibir y gestionar consultas
-            directamente desde PsiCerca.
+            Tu acceso PRO está activo. Desde esta sección vas a poder
+            gestionar las consultas recibidas a través de PsiCerca.
           </p>
 
           <div
@@ -649,7 +665,7 @@
           >
 
             <span class="small">
-              Tu acceso PRO está activo.
+              ⭐ Funcionalidad PRO desbloqueada
             </span>
 
             <p
@@ -657,6 +673,7 @@
               style="margin-bottom:0;"
             >
               El módulo de consultas todavía está en desarrollo.
+              Cuando esté disponible, las consultas aparecerán aquí.
             </p>
 
           </div>
@@ -679,8 +696,8 @@
           </strong>
 
           <p class="small">
-            Próximamente vas a poder configurar tu estado de disponibilidad,
-            modalidad y horarios generales.
+            Tu acceso PRO está activo. Esta sección permitirá configurar
+            tu estado de disponibilidad, modalidad y horarios generales.
           </p>
 
           <div
@@ -693,7 +710,7 @@
           >
 
             <span class="small">
-              Tu acceso PRO está activo.
+              ⭐ Funcionalidad PRO desbloqueada
             </span>
 
             <p
@@ -723,8 +740,8 @@
           </strong>
 
           <p class="small">
-            Próximamente vas a poder consultar las métricas de rendimiento
-            de tu perfil profesional.
+            Tu acceso PRO está activo. Esta sección permitirá consultar
+            las métricas de rendimiento de tu perfil profesional.
           </p>
 
           <div
@@ -737,7 +754,7 @@
           >
 
             <span class="small">
-              Tu acceso PRO está activo.
+              ⭐ Funcionalidad PRO desbloqueada
             </span>
 
             <p
