@@ -1,12 +1,17 @@
 document.addEventListener('DOMContentLoaded', async () => {
+
   const user = await requireUser();
 
   if (!user) return;
 
   const sb = requireSupabase();
 
-  const dashboardContent =
-    document.getElementById('dashboardContent');
+  // =========================================================
+  // ELEMENTOS DEL DOM
+  // =========================================================
+
+  const welcome =
+    document.getElementById('welcome');
 
   const professionalName =
     document.getElementById('professionalName');
@@ -14,14 +19,34 @@ document.addEventListener('DOMContentLoaded', async () => {
   const planBadge =
     document.getElementById('planBadge');
 
+  const subscriptionTitle =
+    document.getElementById('subscriptionTitle');
+
+  const subscriptionDescription =
+    document.getElementById('subscriptionDescription');
+
+  const subscriptionLabel =
+    document.getElementById('subscriptionLabel');
+
+  const subscriptionButton =
+    document.getElementById('subscriptionButton');
+
+  const subscriptionMessage =
+    document.getElementById('subscriptionMessage');
+
+  const consultasContent =
+    document.getElementById('consultasContent');
+
   let subscription = null;
   let isPro = false;
 
+
   // =========================================================
-  // CARGAR PERFIL DEL PROFESIONAL
+  // CARGAR PERFIL
   // =========================================================
 
   async function loadProfile() {
+
     const { data, error } = await sb
       .from('profiles')
       .select(`
@@ -40,27 +65,83 @@ document.addEventListener('DOMContentLoaded', async () => {
       .single();
 
     if (error) {
+
       console.error(
         'Error cargando perfil:',
         error
       );
 
+      if (welcome) {
+        welcome.textContent =
+          'No se pudo cargar el perfil.';
+      }
+
       return null;
     }
 
+    const name =
+      data.display_name ||
+      'Profesional';
+
     if (professionalName) {
-      professionalName.textContent =
-        data.display_name || 'Profesional';
+      professionalName.textContent = name;
+    }
+
+    if (welcome) {
+      welcome.textContent =
+        `Hola, ${name}.`;
+    }
+
+    // -------------------------------------------------------
+    // Perfil
+    // -------------------------------------------------------
+
+    const profileName =
+      document.getElementById('profileName');
+
+    if (profileName) {
+      profileName.textContent =
+        data.display_name ||
+        'Profesional';
+    }
+
+    const profileLicense =
+      document.getElementById('profileLicense');
+
+    if (profileLicense) {
+      profileLicense.textContent =
+        data.license ||
+        'No especificada';
+    }
+
+    const profileModality =
+      document.getElementById('profileModality');
+
+    if (profileModality) {
+      profileModality.textContent =
+        data.modality ||
+        'No especificada';
+    }
+
+    const profileZone =
+      document.getElementById('profileZone');
+
+    if (profileZone) {
+      profileZone.textContent =
+        data.zone ||
+        'No especificada';
     }
 
     return data;
   }
 
+
   // =========================================================
-  // CARGAR SUSCRIPCIÓN PRO
+  // CARGAR SUSCRIPCIÓN
   // =========================================================
 
   async function loadSubscription() {
+
     const { data, error } = await sb
       .from('professional_subscriptions')
       .select(`
@@ -79,6 +160,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       .maybeSingle();
 
     if (error) {
+
       console.error(
         'Error cargando suscripción:',
         error
@@ -106,72 +188,112 @@ document.addEventListener('DOMContentLoaded', async () => {
     updatePlanUI();
   }
 
+
   // =========================================================
-  // ACTUALIZAR INDICADOR DEL PLAN
+  // ACTUALIZAR UI DEL PLAN
   // =========================================================
 
   function updatePlanUI() {
-    if (!planBadge) return;
 
-    if (isPro) {
-      planBadge.textContent = 'PRO';
-      planBadge.className = 'badge success';
-    } else {
-      planBadge.textContent = 'GRATUITO';
-      planBadge.className = 'badge';
+    if (planBadge) {
+
+      if (isPro) {
+        planBadge.textContent = 'PRO';
+        planBadge.className = 'badge success';
+      } else {
+        planBadge.textContent = 'GRATUITO';
+        planBadge.className = 'badge';
+      }
+    }
+
+    if (subscriptionTitle) {
+
+      subscriptionTitle.textContent =
+        isPro
+          ? 'PsiCerca PRO'
+          : 'PsiCerca FREE';
+    }
+
+    if (subscriptionDescription) {
+
+      subscriptionDescription.textContent =
+        isPro
+          ? 'Tenés activo el plan PRO.'
+          : 'Estás utilizando el plan gratuito.';
+    }
+
+    if (subscriptionLabel) {
+
+      subscriptionLabel.textContent =
+        isPro
+          ? 'PLAN ACTIVO'
+          : 'SUSCRIPCIÓN';
+    }
+
+    if (subscriptionButton) {
+
+      subscriptionButton.textContent =
+        isPro
+          ? 'Ver detalles'
+          : 'Conocer PRO';
+
+      subscriptionButton.href =
+        '#suscripcion';
     }
   }
 
+
   // =========================================================
-  // CARGAR CONSULTAS DE PACIENTES
+  // CARGAR CONSULTAS
   // =========================================================
 
   async function loadProfessionalInquiries() {
-    const container =
-      document.getElementById(
-        'professionalInquiries'
-      );
 
-    if (!container) return;
+    if (!consultasContent) {
+      return;
+    }
 
     // -------------------------------------------------------
-    // Si no es PRO
+    // FREE
     // -------------------------------------------------------
 
     if (!isPro) {
-      container.innerHTML = `
-        <div
-          class="card"
-          style="
-            padding:20px;
-            text-align:center;
-          "
+
+      consultasContent.innerHTML = `
+        <strong>
+          🔒 Disponible con PsiCerca PRO
+        </strong>
+
+        <p class="small">
+          Recibí consultas de personas interesadas
+          y gestioná sus datos de contacto desde
+          tu panel profesional.
+        </p>
+
+        <a
+          class="btn primary"
+          href="#suscripcion"
         >
-          <h3>
-            Consultas de pacientes
-          </h3>
-
-          <p class="muted">
-            La recepción y gestión de consultas
-            de pacientes está disponible en el
-            plan PRO.
-          </p>
-
-          <a
-            href="suscripcion.html"
-            class="button"
-          >
-            Ver plan PRO
-          </a>
-        </div>
+          Conocer PsiCerca PRO
+        </a>
       `;
 
       return;
     }
 
+
     // -------------------------------------------------------
-    // Buscar consultas
+    // PRO
     // -------------------------------------------------------
+
+    /*
+      IMPORTANTE:
+
+      En esta consulta NO incluimos todavía
+      patient_whatsapp ni patient_email porque
+      primero necesitamos asegurarnos de que esas
+      columnas existen en Supabase.
+    */
 
     const { data, error } = await sb
       .from('professional_inquiries')
@@ -179,8 +301,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         id,
         patient_name,
         patient_age,
-        patient_whatsapp,
-        patient_email,
         modality,
         availability,
         zone,
@@ -201,55 +321,51 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
       );
 
+
     if (error) {
+
       console.error(
         'Error cargando consultas:',
         error
       );
 
-      container.innerHTML = `
-        <div class="card">
-          <p class="message error">
-            No se pudieron cargar las consultas.
-          </p>
+      consultasContent.innerHTML = `
+        <div class="message error">
+          No se pudieron cargar las consultas.
         </div>
       `;
 
       return;
     }
 
+
     // -------------------------------------------------------
-    // No hay consultas
+    // SIN CONSULTAS
     // -------------------------------------------------------
 
     if (!data || data.length === 0) {
-      container.innerHTML = `
-        <div
-          class="card"
-          style="
-            padding:20px;
-            text-align:center;
-          "
-        >
-          <h3>
-            No hay consultas todavía
-          </h3>
 
-          <p class="muted">
-            Cuando un paciente te envíe una consulta,
-            aparecerá aquí.
-          </p>
-        </div>
+      consultasContent.innerHTML = `
+        <strong>
+          📩 Consultas de pacientes
+        </strong>
+
+        <p class="small">
+          Todavía no recibiste ninguna consulta.
+          Cuando una persona interesada te contacte,
+          aparecerá aquí.
+        </p>
       `;
 
       return;
     }
 
+
     // -------------------------------------------------------
-    // Renderizar consultas
+    // RENDERIZAR
     // -------------------------------------------------------
 
-    container.innerHTML = data
+    consultasContent.innerHTML = data
       .map(inquiry => {
 
         const safeName =
@@ -261,21 +377,9 @@ document.addEventListener('DOMContentLoaded', async () => {
           inquiry.patient_age !== null &&
           inquiry.patient_age !== undefined
             ? escapeHTML(
-                String(
-                  inquiry.patient_age
-                )
+                String(inquiry.patient_age)
               )
             : '';
-
-        const safeWhatsapp =
-          escapeHTML(
-            inquiry.patient_whatsapp || ''
-          );
-
-        const safeEmail =
-          escapeHTML(
-            inquiry.patient_email || ''
-          );
 
         const safeModality =
           escapeHTML(
@@ -302,307 +406,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             inquiry.message || ''
           );
 
-        // ---------------------------------------------------
-        // WhatsApp
-        // ---------------------------------------------------
-
-        const whatsappNumber =
-          String(
-            inquiry.patient_whatsapp || ''
-          ).replace(
-            /\D/g,
-            ''
-          );
-
-        const whatsappBlock =
-          safeWhatsapp &&
-          whatsappNumber
-            ? `
-              <div
-                style="
-                  padding:14px;
-                  border:1px solid var(--line);
-                  border-radius:12px;
-                  background:rgba(0,0,0,.02);
-                "
-              >
-                <div
-                  class="small muted"
-                >
-                  WhatsApp
-                </div>
-
-                <div
-                  style="
-                    margin-top:5px;
-                    display:flex;
-                    align-items:center;
-                    gap:10px;
-                    flex-wrap:wrap;
-                  "
-                >
-                  <a
-                    href="https://wa.me/${whatsappNumber}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style="
-                      font-weight:600;
-                      text-decoration:none;
-                    "
-                  >
-                    ${safeWhatsapp}
-                  </a>
-
-                  <a
-                    href="https://wa.me/${whatsappNumber}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="button"
-                    style="
-                      display:inline-block;
-                      padding:7px 12px;
-                      font-size:13px;
-                    "
-                  >
-                    Contactar por WhatsApp
-                  </a>
-                </div>
-              </div>
-            `
-            : '';
-
-        // ---------------------------------------------------
-        // Email
-        // ---------------------------------------------------
-
-        const emailBlock =
-          safeEmail
-            ? `
-              <div
-                style="
-                  padding:14px;
-                  border:1px solid var(--line);
-                  border-radius:12px;
-                  background:rgba(0,0,0,.02);
-                "
-              >
-                <div
-                  class="small muted"
-                >
-                  Email
-                </div>
-
-                <div
-                  style="
-                    margin-top:5px;
-                    font-weight:600;
-                  "
-                >
-                  <a
-                    href="mailto:${safeEmail}"
-                  >
-                    ${safeEmail}
-                  </a>
-                </div>
-              </div>
-            `
-            : '';
-
-        // ---------------------------------------------------
-        // Datos del paciente
-        // ---------------------------------------------------
-
-        const patientData = `
-          <div
-            style="
-              display:grid;
-              grid-template-columns:
-                repeat(
-                  auto-fit,
-                  minmax(180px, 1fr)
-                );
-              gap:10px;
-              margin-top:15px;
-            "
-          >
-
-            ${
-              safeAge
-                ? `
-                  <div>
-                    <span class="small muted">
-                      Edad
-                    </span>
-
-                    <div
-                      style="
-                        margin-top:3px;
-                        font-weight:600;
-                      "
-                    >
-                      ${safeAge} años
-                    </div>
-                  </div>
-                `
-                : ''
-            }
-
-            ${
-              safeModality
-                ? `
-                  <div>
-                    <span class="small muted">
-                      Modalidad
-                    </span>
-
-                    <div
-                      style="
-                        margin-top:3px;
-                        font-weight:600;
-                      "
-                    >
-                      ${safeModality}
-                    </div>
-                  </div>
-                `
-                : ''
-            }
-
-            ${
-              safeZone
-                ? `
-                  <div>
-                    <span class="small muted">
-                      Zona
-                    </span>
-
-                    <div
-                      style="
-                        margin-top:3px;
-                        font-weight:600;
-                      "
-                    >
-                      ${safeZone}
-                    </div>
-                  </div>
-                `
-                : ''
-            }
-
-            ${
-              safeAvailability
-                ? `
-                  <div>
-                    <span class="small muted">
-                      Disponibilidad
-                    </span>
-
-                    <div
-                      style="
-                        margin-top:3px;
-                        font-weight:600;
-                      "
-                    >
-                      ${safeAvailability}
-                    </div>
-                  </div>
-                `
-                : ''
-            }
-
-          </div>
-        `;
-
-        // ---------------------------------------------------
-        // Motivo
-        // ---------------------------------------------------
-
-        const reasonBlock =
-          safeReason
-            ? `
-              <div
-                style="
-                  margin-top:18px;
-                "
-              >
-                <div
-                  class="small muted"
-                >
-                  Motivo de consulta
-                </div>
-
-                <div
-                  style="
-                    margin-top:5px;
-                  "
-                >
-                  ${safeReason}
-                </div>
-              </div>
-            `
-            : '';
-
-        // ---------------------------------------------------
-        // Mensaje
-        // ---------------------------------------------------
-
-        const messageBlock = `
-          <div
-            style="
-              margin-top:18px;
-            "
-          >
-            <div
-              class="small muted"
-            >
-              Mensaje
-            </div>
-
-            <div
-              style="
-                margin-top:5px;
-                white-space:pre-wrap;
-                line-height:1.5;
-              "
-            >
-              ${safeMessage}
-            </div>
-          </div>
-        `;
-
-        // ---------------------------------------------------
-        // Estado
-        // ---------------------------------------------------
-
-        let statusLabel = 'Nueva';
-        let statusClass = 'warning';
-
-        if (
-          inquiry.status ===
-          'responded'
-        ) {
-          statusLabel =
-            'Respondida';
-
-          statusClass =
-            'success';
-        }
-
-        if (
-          inquiry.status ===
-          'archived'
-        ) {
-          statusLabel =
-            'Archivada';
-
-          statusClass =
-            '';
-        }
-
-        // ---------------------------------------------------
-        // Fecha
-        // ---------------------------------------------------
-
         const createdDate =
           inquiry.created_at
             ? new Date(
@@ -616,52 +419,23 @@ document.addEventListener('DOMContentLoaded', async () => {
               )
             : '';
 
-        // ---------------------------------------------------
-        // Botones
-        // ---------------------------------------------------
+        let statusLabel = 'Nueva';
+        let statusClass = 'warning';
 
-        const actionBlock = `
-          <div
-            style="
-              margin-top:20px;
-              display:flex;
-              gap:10px;
-              flex-wrap:wrap;
-            "
-          >
+        if (
+          inquiry.status === 'responded'
+        ) {
+          statusLabel = 'Respondida';
+          statusClass = 'success';
+        }
 
-            ${
-              inquiry.status === 'new'
-                ? `
-                  <button
-                    type="button"
-                    class="button secondary mark-inquiry-responded"
-                    data-id="${inquiry.id}"
-                  >
-                    Marcar como respondida
-                  </button>
-                `
-                : ''
-            }
+        if (
+          inquiry.status === 'archived'
+        ) {
+          statusLabel = 'Archivada';
+          statusClass = '';
+        }
 
-            <button
-              type="button"
-              class="button secondary delete-inquiry"
-              data-id="${inquiry.id}"
-              style="
-                border-color:#d9534f;
-                color:#d9534f;
-              "
-            >
-              🗑 Eliminar consulta
-            </button>
-
-          </div>
-        `;
-
-        // ---------------------------------------------------
-        // CARD
-        // ---------------------------------------------------
 
         return `
           <article
@@ -683,11 +457,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             >
 
               <div>
-                <h3
-                  style="
-                    margin:0;
-                  "
-                >
+
+                <h3 style="margin:0;">
                   ${safeName}
                 </h3>
 
@@ -696,15 +467,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                     ? `
                       <div
                         class="small muted"
-                        style="
-                          margin-top:4px;
-                        "
+                        style="margin-top:4px;"
                       >
                         ${createdDate}
                       </div>
                     `
                     : ''
                 }
+
               </div>
 
               <span
@@ -715,47 +485,176 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             </div>
 
-            ${patientData}
 
             ${
-              whatsappBlock ||
-              emailBlock
+              safeAge ||
+              safeModality ||
+              safeZone ||
+              safeAvailability
                 ? `
                   <div
                     style="
-                      margin-top:18px;
                       display:grid;
                       grid-template-columns:
                         repeat(
                           auto-fit,
-                          minmax(220px, 1fr)
+                          minmax(180px, 1fr)
                         );
-                      gap:10px;
+                      gap:12px;
+                      margin-top:18px;
                     "
                   >
-                    ${whatsappBlock}
-                    ${emailBlock}
+
+                    ${
+                      safeAge
+                        ? `
+                          <div>
+                            <div class="small muted">
+                              Edad
+                            </div>
+                            <strong>
+                              ${safeAge} años
+                            </strong>
+                          </div>
+                        `
+                        : ''
+                    }
+
+                    ${
+                      safeModality
+                        ? `
+                          <div>
+                            <div class="small muted">
+                              Modalidad
+                            </div>
+                            <strong>
+                              ${safeModality}
+                            </strong>
+                          </div>
+                        `
+                        : ''
+                    }
+
+                    ${
+                      safeZone
+                        ? `
+                          <div>
+                            <div class="small muted">
+                              Zona
+                            </div>
+                            <strong>
+                              ${safeZone}
+                            </strong>
+                          </div>
+                        `
+                        : ''
+                    }
+
+                    ${
+                      safeAvailability
+                        ? `
+                          <div>
+                            <div class="small muted">
+                              Disponibilidad
+                            </div>
+                            <strong>
+                              ${safeAvailability}
+                            </strong>
+                          </div>
+                        `
+                        : ''
+                    }
+
                   </div>
                 `
                 : ''
             }
 
-            ${reasonBlock}
 
-            ${messageBlock}
+            ${
+              safeReason
+                ? `
+                  <div style="margin-top:18px;">
+                    <div class="small muted">
+                      Motivo de consulta
+                    </div>
 
-            ${actionBlock}
+                    <div style="margin-top:5px;">
+                      ${safeReason}
+                    </div>
+                  </div>
+                `
+                : ''
+            }
+
+
+            <div style="margin-top:18px;">
+
+              <div class="small muted">
+                Mensaje
+              </div>
+
+              <div
+                style="
+                  margin-top:5px;
+                  white-space:pre-wrap;
+                  line-height:1.5;
+                "
+              >
+                ${safeMessage}
+              </div>
+
+            </div>
+
+
+            <div
+              style="
+                margin-top:20px;
+                display:flex;
+                gap:10px;
+                flex-wrap:wrap;
+              "
+            >
+
+              ${
+                inquiry.status === 'new'
+                  ? `
+                    <button
+                      type="button"
+                      class="btn secondary mark-inquiry-responded"
+                      data-id="${inquiry.id}"
+                    >
+                      Marcar como respondida
+                    </button>
+                  `
+                  : ''
+              }
+
+              <button
+                type="button"
+                class="btn secondary delete-inquiry"
+                data-id="${inquiry.id}"
+                style="
+                  border-color:#b91c1c;
+                  color:#b91c1c;
+                "
+              >
+                🗑 Eliminar consulta
+              </button>
+
+            </div>
 
           </article>
         `;
       })
       .join('');
 
+
     // =======================================================
     // MARCAR COMO RESPONDIDA
     // =======================================================
 
-    container
+    consultasContent
       .querySelectorAll(
         '.mark-inquiry-responded'
       )
@@ -771,9 +670,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!inquiryId) return;
 
             button.disabled = true;
-
-            button.textContent =
-              'Guardando...';
+            button.textContent = 'Guardando...';
 
             const { error } =
               await sb
@@ -781,8 +678,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                   'professional_inquiries'
                 )
                 .update({
-                  status:
-                    'responded',
+                  status: 'responded',
                   updated_at:
                     new Date().toISOString()
                 })
@@ -796,13 +692,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 );
 
             if (error) {
+
               console.error(
                 'Error actualizando consulta:',
                 error
               );
 
-              button.disabled =
-                false;
+              button.disabled = false;
 
               button.textContent =
                 'Marcar como respondida';
@@ -819,11 +715,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         );
       });
 
+
     // =======================================================
     // ELIMINAR CONSULTA
     // =======================================================
 
-    container
+    consultasContent
       .querySelectorAll(
         '.delete-inquiry'
       )
@@ -841,17 +738,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             const confirmed =
               confirm(
                 '¿Eliminar esta consulta?\n\n' +
-                'Se eliminarán definitivamente ' +
-                'la consulta y los datos de contacto asociados. ' +
+                'La consulta se eliminará definitivamente. ' +
                 'Esta acción no se puede deshacer.'
               );
 
             if (!confirmed) return;
 
             button.disabled = true;
-
-            button.textContent =
-              'Eliminando...';
+            button.textContent = 'Eliminando...';
 
             const { error } =
               await sb
@@ -869,13 +763,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 );
 
             if (error) {
+
               console.error(
                 'Error eliminando consulta:',
                 error
               );
 
-              button.disabled =
-                false;
+              button.disabled = false;
 
               button.textContent =
                 '🗑 Eliminar consulta';
@@ -893,91 +787,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
   }
 
-  // =========================================================
-  // CARGAR DASHBOARD
-  // =========================================================
-
-  async function loadDashboard() {
-
-    const profile =
-      await loadProfile();
-
-    await loadSubscription();
-
-    await loadProfessionalInquiries();
-
-    // -------------------------------------------------------
-    // Nombre
-    // -------------------------------------------------------
-
-    const profileName =
-      document.getElementById(
-        'profileName'
-      );
-
-    if (
-      profileName &&
-      profile
-    ) {
-      profileName.textContent =
-        profile.display_name ||
-        'Profesional';
-    }
-
-    // -------------------------------------------------------
-    // Matrícula
-    // -------------------------------------------------------
-
-    const profileLicense =
-      document.getElementById(
-        'profileLicense'
-      );
-
-    if (
-      profileLicense &&
-      profile
-    ) {
-      profileLicense.textContent =
-        profile.license ||
-        'No especificada';
-    }
-
-    // -------------------------------------------------------
-    // Modalidad
-    // -------------------------------------------------------
-
-    const profileModality =
-      document.getElementById(
-        'profileModality'
-      );
-
-    if (
-      profileModality &&
-      profile
-    ) {
-      profileModality.textContent =
-        profile.modality ||
-        'No especificada';
-    }
-
-    // -------------------------------------------------------
-    // Zona
-    // -------------------------------------------------------
-
-    const profileZone =
-      document.getElementById(
-        'profileZone'
-      );
-
-    if (
-      profileZone &&
-      profile
-    ) {
-      profileZone.textContent =
-        profile.zone ||
-        'No especificada';
-    }
-  }
 
   // =========================================================
   // LOGOUT
@@ -998,13 +807,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     );
   }
 
+
   // =========================================================
-  // INICIAR
+  // INICIAR DASHBOARD
   // =========================================================
 
   try {
 
-    await loadDashboard();
+    await loadProfile();
+
+    await loadSubscription();
+
+    await loadProfessionalInquiries();
+
+    console.log(
+      'Dashboard cargado correctamente.'
+    );
 
   } catch (error) {
 
@@ -1013,15 +831,26 @@ document.addEventListener('DOMContentLoaded', async () => {
       error
     );
 
-    if (dashboardContent) {
+    if (subscriptionTitle) {
 
-      dashboardContent.innerHTML = `
-        <div class="card">
-          <p class="message error">
-            Ocurrió un error al cargar el dashboard.
-          </p>
-        </div>
-      `;
+      subscriptionTitle.textContent =
+        'No se pudo cargar el panel';
+    }
+
+    if (subscriptionDescription) {
+
+      subscriptionDescription.textContent =
+        'Ocurrió un error al consultar los datos. Revisá la consola.';
+    }
+
+    if (subscriptionMessage) {
+
+      subscriptionMessage.textContent =
+        'Ocurrió un error al cargar el dashboard.';
+
+      subscriptionMessage.className =
+        'message error';
     }
   }
+
 });
