@@ -12,10 +12,7 @@
 
   <title>Crear cuenta — PsiCerca</title>
 
-  <link
-    rel="stylesheet"
-    href="styles.css"
-  >
+  <link rel="stylesheet" href="styles.css">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
@@ -48,6 +45,7 @@
 
   </header>
 
+
   <main class="form-wrap">
 
     <div class="form-card">
@@ -65,7 +63,9 @@
         de PsiCerca y gestionar tus futuras interacciones.
       </p>
 
+
       <form id="patientRegisterForm">
+
 
         <div class="field">
 
@@ -83,6 +83,7 @@
 
         </div>
 
+
         <div class="field">
 
           <label for="email">
@@ -98,6 +99,7 @@
           >
 
         </div>
+
 
         <div class="field">
 
@@ -119,6 +121,7 @@
 
         </div>
 
+
         <label class="check">
 
           <input
@@ -128,11 +131,41 @@
           >
 
           <span>
-            Acepto los términos de uso y la política de privacidad
+
+            Acepto los
+
+            <a
+              href="terminos.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              style="
+                color:var(--accent);
+                font-weight:700;
+              "
+            >
+              Términos y Condiciones
+            </a>
+
+            y la
+
+            <a
+              href="privacidad.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              style="
+                color:var(--accent);
+                font-weight:700;
+              "
+            >
+              Política de Privacidad
+            </a>
+
             de PsiCerca.
+
           </span>
 
         </label>
+
 
         <button
           class="btn primary full"
@@ -141,32 +174,43 @@
           Crear cuenta
         </button>
 
+
         <div
           id="msg"
           class="message"
         ></div>
 
+
       </form>
+
 
       <p
         class="small"
-        style="margin-top:20px;text-align:center"
+        style="
+          margin-top:20px;
+          text-align:center;
+        "
       >
 
         ¿Ya tenés una cuenta?
 
         <a
           href="login.html"
-          style="color:var(--accent);font-weight:700"
+          style="
+            color:var(--accent);
+            font-weight:700;
+          "
         >
           Iniciá sesión
         </a>
 
       </p>
 
+
     </div>
 
   </main>
+
 
   <script>
 
@@ -179,12 +223,17 @@
             'patientRegisterForm'
           );
 
+
         if (!form) {
+
           console.error(
             'No se encontró el formulario patientRegisterForm.'
           );
+
           return;
+
         }
+
 
         form.addEventListener(
           'submit',
@@ -192,8 +241,10 @@
 
             e.preventDefault();
 
+
             const button =
               form.querySelector('button');
+
 
             const fullName =
               document
@@ -201,26 +252,51 @@
                 .value
                 .trim();
 
+
             const email =
               document
                 .getElementById('email')
                 .value
                 .trim();
 
+
             const password =
               document
                 .getElementById('password')
                 .value;
 
-            button.disabled = true;
+
+            const termsAccepted =
+              document
+                .getElementById('terms')
+                .checked;
+
+
+            if (!termsAccepted) {
+
+              showMessage(
+                'msg',
+                'Tenés que aceptar los Términos y Condiciones y la Política de Privacidad.',
+                true
+              );
+
+              return;
+
+            }
+
+
+            button.disabled =
+              true;
 
             button.textContent =
               'Creando…';
+
 
             try {
 
               const sb =
                 requireSupabase();
+
 
               const {
                 data,
@@ -228,9 +304,11 @@
               } =
                 await sb.auth.signUp({
 
-                  email: email,
+                  email:
+                    email,
 
-                  password: password,
+                  password:
+                    password,
 
                   options: {
 
@@ -243,7 +321,10 @@
                         fullName,
 
                       role:
-                        'patient'
+                        'patient',
+
+                      terms_version:
+                        '2026-09'
 
                     }
 
@@ -251,11 +332,13 @@
 
                 });
 
+
               if (error) {
 
                 const errorText =
                   `${error.message || ''} ${error.code || ''}`
                     .toLowerCase();
+
 
                 if (
                   errorText.includes(
@@ -272,9 +355,11 @@
 
                 }
 
+
                 throw error;
 
               }
+
 
               if (data.session) {
 
@@ -290,12 +375,14 @@
 
               }
 
+
             } catch (err) {
 
               console.error(
                 'Error durante el registro del paciente:',
                 err
               );
+
 
               showMessage(
                 'msg',
@@ -321,6 +408,7 @@
     );
 
   </script>
+
 
 </body>
 
