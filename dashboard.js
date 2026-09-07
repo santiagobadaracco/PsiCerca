@@ -33,6 +33,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const consultasContent =
     document.getElementById('consultasContent');
 
+  const subscriptionContent =
+    document.getElementById('subscriptionContent');
+
 
   let subscription = null;
   let isPro = false;
@@ -45,9 +48,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function loadProfile() {
 
     const { data, error } = await sb
-
       .from('profiles')
-
       .select(`
         display_name,
         license,
@@ -60,9 +61,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         photo_url,
         user_role
       `)
-
       .eq('id', user.id)
-
       .single();
 
 
@@ -160,29 +159,26 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function loadSubscription() {
 
     const { data, error } = await sb
-
       .from('professional_subscriptions')
-
       .select(`
         id,
         profile_id,
         plan,
         status,
         expires_at,
-        created_at
+        created_at,
+        cancel_at_period_end,
+        cancelled_at,
+        next_payment_at
       `)
-
       .eq('profile_id', user.id)
-
       .order(
         'created_at',
         {
           ascending: false
         }
       )
-
       .limit(1)
-
       .maybeSingle();
 
 
@@ -265,10 +261,35 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (subscriptionDescription) {
 
-      subscriptionDescription.textContent =
-        isPro
-          ? 'Tenés activo el plan PRO.'
-          : 'Estás utilizando el plan gratuito.';
+      if (
+        isPro &&
+        subscription?.cancel_at_period_end &&
+        subscription?.expires_at
+      ) {
+
+        const endDate =
+          new Date(
+            subscription.expires_at
+          ).toLocaleDateString(
+            'es-AR',
+            {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric'
+            }
+          );
+
+        subscriptionDescription.textContent =
+          `Tu plan PRO está activo hasta el ${endDate}. La suscripción fue cancelada y no se realizarán nuevos cobros.`;
+
+      } else {
+
+        subscriptionDescription.textContent =
+          isPro
+            ? 'Tenés activo el plan PRO.'
+            : 'Estás utilizando el plan gratuito.';
+
+      }
 
     }
 
@@ -292,6 +313,356 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       subscriptionButton.href =
         '#suscripcion';
+
+    }
+
+
+    renderCancellationUI();
+
+  }
+
+
+  // =====================================================
+  // CANCELACIÓN DE SUSCRIPCIÓN
+  // =====================================================
+
+  function renderCancellationUI() {
+
+    /*
+     * Buscamos un contenedor específico si existe.
+     * Si no existe, utilizamos subscriptionMessage.
+     */
+
+    const container =
+      subscriptionContent ||
+      subscriptionMessage;
+
+    if (!container) return;
+
+
+    /*
+     * Si no es PRO, no mostramos cancelación.
+     */
+
+    if (!isPro) {
+
+      const existing =
+        document.getElementById(
+          'cancelSubscriptionBox'
+        );
+
+      if (existing) {
+        existing.remove();
+      }
+
+      return;
+
+    }
+
+
+    /*
+     * Si ya está cancelada para el final
+     * del período, mostramos el estado.
+     */
+
+    if (
+      subscription?.cancel_at_period_end &&
+      subscription?.expires_at
+    ) {
+
+      const endDate =
+        new Date(
+          subscription.expires_at
+        ).toLocaleDateString(
+          'es-AR',
+          {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+          }
+        );
+
+
+      const existing =
+        document.getElementById(
+          'cancelSubscriptionBox'
+        );
+
+      if (existing) {
+        existing.remove();
+      }
+
+
+      const box =
+        document.createElement('div');
+
+      box.id =
+        'cancelSubscriptionBox';
+
+      box.style.cssText = `
+        margin-top:20px;
+        padding:18px;
+        border-radius:14px;
+        background:var(--soft);
+        border:1px solid rgba(0,0,0,.08);
+      `;
+
+      box.innerHTML = `
+
+        <strong>
+          Suscripción cancelada
+        </strong>
+
+        <p
+          class="small"
+          style="margin-top:8px;"
+        >
+          Tu plan PRO seguirá activo hasta
+          el ${escapeHTML(endDate)}.
+          No se realizarán nuevos cobros.
+        </p>
+
+      `;
+
+      container.appendChild(box);
+
+      return;
+
+    }
+
+
+    /*
+     * Si está PRO normalmente,
+     * mostramos botón de cancelación.
+     */
+
+    const existing =
+      document.getElementById(
+        'cancelSubscriptionBox'
+      );
+
+    if (existing) {
+      existing.remove();
+    }
+
+
+    const box =
+      document.createElement('div');
+
+    box.id =
+      'cancelSubscriptionBox';
+
+    box.style.cssText = `
+      margin-top:20px;
+      padding:18px;
+      border-radius:14px;
+      background:var(--soft);
+      border:1px solid rgba(0,0,0,.08);
+    `;
+
+
+    box.innerHTML = `
+
+      <strong>
+        Cancelar suscripción PRO
+      </strong>
+
+      <p
+        class="small"
+        style="margin-top:8px;"
+      >
+        Podés cancelar la renovación automática
+        de tu suscripción.
+      </p>
+
+      <p
+        class="small"
+        style="margin-top:8px;"
+      >
+        Tu acceso PRO continuará durante el período
+        que ya abonaste. No se realizará el próximo cobro.
+      </p>
+
+      <button
+        type="button"
+        id="cancelSubscriptionButton"
+        class="btn secondary"
+        style="
+          margin-top:12px;
+          border-color:#b91c1c;
+          color:#b91c1c;
+        "
+      >
+        Cancelar suscripción
+      </button>
+
+    `;
+
+
+    container.appendChild(box);
+
+
+    const cancelButton =
+      document.getElementById(
+        'cancelSubscriptionButton'
+      );
+
+
+    if (!cancelButton) return;
+
+
+    cancelButton.addEventListener(
+      'click',
+      cancelSubscription
+    );
+
+  }
+
+
+  // =====================================================
+  // EJECUTAR CANCELACIÓN
+  // =====================================================
+
+  async function cancelSubscription() {
+
+    if (!subscription || !isPro) {
+      return;
+    }
+
+
+    const confirmed =
+      confirm(
+        '¿Querés cancelar tu suscripción PRO?\n\n' +
+        'No se realizarán nuevos cobros.\n\n' +
+        'Tu acceso PRO continuará hasta el final del período que ya abonaste.\n\n' +
+        'Esta acción cancela la renovación automática.'
+      );
+
+
+    if (!confirmed) {
+      return;
+    }
+
+
+    const button =
+      document.getElementById(
+        'cancelSubscriptionButton'
+      );
+
+
+    if (button) {
+
+      button.disabled =
+        true;
+
+      button.textContent =
+        'Cancelando…';
+
+    }
+
+
+    if (subscriptionMessage) {
+
+      subscriptionMessage.textContent =
+        'Procesando la cancelación…';
+
+      subscriptionMessage.className =
+        'message';
+
+    }
+
+
+    try {
+
+      const {
+        data,
+        error
+      } = await sb.functions.invoke(
+        'cancel-subscription'
+      );
+
+
+      if (error) {
+
+        console.error(
+          'Error cancelando suscripción:',
+          error
+        );
+
+        throw new Error(
+          'No se pudo cancelar la suscripción.'
+        );
+
+      }
+
+
+      if (!data || !data.success) {
+
+        throw new Error(
+          data?.error ||
+          'No se pudo cancelar la suscripción.'
+        );
+
+      }
+
+
+      console.log(
+        'Cancelación realizada:',
+        data
+      );
+
+
+      if (subscriptionMessage) {
+
+        subscriptionMessage.textContent =
+          'La suscripción fue cancelada correctamente. Tu plan PRO continuará activo hasta el final del período abonado.';
+
+        subscriptionMessage.className =
+          'message success';
+
+      }
+
+
+      /*
+       * Volvemos a consultar la base de datos
+       * para mostrar el estado real.
+       */
+
+      await loadSubscription();
+
+
+      await loadProfessionalInquiries();
+
+
+    } catch (error) {
+
+      console.error(
+        'Error en cancelación:',
+        error
+      );
+
+
+      if (subscriptionMessage) {
+
+        subscriptionMessage.textContent =
+          error.message ||
+          'No se pudo cancelar la suscripción.';
+
+        subscriptionMessage.className =
+          'message error';
+
+      }
+
+
+      if (button) {
+
+        button.disabled =
+          false;
+
+        button.textContent =
+          'Cancelar suscripción';
+
+      }
 
     }
 
@@ -351,9 +722,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       data,
       error
     } = await sb
-
       .from('professional_inquiries')
-
       .select(`
         id,
         patient_name,
@@ -369,12 +738,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         created_at,
         updated_at
       `)
-
       .eq(
         'professional_id',
         user.id
       )
-
       .order(
         'created_at',
         {
@@ -459,15 +826,31 @@ document.addEventListener('DOMContentLoaded', async () => {
             : '';
 
 
-        const safeWhatsapp =
-          escapeHTML(
+        const rawWhatsapp =
+          String(
             inquiry.patient_whatsapp || ''
           );
 
+        const whatsappDigits =
+          rawWhatsapp.replace(
+            /\D/g,
+            ''
+          );
+
+        const safeWhatsapp =
+          escapeHTML(
+            rawWhatsapp
+          );
+
+
+        const rawEmail =
+          String(
+            inquiry.patient_email || ''
+          );
 
         const safeEmail =
           escapeHTML(
-            inquiry.patient_email || ''
+            rawEmail
           );
 
 
@@ -561,8 +944,6 @@ document.addEventListener('DOMContentLoaded', async () => {
               margin-bottom:16px;
             "
           >
-
-            <!-- ENCABEZADO -->
 
             <div
               style="
@@ -669,27 +1050,29 @@ document.addEventListener('DOMContentLoaded', async () => {
                             </span>
 
 
-                            <a
-                              class="btn secondary"
-                              href="https://wa.me/${escapeHTML(
-                                safeWhatsapp
-                                  .replace(
-                                    /\\D/g,
-                                    ''
-                                  )
-                              )}"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              style="
-                                font-size:12px;
-                                padding:
-                                  7px 11px;
-                              "
-                            >
+                            ${
+                              whatsappDigits
+                                ? `
 
-                              Abrir WhatsApp
+                                  <a
+                                    class="btn secondary"
+                                    href="https://wa.me/${whatsappDigits}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style="
+                                      font-size:12px;
+                                      padding:
+                                        7px 11px;
+                                    "
+                                  >
 
-                            </a>
+                                    Abrir WhatsApp
+
+                                  </a>
+
+                                `
+                                : ''
+                            }
 
                           </div>
 
@@ -1010,11 +1393,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ===================================================
 
     consultasContent
-
       .querySelectorAll(
         '.mark-inquiry-responded'
       )
-
       .forEach(button => {
 
         button.addEventListener(
@@ -1038,26 +1419,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             const {
               error
             } = await sb
-
               .from(
                 'professional_inquiries'
               )
-
               .update({
-
                 status:
                   'responded',
-
                 updated_at:
                   new Date().toISOString()
-
               })
-
               .eq(
                 'id',
                 inquiryId
               )
-
               .eq(
                 'professional_id',
                 user.id
@@ -1100,11 +1474,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ===================================================
 
     consultasContent
-
       .querySelectorAll(
         '.delete-inquiry'
       )
-
       .forEach(button => {
 
         button.addEventListener(
@@ -1139,18 +1511,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             const {
               error
             } = await sb
-
               .from(
                 'professional_inquiries'
               )
-
               .delete()
-
               .eq(
                 'id',
                 inquiryId
               )
-
               .eq(
                 'professional_id',
                 user.id
