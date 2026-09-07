@@ -5,9 +5,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const sb = requireSupabase();
 
-  const dashboardContent = document.getElementById('dashboardContent');
-  const professionalName = document.getElementById('professionalName');
-  const planBadge = document.getElementById('planBadge');
+  const dashboardContent =
+    document.getElementById('dashboardContent');
+
+  const professionalName =
+    document.getElementById('professionalName');
+
+  const planBadge =
+    document.getElementById('planBadge');
 
   let subscription = null;
   let isPro = false;
@@ -35,7 +40,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       .single();
 
     if (error) {
-      console.error('Error cargando perfil:', error);
+      console.error(
+        'Error cargando perfil:',
+        error
+      );
+
       return null;
     }
 
@@ -48,20 +57,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // =========================================================
-  // CARGAR SUSCRIPCIÓN
+  // CARGAR SUSCRIPCIÓN PRO
   // =========================================================
 
   async function loadSubscription() {
     const { data, error } = await sb
-      .from('subscriptions')
+      .from('professional_subscriptions')
       .select(`
         id,
+        profile_id,
         plan,
         status,
         expires_at,
         created_at
       `)
-      .eq('professional_id', user.id)
+      .eq('profile_id', user.id)
       .order('created_at', {
         ascending: false
       })
@@ -76,6 +86,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       subscription = null;
       isPro = false;
+
+      updatePlanUI();
 
       return;
     }
@@ -95,7 +107,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // =========================================================
-  // ACTUALIZAR UI DEL PLAN
+  // ACTUALIZAR INDICADOR DEL PLAN
   // =========================================================
 
   function updatePlanUI() {
@@ -111,7 +123,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // =========================================================
-  // CARGAR CONSULTAS
+  // CARGAR CONSULTAS DE PACIENTES
   // =========================================================
 
   async function loadProfessionalInquiries() {
@@ -158,7 +170,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // -------------------------------------------------------
-    // Cargar consultas
+    // Buscar consultas
     // -------------------------------------------------------
 
     const { data, error } = await sb
@@ -207,7 +219,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // -------------------------------------------------------
-    // Sin consultas
+    // No hay consultas
     // -------------------------------------------------------
 
     if (!data || data.length === 0) {
@@ -249,9 +261,21 @@ document.addEventListener('DOMContentLoaded', async () => {
           inquiry.patient_age !== null &&
           inquiry.patient_age !== undefined
             ? escapeHTML(
-                String(inquiry.patient_age)
+                String(
+                  inquiry.patient_age
+                )
               )
             : '';
+
+        const safeWhatsapp =
+          escapeHTML(
+            inquiry.patient_whatsapp || ''
+          );
+
+        const safeEmail =
+          escapeHTML(
+            inquiry.patient_email || ''
+          );
 
         const safeModality =
           escapeHTML(
@@ -278,18 +302,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             inquiry.message || ''
           );
 
-        const safeWhatsapp =
-          escapeHTML(
-            inquiry.patient_whatsapp || ''
-          );
-
-        const safeEmail =
-          escapeHTML(
-            inquiry.patient_email || ''
-          );
-
         // ---------------------------------------------------
-        // Normalizar WhatsApp para wa.me
+        // WhatsApp
         // ---------------------------------------------------
 
         const whatsappNumber =
@@ -299,59 +313,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             /\D/g,
             ''
           );
-
-        // ---------------------------------------------------
-        // Fecha
-        // ---------------------------------------------------
-
-        const createdDate =
-          inquiry.created_at
-            ? new Date(
-                inquiry.created_at
-              ).toLocaleString(
-                'es-AR',
-                {
-                  dateStyle: 'short',
-                  timeStyle: 'short'
-                }
-              )
-            : '';
-
-        // ---------------------------------------------------
-        // Estado
-        // ---------------------------------------------------
-
-        let statusLabel =
-          'Nueva';
-
-        let statusClass =
-          'warning';
-
-        if (
-          inquiry.status ===
-          'responded'
-        ) {
-          statusLabel =
-            'Respondida';
-
-          statusClass =
-            'success';
-        }
-
-        if (
-          inquiry.status ===
-          'archived'
-        ) {
-          statusLabel =
-            'Archivada';
-
-          statusClass =
-            '';
-        }
-
-        // ---------------------------------------------------
-        // Botón WhatsApp
-        // ---------------------------------------------------
 
         const whatsappBlock =
           safeWhatsapp &&
@@ -610,28 +571,96 @@ document.addEventListener('DOMContentLoaded', async () => {
         `;
 
         // ---------------------------------------------------
-        // Acción
+        // Estado
         // ---------------------------------------------------
 
-        const actionBlock =
+        let statusLabel = 'Nueva';
+        let statusClass = 'warning';
+
+        if (
           inquiry.status ===
-          'new'
-            ? `
-              <button
-                type="button"
-                class="button secondary mark-inquiry-responded"
-                data-id="${inquiry.id}"
-                style="
-                  margin-top:18px;
-                "
-              >
-                Marcar como respondida
-              </button>
-            `
+          'responded'
+        ) {
+          statusLabel =
+            'Respondida';
+
+          statusClass =
+            'success';
+        }
+
+        if (
+          inquiry.status ===
+          'archived'
+        ) {
+          statusLabel =
+            'Archivada';
+
+          statusClass =
+            '';
+        }
+
+        // ---------------------------------------------------
+        // Fecha
+        // ---------------------------------------------------
+
+        const createdDate =
+          inquiry.created_at
+            ? new Date(
+                inquiry.created_at
+              ).toLocaleString(
+                'es-AR',
+                {
+                  dateStyle: 'short',
+                  timeStyle: 'short'
+                }
+              )
             : '';
 
         // ---------------------------------------------------
-        // CARD COMPLETA
+        // Botones
+        // ---------------------------------------------------
+
+        const actionBlock = `
+          <div
+            style="
+              margin-top:20px;
+              display:flex;
+              gap:10px;
+              flex-wrap:wrap;
+            "
+          >
+
+            ${
+              inquiry.status === 'new'
+                ? `
+                  <button
+                    type="button"
+                    class="button secondary mark-inquiry-responded"
+                    data-id="${inquiry.id}"
+                  >
+                    Marcar como respondida
+                  </button>
+                `
+                : ''
+            }
+
+            <button
+              type="button"
+              class="button secondary delete-inquiry"
+              data-id="${inquiry.id}"
+              style="
+                border-color:#d9534f;
+                color:#d9534f;
+              "
+            >
+              🗑 Eliminar consulta
+            </button>
+
+          </div>
+        `;
+
+        // ---------------------------------------------------
+        // CARD
         // ---------------------------------------------------
 
         return `
@@ -722,9 +751,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       })
       .join('');
 
-    // -------------------------------------------------------
-    // Eventos: marcar como respondida
-    // -------------------------------------------------------
+    // =======================================================
+    // MARCAR COMO RESPONDIDA
+    // =======================================================
 
     container
       .querySelectorAll(
@@ -789,13 +818,87 @@ document.addEventListener('DOMContentLoaded', async () => {
           }
         );
       });
+
+    // =======================================================
+    // ELIMINAR CONSULTA
+    // =======================================================
+
+    container
+      .querySelectorAll(
+        '.delete-inquiry'
+      )
+      .forEach(button => {
+
+        button.addEventListener(
+          'click',
+          async () => {
+
+            const inquiryId =
+              button.dataset.id;
+
+            if (!inquiryId) return;
+
+            const confirmed =
+              confirm(
+                '¿Eliminar esta consulta?\n\n' +
+                'Se eliminarán definitivamente ' +
+                'la consulta y los datos de contacto asociados. ' +
+                'Esta acción no se puede deshacer.'
+              );
+
+            if (!confirmed) return;
+
+            button.disabled = true;
+
+            button.textContent =
+              'Eliminando...';
+
+            const { error } =
+              await sb
+                .from(
+                  'professional_inquiries'
+                )
+                .delete()
+                .eq(
+                  'id',
+                  inquiryId
+                )
+                .eq(
+                  'professional_id',
+                  user.id
+                );
+
+            if (error) {
+              console.error(
+                'Error eliminando consulta:',
+                error
+              );
+
+              button.disabled =
+                false;
+
+              button.textContent =
+                '🗑 Eliminar consulta';
+
+              alert(
+                'No se pudo eliminar la consulta.'
+              );
+
+              return;
+            }
+
+            await loadProfessionalInquiries();
+          }
+        );
+      });
   }
 
   // =========================================================
-  // DATOS GENERALES DEL DASHBOARD
+  // CARGAR DASHBOARD
   // =========================================================
 
   async function loadDashboard() {
+
     const profile =
       await loadProfile();
 
@@ -804,7 +907,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadProfessionalInquiries();
 
     // -------------------------------------------------------
-    // Datos básicos del dashboard
+    // Nombre
     // -------------------------------------------------------
 
     const profileName =
@@ -821,6 +924,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         'Profesional';
     }
 
+    // -------------------------------------------------------
+    // Matrícula
+    // -------------------------------------------------------
+
     const profileLicense =
       document.getElementById(
         'profileLicense'
@@ -835,6 +942,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         'No especificada';
     }
 
+    // -------------------------------------------------------
+    // Modalidad
+    // -------------------------------------------------------
+
     const profileModality =
       document.getElementById(
         'profileModality'
@@ -848,6 +959,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         profile.modality ||
         'No especificada';
     }
+
+    // -------------------------------------------------------
+    // Zona
+    // -------------------------------------------------------
 
     const profileZone =
       document.getElementById(
@@ -874,6 +989,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     );
 
   if (logoutButton) {
+
     logoutButton.addEventListener(
       'click',
       async () => {
@@ -883,18 +999,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // =========================================================
-  // INICIAR DASHBOARD
+  // INICIAR
   // =========================================================
 
   try {
+
     await loadDashboard();
+
   } catch (error) {
+
     console.error(
       'Error general del dashboard:',
       error
     );
 
     if (dashboardContent) {
+
       dashboardContent.innerHTML = `
         <div class="card">
           <p class="message error">
