@@ -215,6 +215,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       );
 
 
+    console.log(
+      'Suscripción actual:',
+      subscription
+    );
+
+    console.log(
+      '¿Es PRO?:',
+      isPro
+    );
+
+
     updatePlanUI();
 
   }
@@ -329,31 +340,69 @@ document.addEventListener('DOMContentLoaded', async () => {
   function renderCancellationUI() {
 
     /*
-     * Buscamos un contenedor específico si existe.
-     * Si no existe, utilizamos subscriptionMessage.
+     * Primero eliminamos cualquier versión anterior
+     * del bloque de cancelación.
      */
 
-    const container =
-      subscriptionContent ||
-      subscriptionMessage;
+    const oldBox =
+      document.getElementById(
+        'cancelSubscriptionBox'
+      );
 
-    if (!container) return;
+    if (oldBox) {
+      oldBox.remove();
+    }
 
 
     /*
-     * Si no es PRO, no mostramos cancelación.
+     * Buscamos dónde insertar el bloque.
+     *
+     * Prioridad:
+     * 1. #subscriptionContent
+     * 2. #subscriptionMessage
+     * 3. contenedor del botón de suscripción
+     * 4. sección #suscripcion
      */
 
-    if (!isPro) {
+    let container =
+      document.getElementById(
+        'subscriptionContent'
+      );
 
-      const existing =
+
+    if (!container) {
+
+      container =
         document.getElementById(
-          'cancelSubscriptionBox'
+          'subscriptionMessage'
         );
 
-      if (existing) {
-        existing.remove();
-      }
+    }
+
+
+    if (!container && subscriptionButton) {
+
+      container =
+        subscriptionButton.parentElement;
+
+    }
+
+
+    if (!container) {
+
+      container =
+        document.getElementById(
+          'suscripcion'
+        );
+
+    }
+
+
+    if (!container) {
+
+      console.error(
+        'No se encontró ningún contenedor para mostrar la cancelación.'
+      );
 
       return;
 
@@ -361,9 +410,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     /*
-     * Si ya está cancelada para el final
-     * del período, mostramos el estado.
+     * Si NO es PRO, no mostramos nada.
      */
+
+    if (!isPro) {
+      return;
+    }
+
+
+    // ===================================================
+    // PRO YA CANCELADO
+    // ===================================================
 
     if (
       subscription?.cancel_at_period_end &&
@@ -383,21 +440,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         );
 
 
-      const existing =
-        document.getElementById(
-          'cancelSubscriptionBox'
+      const box =
+        document.createElement(
+          'div'
         );
 
-      if (existing) {
-        existing.remove();
-      }
-
-
-      const box =
-        document.createElement('div');
 
       box.id =
         'cancelSubscriptionBox';
+
 
       box.style.cssText = `
         margin-top:20px;
@@ -406,6 +457,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         background:var(--soft);
         border:1px solid rgba(0,0,0,.08);
       `;
+
 
       box.innerHTML = `
 
@@ -424,33 +476,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       `;
 
+
       container.appendChild(box);
+
 
       return;
 
     }
 
 
-    /*
-     * Si está PRO normalmente,
-     * mostramos botón de cancelación.
-     */
-
-    const existing =
-      document.getElementById(
-        'cancelSubscriptionBox'
-      );
-
-    if (existing) {
-      existing.remove();
-    }
-
+    // ===================================================
+    // PRO ACTIVO — MOSTRAR CANCELAR
+    // ===================================================
 
     const box =
-      document.createElement('div');
+      document.createElement(
+        'div'
+      );
+
 
     box.id =
       'cancelSubscriptionBox';
+
 
     box.style.cssText = `
       margin-top:20px;
@@ -491,6 +538,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           margin-top:12px;
           border-color:#b91c1c;
           color:#b91c1c;
+          cursor:pointer;
         "
       >
         Cancelar suscripción
@@ -508,7 +556,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       );
 
 
-    if (!cancelButton) return;
+    if (!cancelButton) {
+
+      console.error(
+        'No se pudo crear el botón de cancelación.'
+      );
+
+      return;
+
+    }
 
 
     cancelButton.addEventListener(
