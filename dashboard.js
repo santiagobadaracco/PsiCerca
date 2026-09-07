@@ -756,7 +756,9 @@
     }
 
 
-    // Cargar suscripción sin bloquear el resto del dashboard.
+    // ============================================================
+    // CARGAR SUSCRIPCIÓN
+    // ============================================================
 
     loadSubscription().catch(error => {
 
@@ -772,46 +774,97 @@
     // NAVEGACIÓN INTERNA
     // ============================================================
 
-    document
-      .querySelectorAll(
-        'a[href^="#"]'
-      )
-      .forEach(link => {
+    /*
+     * Esta navegación utiliza delegación de eventos.
+     *
+     * Es importante porque algunos botones de PRO se crean
+     * dinámicamente después de cargar la suscripción.
+     */
 
-        link.addEventListener(
-          'click',
-          event => {
+    document.addEventListener(
+      'click',
+      event => {
 
-            const targetId =
-              link.getAttribute('href');
+        const element =
+          event.target.closest(
+            'a, button'
+          );
 
-            if (
-              !targetId ||
-              targetId === '#'
-            ) {
-              return;
-            }
+        if (!element) {
+          return;
+        }
 
-            const target =
-              document.querySelector(
-                targetId
-              );
 
-            if (!target) {
-              return;
-            }
+        const href =
+          element.getAttribute('href');
 
-            event.preventDefault();
 
-            target.scrollIntoView({
-              behavior: 'smooth',
-              block: 'start'
-            });
+        const text =
+          typeof normalizeText === 'function'
+            ? normalizeText(element.textContent)
+            : element.textContent
+                .toLowerCase()
+                .trim();
 
-          }
-        );
 
-      });
+        const isProButton =
+          text.includes(
+            'conoce psicerca pro'
+          );
+
+
+        const isSubscriptionLink =
+          href === '#suscripcion';
+
+
+        if (
+          !isProButton &&
+          !isSubscriptionLink
+        ) {
+          return;
+        }
+
+
+        const target =
+          document.getElementById(
+            'suscripcion'
+          );
+
+
+        if (!target) {
+          return;
+        }
+
+
+        event.preventDefault();
+
+
+        target.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+
+
+        /*
+         * Actualizamos también la URL para que el estado
+         * de navegación sea coherente sin recargar la página.
+         */
+
+        if (
+          window.history &&
+          window.history.replaceState
+        ) {
+
+          window.history.replaceState(
+            null,
+            '',
+            '#suscripcion'
+          );
+
+        }
+
+      }
+    );
 
 
     // ============================================================
@@ -996,6 +1049,21 @@
 
 
     currentProfile = profile;
+
+
+    // ============================================================
+    // ACTUALIZAR SALUDO
+    // ============================================================
+
+    if (
+      profile?.display_name &&
+      welcome
+    ) {
+
+      welcome.textContent =
+        `Hola, ${profile.display_name} 👋`;
+
+    }
 
 
     // ============================================================
@@ -2677,6 +2745,21 @@
 
           currentProfile =
             savedProfile;
+
+
+          // ======================================================
+          // ACTUALIZAR SALUDO
+          // ======================================================
+
+          if (
+            savedProfile?.display_name &&
+            welcome
+          ) {
+
+            welcome.textContent =
+              `Hola, ${savedProfile.display_name} 👋`;
+
+          }
 
 
           // ======================================================
