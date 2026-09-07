@@ -771,6 +771,139 @@
 
 
     // ============================================================
+    // CONTRATAR PSI CERCA PRO
+    // ============================================================
+
+    async function startProSubscription() {
+
+      const button =
+        document.getElementById(
+          'upgradeProButton'
+        );
+
+
+      if (!button) {
+        return;
+      }
+
+
+      button.disabled =
+        true;
+
+      button.textContent =
+        'Preparando pago...';
+
+
+      try {
+
+        const {
+          data: { session }
+        } =
+          await sb.auth.getSession();
+
+
+        if (!session) {
+
+          window.location.href =
+            'login.html';
+
+          return;
+
+        }
+
+
+        const response =
+          await fetch(
+            `${window.PSICERCA_CONFIG.SUPABASE_URL}/functions/v1/create-pro-subscription`,
+            {
+              method: 'POST',
+
+              headers: {
+                'Content-Type':
+                  'application/json',
+
+                'Authorization':
+                  `Bearer ${session.access_token}`
+              }
+            }
+          );
+
+
+        const result =
+          await response.json();
+
+
+        if (
+          !response.ok ||
+          !result.success ||
+          !result.checkout_url
+        ) {
+
+          console.error(
+            'Respuesta de Mercado Pago:',
+            result
+          );
+
+          throw new Error(
+            result.error ||
+            'No se pudo iniciar la suscripción.'
+          );
+
+        }
+
+
+        // Ir al checkout de Mercado Pago
+
+        window.location.href =
+          result.checkout_url;
+
+
+      } catch (error) {
+
+        console.error(
+          'Error al iniciar suscripción PRO:',
+          error
+        );
+
+
+        alert(
+          error.message ||
+          'No se pudo iniciar el proceso de pago.'
+        );
+
+
+        button.disabled =
+          false;
+
+        button.textContent =
+          'Contratar PsiCerca PRO';
+
+      }
+
+    }
+
+
+    // ============================================================
+    // CONECTAR BOTÓN DE CONTRATACIÓN
+    // ============================================================
+
+    const upgradeProButton =
+      document.getElementById(
+        'upgradeProButton'
+      );
+
+
+    if (upgradeProButton) {
+
+      upgradeProButton.addEventListener(
+        'click',
+        startProSubscription
+      );
+
+    }
+
+
+    // ============================================================
     // NAVEGACIÓN INTERNA
     // ============================================================
 
@@ -893,6 +1026,7 @@
             prompt(
               'Para confirmar la eliminación, escribí exactamente:\n\nELIMINAR'
             );
+
 
           if (confirmationText !== 'ELIMINAR') {
 
@@ -1194,7 +1328,9 @@
 
 
       const populationField =
-        document.getElementById('population');
+        document.getElementById(
+          'population'
+        );
 
 
       if (populationField) {
