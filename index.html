@@ -1,351 +1,1506 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+<!doctype html>
+<html lang="es">
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+<head>
 
-Deno.serve(async (req) => {
-  // CORS
-  if (req.method === "OPTIONS") {
-    return new Response("ok", {
-      headers: corsHeaders,
-    });
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <title>PsiCerca — Encontrá tu profesional de salud mental</title>
+
+  <meta
+    name="description"
+    content="PsiCerca conecta personas que buscan atención en salud mental con profesionales de la psicología."
+  >
+
+  <link rel="stylesheet" href="styles.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="supabase.js"></script>
+
+  <style>
+
+    /*
+     * =====================================================
+     * ESTILOS ESPECÍFICOS DEL INICIO
+     * =====================================================
+     */
+
+    .home-hero {
+      padding: 80px 0 70px;
+    }
+
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns:
+        minmax(0, 1.15fr)
+        minmax(320px, .85fr);
+
+      gap: 60px;
+
+      align-items: center;
+    }
+
+
+    .hero-copy h1 {
+      font-size: clamp(42px, 6vw, 72px);
+      line-height: .98;
+      letter-spacing: -2.8px;
+      margin: 14px 0 24px;
+    }
+
+
+    .hero-copy > p {
+      max-width: 650px;
+      font-size: 19px;
+      line-height: 1.65;
+      color: var(--muted);
+    }
+
+
+    .hero-card {
+      background: var(--soft);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      padding: 28px;
+      box-shadow: 0 20px 50px rgba(0,0,0,.06);
+    }
+
+
+    .searchbox {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 22px;
+    }
+
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 30px;
+    }
+
+
+    .trust-row {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-top: 28px;
+    }
+
+
+    .trust-item {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+
+    .trust-item strong {
+      color: var(--text);
+    }
+
+
+    .section-intro {
+      max-width: 720px;
+      margin-bottom: 38px;
+    }
+
+
+    .section-intro p {
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.65;
+    }
+
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+      gap: 20px;
+    }
+
+
+    .feature-card {
+      padding: 28px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: white;
+    }
+
+
+    .feature-number {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      background: var(--soft);
+      color: var(--accent);
+
+      font-weight: 800;
+
+      margin-bottom: 20px;
+    }
+
+
+    .feature-card h3 {
+      margin-bottom: 10px;
+    }
+
+
+    .feature-card p {
+      color: var(--muted);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+
+    .steps {
+      display: grid;
+      grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+      gap: 20px;
+    }
+
+
+    .step {
+      padding: 30px;
+      background: var(--soft);
+      border-radius: 22px;
+    }
+
+
+    .step strong {
+      display: block;
+      font-size: 13px;
+      color: var(--accent);
+      margin-bottom: 10px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+
+    .step h3 {
+      margin-bottom: 10px;
+    }
+
+
+    .step p {
+      color: var(--muted);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+
+    .professional-section {
+      background: var(--soft);
+    }
+
+
+    .pro-grid {
+      display: grid;
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+      gap: 20px;
+    }
+
+
+    .pro-cta {
+      padding: 30px;
+      border-radius: 24px;
+      background: white;
+      border: 1px solid var(--line);
+    }
+
+
+    .pro-cta p {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+
+    .home-professionals {
+      margin-top: 34px;
+    }
+
+
+    .home-professionals-grid {
+      display: grid;
+      grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+      gap: 20px;
+    }
+
+
+    .home-pro-card {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 24px;
+      background: white;
+    }
+
+
+    .home-pro-top {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+
+    .home-pro-photo {
+      width: 58px;
+      height: 58px;
+      min-width: 58px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+
+    .home-pro-avatar {
+      width: 58px;
+      height: 58px;
+      min-width: 58px;
+      border-radius: 50%;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      background: var(--soft);
+      color: var(--accent);
+
+      font-weight: 800;
+    }
+
+
+    .home-pro-card h3 {
+      margin: 0 0 4px;
+      font-size: 18px;
+    }
+
+
+    .home-pro-card .small {
+      margin: 0;
+    }
+
+
+    .home-pro-card p {
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+
+    .faq-list {
+      max-width: 820px;
+    }
+
+
+    .faq-item {
+      border-top: 1px solid var(--line);
+      padding: 22px 0;
+    }
+
+
+    .faq-item:last-child {
+      border-bottom: 1px solid var(--line);
+    }
+
+
+    .faq-item h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+
+    .faq-item p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+
+    .final-cta {
+      text-align: center;
+      padding: 80px 20px;
+    }
+
+
+    .final-cta h2 {
+      max-width: 700px;
+      margin: 0 auto 18px;
+    }
+
+
+    .final-cta p {
+      max-width: 620px;
+      margin: 0 auto 28px;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.6;
+    }
+
+
+    @media (max-width: 850px) {
+
+      .hero-grid {
+        grid-template-columns: 1fr;
+        gap: 35px;
+      }
+
+
+      .feature-grid,
+      .steps,
+      .home-professionals-grid {
+        grid-template-columns: 1fr;
+      }
+
+
+      .pro-grid {
+        grid-template-columns: 1fr;
+      }
+
+
+      .home-hero {
+        padding: 55px 0;
+      }
+
+    }
+
+
+    @media (max-width: 600px) {
+
+      .hero-copy h1 {
+        letter-spacing: -1.8px;
+      }
+
+
+      .actions .btn {
+        width: 100%;
+      }
+
+
+      .hero-card {
+        padding: 18px;
+      }
+
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     HEADER
+     ===================================================== -->
+
+<header>
+
+  <div class="container nav">
+
+    <a
+      class="logo"
+      href="index.html"
+    >
+      Psi<span>Cerca</span>
+    </a>
+
+
+    <nav class="navlinks">
+
+      <a href="#como">
+        Cómo funciona
+      </a>
+
+      <a href="#profesionales">
+        Profesionales
+      </a>
+
+      <a href="#faq">
+        Preguntas frecuentes
+      </a>
+
+      <a
+        href="login.html"
+        class="navcta"
+      >
+        Iniciar sesión
+      </a>
+
+      <a
+        href="registro.html"
+        class="navcta"
+      >
+        Soy psicólogo/a
+      </a>
+
+    </nav>
+
+  </div>
+
+</header>
+
+
+<!-- =====================================================
+     HERO
+     ===================================================== -->
+
+<main>
+
+
+<section
+  class="home-hero"
+  id="inicio"
+>
+
+  <div class="container">
+
+    <div class="hero-grid">
+
+
+      <!-- TEXTO -->
+
+      <div class="hero-copy">
+
+        <div class="eyebrow">
+
+          <span class="dot"></span>
+
+          Encontrá profesionales en PsiCerca
+
+        </div>
+
+
+        <h1>
+
+          Encontrá un profesional de salud mental
+          <span style="color:var(--accent)">
+            cerca tuyo.
+          </span>
+
+        </h1>
+
+
+        <p>
+
+          PsiCerca te ayuda a encontrar profesionales
+          de la psicología según la zona donde atienden,
+          modalidad, orientación y población con la que
+          trabajan.
+
+        </p>
+
+
+        <div class="actions">
+
+          <a
+            class="btn primary"
+            href="profesionales.html"
+          >
+
+            🔎 Buscar un psicólogo
+
+          </a>
+
+
+          <a
+            href="registro.html"
+            class="btn secondary"
+          >
+
+            Soy psicólogo/a
+
+          </a>
+
+        </div>
+
+
+        <div class="trust-row">
+
+          <div class="trust-item">
+
+            ✓ <strong>Directorio público</strong>
+
+          </div>
+
+          <div class="trust-item">
+
+            ✓ <strong>Filtros de búsqueda</strong>
+
+          </div>
+
+          <div class="trust-item">
+
+            ✓ <strong>Contacto directo</strong>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- TARJETA DE BÚSQUEDA -->
+
+      <div class="hero-card">
+
+        <div class="searchbox">
+
+          <small>
+            BUSCÁ TU PROFESIONAL
+          </small>
+
+
+          <div
+            style="
+              font-family:Manrope,sans-serif;
+              font-size:21px;
+              font-weight:800;
+              margin-top:8px;
+              letter-spacing:-.5px;
+            "
+          >
+
+            Encontrá el profesional
+            que necesitás.
+
+          </div>
+
+
+          <p
+            style="
+              margin:8px 0 18px;
+              color:var(--muted);
+              font-size:14px;
+              line-height:1.5;
+            "
+          >
+
+            Buscá por zona, modalidad,
+            orientación y población.
+
+          </p>
+
+
+          <a
+            href="profesionales.html"
+            class="btn primary"
+            style="width:100%;"
+          >
+
+            🔎 Buscar psicólogo
+
+          </a>
+
+        </div>
+
+
+        <div
+          style="
+            margin-top:20px;
+            padding:0 4px;
+          "
+        >
+
+          <p
+            class="small"
+            style="margin:0;"
+          >
+
+            Podés explorar el directorio
+            sin crear una cuenta.
+
+          </p>
+
+        </div>
+
+      </div>
+
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =====================================================
+     PROFESIONALES DESTACADOS / REALES
+     ===================================================== -->
+
+<section
+  class="section"
+  id="profesionales"
+>
+
+  <div class="container">
+
+    <div class="section-intro">
+
+      <div class="eyebrow">
+        Directorio
+      </div>
+
+
+      <h2>
+        Profesionales que ya están en PsiCerca
+      </h2>
+
+
+      <p>
+
+        Explorá algunos de los perfiles disponibles.
+        Podés acceder al directorio completo para
+        buscar según tus necesidades.
+
+      </p>
+
+    </div>
+
+
+    <div
+      id="homeProfessionals"
+      class="home-professionals"
+    >
+
+      <div class="empty">
+        Cargando profesionales…
+      </div>
+
+    </div>
+
+
+    <div
+      style="
+        text-align:center;
+        margin-top:30px;
+      "
+    >
+
+      <a
+        href="profesionales.html"
+        class="btn primary"
+      >
+
+        Ver todos los profesionales
+
+      </a>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =====================================================
+     PARA PACIENTES
+     ===================================================== -->
+
+<section
+  class="section"
+  id="pacientes"
+>
+
+  <div class="container">
+
+    <div
+      style="
+        max-width:820px;
+        margin:0 auto;
+        text-align:center;
+      "
+    >
+
+      <div class="eyebrow">
+        Para pacientes
+      </div>
+
+
+      <h2>
+        ¿Estás buscando un psicólogo?
+      </h2>
+
+
+      <p
+        style="
+          color:var(--muted);
+          font-size:18px;
+          max-width:650px;
+          margin:18px auto 28px;
+          line-height:1.6;
+        "
+      >
+
+        Explorá profesionales de PsiCerca y encontrá
+        opciones según la zona, modalidad, orientación
+        y población con la que trabajan.
+
+      </p>
+
+
+      <a
+        href="profesionales.html"
+        class="btn primary"
+      >
+
+        🔎 Buscar un psicólogo
+
+      </a>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =====================================================
+     CÓMO FUNCIONA
+     ===================================================== -->
+
+<section
+  class="section"
+  id="como"
+>
+
+  <div class="container">
+
+    <div class="section-intro">
+
+      <div class="eyebrow">
+        Cómo funciona
+      </div>
+
+
+      <h2>
+        Encontrar un profesional puede ser más simple.
+      </h2>
+
+
+      <p>
+
+        PsiCerca organiza la información para que
+        puedas explorar distintas opciones y decidir
+        con quién querés ponerte en contacto.
+
+      </p>
+
+    </div>
+
+
+    <div class="steps">
+
+
+      <div class="step">
+
+        <strong>
+          Paso 01
+        </strong>
+
+        <h3>
+          Buscá
+        </h3>
+
+        <p>
+
+          Explorá el directorio y utilizá los filtros
+          para encontrar profesionales según tus
+          necesidades.
+
+        </p>
+
+      </div>
+
+
+      <div class="step">
+
+        <strong>
+          Paso 02
+        </strong>
+
+        <h3>
+          Conocé
+        </h3>
+
+        <p>
+
+          Revisá el perfil profesional, su orientación,
+          modalidad de atención y población con la
+          que trabaja.
+
+        </p>
+
+      </div>
+
+
+      <div class="step">
+
+        <strong>
+          Paso 03
+        </strong>
+
+        <h3>
+          Contactá
+        </h3>
+
+        <p>
+
+          Cuando encuentres una opción que te interese,
+          podés crear una cuenta y contactarte con el
+          profesional.
+
+        </p>
+
+      </div>
+
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =====================================================
+     PARA PROFESIONALES
+     ===================================================== -->
+
+<section
+  class="section professional-section"
+>
+
+  <div class="container">
+
+    <div class="section-intro">
+
+      <div class="eyebrow">
+        Para profesionales
+      </div>
+
+
+      <h2>
+        ¿Sos psicólogo/a?
+      </h2>
+
+
+      <p>
+
+        Creá tu cuenta profesional y armá un perfil
+        para que las personas puedan conocer tu
+        práctica y contactarte.
+
+      </p>
+
+    </div>
+
+
+    <div class="pro-grid">
+
+
+      <div class="pro-cta">
+
+        <h3>
+          Creá tu perfil
+        </h3>
+
+
+        <p>
+
+          Completá tus datos profesionales,
+          matrícula, orientación, modalidad,
+          población y zonas de atención.
+
+        </p>
+
+
+        <a
+          href="registro.html"
+          class="btn primary"
+        >
+
+          Crear cuenta profesional
+
+        </a>
+
+      </div>
+
+
+      <div class="pro-cta">
+
+        <h3>
+          ¿Ya tenés una cuenta?
+        </h3>
+
+
+        <p>
+
+          Ingresá a tu panel para actualizar
+          tu información y administrar la
+          publicación de tu perfil.
+
+        </p>
+
+
+        <a
+          href="login.html"
+          class="btn secondary"
+        >
+
+          Iniciar sesión
+
+        </a>
+
+      </div>
+
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =====================================================
+     PREGUNTAS FRECUENTES
+     ===================================================== -->
+
+<section
+  class="section"
+  id="faq"
+>
+
+  <div class="container">
+
+    <div class="section-intro">
+
+      <div class="eyebrow">
+        Preguntas frecuentes
+      </div>
+
+
+      <h2>
+        Algunas respuestas antes de empezar.
+      </h2>
+
+    </div>
+
+
+    <div class="faq-list">
+
+
+      <div class="faq-item">
+
+        <h3>
+          ¿Necesito una cuenta para buscar profesionales?
+        </h3>
+
+        <p>
+
+          No. Podés explorar el directorio y consultar
+          los perfiles públicos sin registrarte.
+
+        </p>
+
+      </div>
+
+
+      <div class="faq-item">
+
+        <h3>
+          ¿Para qué necesito una cuenta de paciente?
+        </h3>
+
+        <p>
+
+          La cuenta permite acceder a las opciones
+          de contacto de los profesionales.
+
+        </p>
+
+      </div>
+
+
+      <div class="faq-item">
+
+        <h3>
+          ¿PsiCerca brinda atención psicológica?
+        </h3>
+
+        <p>
+
+          No. PsiCerca es una plataforma tecnológica
+          que facilita la búsqueda y el contacto entre
+          personas y profesionales.
+
+        </p>
+
+      </div>
+
+
+      <div class="faq-item">
+
+        <h3>
+          ¿PsiCerca verifica las matrículas?
+        </h3>
+
+        <p>
+
+          La matrícula informada en cada perfil es
+          declarada por el profesional. Recomendamos
+          comprobarla directamente en el registro
+          oficial correspondiente.
+
+        </p>
+
+      </div>
+
+
+      <div class="faq-item">
+
+        <h3>
+          ¿Puedo encontrar atención presencial y online?
+        </h3>
+
+        <p>
+
+          Sí. El directorio permite filtrar profesionales
+          según la modalidad de atención disponible.
+
+        </p>
+
+      </div>
+
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =====================================================
+     CTA FINAL
+     ===================================================== -->
+
+<section class="final-cta">
+
+  <div class="container">
+
+    <div class="eyebrow">
+      PsiCerca
+    </div>
+
+
+    <h2>
+      Empezá a buscar tu profesional.
+    </h2>
+
+
+    <p>
+
+      Explorá el directorio y encontrá opciones
+      de profesionales de salud mental según
+      tus necesidades.
+
+    </p>
+
+
+    <a
+      href="profesionales.html"
+      class="btn primary"
+    >
+
+      🔎 Buscar un psicólogo
+
+    </a>
+
+  </div>
+
+</section>
+
+
+</main>
+
+
+<!-- =====================================================
+     FOOTER
+     ===================================================== -->
+
+<footer class="footer">
+
+  <div class="container">
+
+    <div
+      style="
+        display:flex;
+        justify-content:space-between;
+        gap:20px;
+        flex-wrap:wrap;
+        align-items:center;
+      "
+    >
+
+      <div>
+
+        PsiCerca · Plataforma tecnológica · 2026
+
+      </div>
+
+
+      <div>
+
+        <a href="login.html">
+          Iniciar sesión
+        </a>
+
+        &nbsp;·&nbsp;
+
+        <a href="registro.html">
+          Soy psicólogo/a
+        </a>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</footer>
+
+
+<!-- =====================================================
+     JAVASCRIPT
+     ===================================================== -->
+
+<script>
+
+
+/*
+ * =====================================================
+ * CARGAR PROFESIONALES EN EL HOME
+ * =====================================================
+ */
+
+async function loadHomeProfessionals() {
+
+
+  const box =
+    document.getElementById(
+      'homeProfessionals'
+    );
+
+
+  if (!box) {
+    return;
   }
+
 
   try {
-    if (req.method !== "POST") {
-      return new Response(
-        JSON.stringify({
-          error: "Método no permitido.",
-        }),
-        {
-          status: 405,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-    }
 
-    // Variables de entorno de Supabase
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
-    const supabaseServiceRoleKey = Deno.env.get(
-      "SUPABASE_SERVICE_ROLE_KEY"
-    );
-    const mercadoPagoAccessToken = Deno.env.get(
-      "MERCADOPAGO_ACCESS_TOKEN"
-    );
 
-    if (
-      !supabaseUrl ||
-      !supabaseAnonKey ||
-      !supabaseServiceRoleKey ||
-      !mercadoPagoAccessToken
-    ) {
-      throw new Error(
-        "Faltan variables de entorno necesarias."
-      );
-    }
+    const sb =
+      requireSupabase();
 
-    // --------------------------------------------------
-    // 1. Identificar al usuario autenticado
-    // --------------------------------------------------
-
-    const authHeader = req.headers.get("Authorization");
-
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({
-          error: "Usuario no autenticado.",
-        }),
-        {
-          status: 401,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-    }
-
-    const supabaseAuth = createClient(
-      supabaseUrl,
-      supabaseAnonKey,
-      {
-        global: {
-          headers: {
-            Authorization: authHeader,
-          },
-        },
-      }
-    );
 
     const {
-      data: { user },
-      error: userError,
-    } = await supabaseAuth.auth.getUser();
+      data: profiles,
+      error
+    } = await sb
 
-    if (userError || !user) {
-      return new Response(
-        JSON.stringify({
-          error: "No se pudo validar el usuario.",
-        }),
+      .from('profiles')
+
+      .select(`
+        id,
+        display_name,
+        license,
+        jurisdiction,
+        modality,
+        orientation,
+        population,
+        bio,
+        photo_url
+      `)
+
+      .eq(
+        'is_public',
+        true
+      )
+
+      .order(
+        'display_name',
         {
-          status: 401,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
+          ascending:true
         }
-      );
+      )
+
+      .limit(3);
+
+
+    if (error) {
+      throw error;
     }
 
-    // --------------------------------------------------
-    // 2. Cliente administrativo de Supabase
-    // --------------------------------------------------
-
-    const supabaseAdmin = createClient(
-      supabaseUrl,
-      supabaseServiceRoleKey
-    );
-
-    // --------------------------------------------------
-    // 3. Verificar que sea profesional
-    // --------------------------------------------------
-
-    const { data: role, error: roleError } =
-      await supabaseAdmin
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "professional")
-        .maybeSingle();
-
-    if (roleError) {
-      console.error(roleError);
-
-      return new Response(
-        JSON.stringify({
-          error: "No se pudo verificar el rol del usuario.",
-        }),
-        {
-          status: 500,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-    }
-
-    if (!role) {
-      return new Response(
-        JSON.stringify({
-          error:
-            "Solo los profesionales pueden contratar PsiCerca PRO.",
-        }),
-        {
-          status: 403,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-    }
-
-    // --------------------------------------------------
-    // 4. Verificar suscripción actual
-    // --------------------------------------------------
-
-    const { data: subscription, error: subscriptionError } =
-      await supabaseAdmin
-        .from("professional_subscriptions")
-        .select(
-          `
-          id,
-          plan,
-          status,
-          mercado_pago_subscription_id
-        `
-        )
-        .eq("profile_id", user.id)
-        .maybeSingle();
-
-    if (subscriptionError) {
-      console.error(subscriptionError);
-
-      return new Response(
-        JSON.stringify({
-          error:
-            "No se pudo consultar el estado de la suscripción.",
-        }),
-        {
-          status: 500,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-    }
 
     if (
-      subscription?.plan === "pro" &&
-      subscription?.status === "active"
+      !profiles ||
+      !profiles.length
     ) {
-      return new Response(
-        JSON.stringify({
-          error: "Ya tenés una suscripción PRO activa.",
-        }),
-        {
-          status: 409,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+
+      box.innerHTML = `
+
+        <div class="empty">
+
+          Todavía no hay profesionales
+          publicados.
+
+        </div>
+
+      `;
+
+      return;
+
     }
 
-    // --------------------------------------------------
-    // 5. Crear suscripción recurrente en Mercado Pago
-    // --------------------------------------------------
 
-    const mercadoPagoResponse = await fetch(
-      "https://api.mercadopago.com/preapproval",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${mercadoPagoAccessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          reason: "PsiCerca PRO",
-          external_reference: user.id,
-          payer_email: user.email,
-          auto_recurring: {
-            frequency: 1,
-            frequency_type: "months",
-            transaction_amount: 15000,
-            currency_id: "ARS",
-          },
-          back_url:
-            "https://santiagobadaracco.github.io/PsiCerca/dashboard.html#suscripcion",
-          status: "pending",
-        }),
-      }
-    );
+    box.innerHTML = `
 
-    const mercadoPagoData =
-      await mercadoPagoResponse.json();
+      <div class="home-professionals-grid">
 
-    if (!mercadoPagoResponse.ok) {
-      console.error(
-        "Mercado Pago error:",
-        mercadoPagoData
-      );
+        ${profiles.map(profile => {
 
-      return new Response(
-        JSON.stringify({
-          error:
-            "Mercado Pago no pudo crear la suscripción.",
-          details: mercadoPagoData,
-        }),
-        {
-          status: 502,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-    }
 
-    // --------------------------------------------------
-    // 6. Guardar ID de Mercado Pago en PsiCerca
-    // --------------------------------------------------
+          const initials =
 
-    if (subscription?.id && mercadoPagoData.id) {
-      const { error: updateError } =
-        await supabaseAdmin
-          .from("professional_subscriptions")
-          .update({
-            mercado_pago_subscription_id:
-              String(mercadoPagoData.id),
-            mercado_pago_payer_id:
-              mercadoPagoData.payer_id
-                ? String(mercadoPagoData.payer_id)
-                : null,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", subscription.id);
+            (profile.display_name || 'P')
 
-      if (updateError) {
-        console.error(
-          "Supabase subscription update error:",
-          updateError
-        );
+              .split(' ')
 
-        return new Response(
-          JSON.stringify({
-            error:
-              "La suscripción fue creada en Mercado Pago, pero no pudo registrarse en PsiCerca.",
-          }),
-          {
-            status: 500,
-            headers: {
-              ...corsHeaders,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-      }
-    }
+              .filter(Boolean)
 
-    // --------------------------------------------------
-    // 7. Devolver URL de Mercado Pago
-    // --------------------------------------------------
+              .map(
+                word => word[0]
+              )
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        subscription_id: String(
-          mercadoPagoData.id
-        ),
-        checkout_url:
-          mercadoPagoData.init_point,
-      }),
-      {
-        status: 200,
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+              .slice(0,2)
+
+              .join('')
+
+              .toUpperCase();
+
+
+          const photo =
+
+            profile.photo_url
+
+              ? `
+
+                <img
+                  class="home-pro-photo"
+                  src="${escapeHTML(
+                    profile.photo_url
+                  )}"
+                  alt="Foto de ${escapeHTML(
+                    profile.display_name ||
+                    'profesional'
+                  )}"
+                >
+
+              `
+
+              : `
+
+                <div class="home-pro-avatar">
+
+                  ${escapeHTML(initials)}
+
+                </div>
+
+              `;
+
+
+          const chips = [
+
+            profile.orientation,
+            profile.modality,
+            profile.population
+
+          ]
+
+            .filter(Boolean)
+
+            .slice(0,3)
+
+            .map(
+              item => `
+
+                <span class="chip">
+
+                  ${escapeHTML(item)}
+
+                </span>
+
+              `
+            )
+
+            .join('');
+
+
+          return `
+
+            <article class="home-pro-card">
+
+
+              <div class="home-pro-top">
+
+                ${photo}
+
+
+                <div>
+
+                  <h3>
+
+                    ${escapeHTML(
+                      profile.display_name ||
+                      'Profesional'
+                    )}
+
+                  </h3>
+
+
+                  <p class="small">
+
+                    ${escapeHTML(
+                      profile.license ||
+                      ''
+                    )}
+
+                    ${
+                      profile.jurisdiction
+                        ? ` · ${escapeHTML(
+                            profile.jurisdiction
+                          )}`
+                        : ''
+                    }
+
+                  </p>
+
+                </div>
+
+              </div>
+
+
+              ${
+                chips
+
+                  ? `
+
+                    <div
+                      class="chips"
+                      style="margin-bottom:15px;"
+                    >
+
+                      ${chips}
+
+                    </div>
+
+                  `
+
+                  : ''
+              }
+
+
+              <p>
+
+                ${escapeHTML(
+                  profile.bio ||
+                  'Profesional de la salud mental.'
+                )}
+
+              </p>
+
+
+              <a
+                href="profesional.html?id=${encodeURIComponent(
+                  profile.id
+                )}"
+                class="btn secondary full"
+              >
+
+                Ver perfil
+
+              </a>
+
+
+            </article>
+
+          `;
+
+
+        }).join('')}
+
+      </div>
+
+    `;
+
+
   } catch (error) {
-    console.error(error);
 
-    return new Response(
-      JSON.stringify({
-        error:
-          error instanceof Error
-            ? error.message
-            : "Error interno.",
-      }),
-      {
-        status: 500,
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json",
-        },
-      }
+
+    console.error(
+      'Error cargando profesionales del inicio:',
+      error
     );
+
+
+    box.innerHTML = `
+
+      <div class="empty">
+
+        No se pudieron cargar
+        los profesionales.
+
+      </div>
+
+    `;
+
   }
-});
+
+}
+
+
+/*
+ * =====================================================
+ * INICIALIZACIÓN
+ * =====================================================
+ */
+
+loadHomeProfessionals();
+
+
+</script>
+
+
+</body>
+
+</html>
