@@ -44,7 +44,10 @@
       <form id="registerForm">
 
         <div class="field">
-          <label>Nombre y apellido</label>
+          <label for="fullName">
+            Nombre y apellido
+          </label>
+
           <input
             id="fullName"
             required
@@ -53,7 +56,10 @@
         </div>
 
         <div class="field">
-          <label>Email</label>
+          <label for="email">
+            Email
+          </label>
+
           <input
             id="email"
             type="email"
@@ -63,7 +69,10 @@
         </div>
 
         <div class="field">
-          <label>Contraseña</label>
+          <label for="password">
+            Contraseña
+          </label>
+
           <input
             id="password"
             type="password"
@@ -78,7 +87,9 @@
         </div>
 
         <div class="field">
-          <label>Matrícula</label>
+          <label for="license">
+            Matrícula
+          </label>
 
           <input
             id="license"
@@ -88,7 +99,9 @@
         </div>
 
         <div class="field">
-          <label>Jurisdicción</label>
+          <label for="jurisdiction">
+            Jurisdicción
+          </label>
 
           <select id="jurisdiction" required>
             <option value="">Seleccioná</option>
@@ -98,34 +111,37 @@
           </select>
         </div>
 
-      <label class="check">
-  <input
-    id="terms"
-    type="checkbox"
-    required
-  >
-  <span>
-    Acepto los
-    <a
-      href="terminos.html"
-      target="_blank"
-      rel="noopener noreferrer"
-      style="color:var(--accent);font-weight:700;"
-    >
-      Términos y Condiciones
-    </a>
-    y la
-    <a
-      href="privacidad.html"
-      target="_blank"
-      rel="noopener noreferrer"
-      style="color:var(--accent);font-weight:700;"
-    >
-      Política de Privacidad
-    </a>
-    de PsiCerca.
-  </span>
-</label>
+        <label class="check">
+
+          <input
+            id="terms"
+            type="checkbox"
+            required
+          >
+
+          <span>
+            Acepto los
+            <a
+              href="terminos.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              style="color:var(--accent);font-weight:700;"
+            >
+              Términos y Condiciones
+            </a>
+            y la
+            <a
+              href="privacidad.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              style="color:var(--accent);font-weight:700;"
+            >
+              Política de Privacidad
+            </a>
+            de PsiCerca.
+          </span>
+
+        </label>
 
         <button
           class="btn primary full"
@@ -153,9 +169,11 @@
         document.getElementById('registerForm');
 
       if (!form) {
+
         console.error(
           'No se encontró el formulario registerForm.'
         );
+
         return;
       }
 
@@ -194,12 +212,29 @@
             .getElementById('jurisdiction')
             .value;
 
+        const termsAccepted =
+          document
+            .getElementById('terms')
+            .checked;
+
+        if (!termsAccepted) {
+
+          showMessage(
+            'msg',
+            'Tenés que aceptar los Términos y Condiciones y la Política de Privacidad.',
+            true
+          );
+
+          return;
+        }
+
         button.disabled = true;
         button.textContent = 'Creando…';
 
         try {
 
-          const sb = requireSupabase();
+          const sb =
+            requireSupabase();
 
           const { data, error } =
             await sb.auth.signUp({
@@ -214,10 +249,22 @@
                   'https://santiagobadaracco.github.io/PsiCerca/login.html',
 
                 data: {
-                  full_name: fullName,
-                  license: license,
-                  jurisdiction: jurisdiction,
-                  role: 'professional'
+
+                  full_name:
+                    fullName,
+
+                  license:
+                    license,
+
+                  jurisdiction:
+                    jurisdiction,
+
+                  role:
+                    'professional',
+
+                  terms_version:
+                    '2026-09'
+
                 }
 
               }
@@ -288,4 +335,5 @@
   </script>
 
 </body>
+
 </html>
