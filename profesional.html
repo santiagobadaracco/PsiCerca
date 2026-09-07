@@ -99,7 +99,6 @@
       line-height:1.55;
     }
 
-
     .inquiry-fields {
       display:grid;
       grid-template-columns:
@@ -129,6 +128,11 @@
       box-sizing:border-box;
     }
 
+    .inquiry-hint {
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.4;
+    }
 
     .inquiry-textarea-wrap {
       position:relative;
@@ -148,7 +152,6 @@
       color:var(--muted);
       pointer-events:none;
     }
-
 
     .privacy-box {
       display:flex;
@@ -171,7 +174,6 @@
       line-height:1.55;
       color:var(--muted);
     }
-
 
     .inquiry-actions {
       display:flex;
@@ -196,13 +198,19 @@
       font-weight:600;
     }
 
-    .inquiry-success {
+
+    /* =====================================================
+       CONTACTO
+       ===================================================== */
+
+    .contact-note {
       margin-top:16px;
-      padding:15px 16px;
+      padding:14px 16px;
       border-radius:14px;
       background:var(--soft);
-      font-size:13px;
-      font-weight:600;
+      font-size:12px;
+      line-height:1.55;
+      color:var(--muted);
     }
 
 
@@ -942,7 +950,7 @@
 
       /*
        * ---------------------------------------------------
-       * WHATSAPP
+       * WHATSAPP DEL PROFESIONAL
        * ---------------------------------------------------
        */
 
@@ -1058,9 +1066,9 @@
 
               <p class="inquiry-subtitle">
 
-                Contale brevemente a este profesional
-                qué estás buscando y qué modalidad
-                te resulta conveniente.
+                Completá tus datos y contale brevemente
+                a este profesional qué estás buscando.
+                Luego podrá contactarte directamente.
 
               </p>
 
@@ -1080,7 +1088,7 @@
               <label class="inquiry-field">
 
                 <span class="inquiry-label">
-                  Nombre
+                  Nombre y apellido *
                 </span>
 
                 <input
@@ -1088,7 +1096,7 @@
                   type="text"
                   required
                   maxlength="100"
-                  placeholder="Tu nombre"
+                  placeholder="Tu nombre y apellido"
                 >
 
               </label>
@@ -1109,6 +1117,55 @@
                   max="120"
                   placeholder="Edad"
                 >
+
+              </label>
+
+
+              <!-- WHATSAPP -->
+
+              <label class="inquiry-field">
+
+                <span class="inquiry-label">
+                  WhatsApp *
+                </span>
+
+                <input
+                  id="inquiryWhatsapp"
+                  type="tel"
+                  required
+                  maxlength="30"
+                  placeholder="Ej.: 11 1234-5678"
+                >
+
+                <span class="inquiry-hint">
+                  El profesional utilizará este número
+                  para contactarte.
+
+                </span>
+
+              </label>
+
+
+              <!-- EMAIL -->
+
+              <label class="inquiry-field">
+
+                <span class="inquiry-label">
+                  Email
+                </span>
+
+                <input
+                  id="inquiryEmail"
+                  type="email"
+                  maxlength="150"
+                  placeholder="tuemail@ejemplo.com"
+                >
+
+                <span class="inquiry-hint">
+                  Opcional. Podés dejarlo como medio
+                  de contacto alternativo.
+
+                </span>
 
               </label>
 
@@ -1228,7 +1285,7 @@
               <label class="inquiry-field full">
 
                 <span class="inquiry-label">
-                  Mensaje
+                  Mensaje *
                 </span>
 
 
@@ -1275,6 +1332,18 @@
                 pensado únicamente para un primer contacto.
 
               </p>
+
+            </div>
+
+
+            <div class="contact-note">
+
+              <strong>¿Qué pasa después?</strong><br>
+
+              Tu consulta será recibida por el profesional.
+              Si considera que puede responder a tu búsqueda,
+              podrá contactarte directamente mediante el
+              WhatsApp o email que indiques.
 
             </div>
 
@@ -1418,6 +1487,10 @@
             }
 
 
+            /*
+             * DATOS
+             */
+
             const patientName =
               document.getElementById(
                 'inquiryName'
@@ -1434,6 +1507,18 @@
               ageValue
                 ? Number(ageValue)
                 : null;
+
+
+            const patientWhatsapp =
+              document.getElementById(
+                'inquiryWhatsapp'
+              ).value.trim();
+
+
+            const patientEmail =
+              document.getElementById(
+                'inquiryEmail'
+              ).value.trim();
 
 
             const modality =
@@ -1466,10 +1551,48 @@
               ).value.trim();
 
 
+            /*
+             * VALIDACIONES
+             */
+
             if (!patientName) {
 
               throw new Error(
-                'Ingresá tu nombre.'
+                'Ingresá tu nombre y apellido.'
+              );
+
+            }
+
+
+            if (!patientWhatsapp) {
+
+              throw new Error(
+                'Ingresá un número de WhatsApp para que el profesional pueda contactarte.'
+              );
+
+            }
+
+
+            if (
+              patientWhatsapp.replace(/\D/g, '').length < 8
+            ) {
+
+              throw new Error(
+                'Ingresá un número de WhatsApp válido.'
+              );
+
+            }
+
+
+            if (
+              patientEmail &&
+              !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+                patientEmail
+              )
+            ) {
+
+              throw new Error(
+                'Ingresá un email válido o dejá el campo vacío.'
               );
 
             }
@@ -1503,6 +1626,12 @@
                 patient_name: patientName,
 
                 patient_age: patientAge,
+
+                patient_whatsapp:
+                  patientWhatsapp,
+
+                patient_email:
+                  patientEmail || null,
 
                 modality:
                   modality || null,
