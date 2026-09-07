@@ -1,54 +1,422 @@
-document.addEventListener('DOMContentLoaded', async () => {
+<!doctype html>
+<html lang="es">
 
-  const user = await requireUser();
+<head>
 
-  if (!user) return;
+  <meta charset="utf-8">
 
-  const sb = requireSupabase();
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
 
-  const welcome =
-    document.getElementById('welcome');
+  <title>Perfil profesional — PsiCerca</title>
 
-  const professionalName =
-    document.getElementById('professionalName');
+  <link rel="stylesheet" href="styles.css">
 
-  const planBadge =
-    document.getElementById('planBadge');
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
 
-  const subscriptionTitle =
-    document.getElementById('subscriptionTitle');
+  <style>
 
-  const subscriptionDescription =
-    document.getElementById('subscriptionDescription');
+    /* =====================================================
+       PERFIL PROFESIONAL
+       ===================================================== */
 
-  const subscriptionLabel =
-    document.getElementById('subscriptionLabel');
+    .profile-header {
+      display:flex;
+      align-items:center;
+      gap:20px;
+      margin-bottom:30px;
+    }
 
-  const subscriptionButton =
-    document.getElementById('subscriptionButton');
+    .profile-avatar {
+      width:88px;
+      height:88px;
+      min-width:88px;
+      border-radius:50%;
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:var(--soft);
+      font-weight:800;
+      font-size:24px;
+    }
 
-  const subscriptionMessage =
-    document.getElementById('subscriptionMessage');
-
-  const consultasContent =
-    document.getElementById('consultasContent');
-
-
-  let subscription = null;
-  let isPro = false;
+    .profile-avatar img {
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
 
 
-  // =====================================================
-  // PERFIL
-  // =====================================================
+    /* =====================================================
+       CONSULTA
+       ===================================================== */
 
-  async function loadProfile() {
+    .inquiry-card {
+      margin-top:34px;
+      padding:26px;
+      border:1px solid var(--line);
+      border-radius:20px;
+      background:#fff;
+      box-shadow:0 8px 28px rgba(0,0,0,.045);
+    }
 
-    const { data, error } = await sb
+    .inquiry-header {
+      display:flex;
+      align-items:flex-start;
+      gap:14px;
+      margin-bottom:24px;
+    }
+
+    .inquiry-icon {
+      width:46px;
+      height:46px;
+      min-width:46px;
+      border-radius:14px;
+      background:var(--soft);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:22px;
+    }
+
+    .inquiry-title {
+      margin:2px 0 5px;
+      font-size:25px;
+      line-height:1.15;
+    }
+
+    .inquiry-subtitle {
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.55;
+    }
+
+    .inquiry-fields {
+      display:grid;
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+      gap:16px;
+    }
+
+    .inquiry-field {
+      display:flex;
+      flex-direction:column;
+      gap:7px;
+    }
+
+    .inquiry-field.full {
+      grid-column:1 / -1;
+    }
+
+    .inquiry-label {
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .inquiry-field input,
+    .inquiry-field select,
+    .inquiry-field textarea {
+      width:100%;
+      box-sizing:border-box;
+    }
+
+    .inquiry-hint {
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.4;
+    }
+
+    .inquiry-textarea-wrap {
+      position:relative;
+    }
+
+    .inquiry-textarea-wrap textarea {
+      padding-bottom:34px;
+      resize:vertical;
+      min-height:150px;
+    }
+
+    .character-counter {
+      position:absolute;
+      right:12px;
+      bottom:10px;
+      font-size:12px;
+      color:var(--muted);
+      pointer-events:none;
+    }
+
+    .privacy-box {
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      margin-top:18px;
+      padding:14px 16px;
+      border-radius:14px;
+      background:var(--soft);
+    }
+
+    .privacy-icon {
+      font-size:17px;
+      line-height:1.3;
+    }
+
+    .privacy-text {
+      margin:0;
+      font-size:12px;
+      line-height:1.55;
+      color:var(--muted);
+    }
+
+    .inquiry-actions {
+      display:flex;
+      align-items:center;
+      gap:14px;
+      flex-wrap:wrap;
+      margin-top:20px;
+    }
+
+    .inquiry-submit {
+      min-width:160px;
+      justify-content:center;
+    }
+
+    .inquiry-submit:disabled {
+      opacity:.65;
+      cursor:not-allowed;
+    }
+
+    .inquiry-status {
+      font-size:13px;
+      font-weight:600;
+    }
+
+
+    /* =====================================================
+       CONTACTO
+       ===================================================== */
+
+    .contact-note {
+      margin-top:16px;
+      padding:14px 16px;
+      border-radius:14px;
+      background:var(--soft);
+      font-size:12px;
+      line-height:1.55;
+      color:var(--muted);
+    }
+
+
+    /* =====================================================
+       WHATSAPP
+       ===================================================== */
+
+    .whatsapp-area {
+      margin-top:8px;
+      padding-top:24px;
+      border-top:1px solid var(--line);
+    }
+
+    .whatsapp-box {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:18px;
+      padding:18px;
+      border-radius:16px;
+      background:var(--soft);
+    }
+
+    .whatsapp-title {
+      font-weight:700;
+      margin-bottom:4px;
+    }
+
+    .whatsapp-description {
+      margin:0;
+    }
+
+
+    /* =====================================================
+       MENSAJES
+       ===================================================== */
+
+    .access-box {
+      background:var(--soft);
+      border-radius:16px;
+      padding:18px;
+    }
+
+
+    /* =====================================================
+       RESPONSIVE
+       ===================================================== */
+
+    @media (max-width:650px) {
+
+      .profile-header {
+        align-items:flex-start;
+        gap:14px;
+      }
+
+      .profile-avatar {
+        width:70px;
+        height:70px;
+        min-width:70px;
+        font-size:20px;
+      }
+
+      .inquiry-card {
+        padding:20px;
+        border-radius:18px;
+      }
+
+      .inquiry-fields {
+        grid-template-columns:1fr;
+      }
+
+      .inquiry-field.full {
+        grid-column:auto;
+      }
+
+      .inquiry-actions {
+        align-items:stretch;
+        flex-direction:column;
+      }
+
+      .inquiry-submit {
+        width:100%;
+      }
+
+      .whatsapp-box {
+        align-items:stretch;
+        flex-direction:column;
+      }
+
+      .whatsapp-box .btn {
+        width:100%;
+        justify-content:center;
+      }
+
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+
+<header>
+
+  <div class="container nav">
+
+    <a
+      class="logo"
+      href="index.html"
+    >
+      Psi<span>Cerca</span>
+    </a>
+
+
+    <a
+      href="profesionales.html"
+      class="btn secondary"
+    >
+      ← Volver al directorio
+    </a>
+
+  </div>
+
+</header>
+
+
+<main
+  class="form-wrap"
+  style="max-width:760px"
+>
+
+  <div
+    id="profile"
+    class="panel"
+  >
+
+    <div class="empty">
+      Cargando perfil…
+    </div>
+
+  </div>
+
+</main>
+
+
+<footer class="footer">
+
+  <div class="container">
+
+    PsiCerca · Plataforma tecnológica · 2026
+
+  </div>
+
+</footer>
+
+
+<script>
+
+(async function () {
+
+  const box =
+    document.getElementById('profile');
+
+
+  const id =
+    new URLSearchParams(
+      window.location.search
+    ).get('id');
+
+
+  if (!id) {
+
+    box.innerHTML = `
+      <div class="empty">
+        Perfil no encontrado.
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  try {
+
+    const sb =
+      requireSupabase();
+
+
+    /*
+     * =====================================================
+     * PERFIL PÚBLICO
+     * =====================================================
+     */
+
+    const {
+      data: p,
+      error
+    } = await sb
 
       .from('profiles')
 
       .select(`
+        id,
         display_name,
         license,
         jurisdiction,
@@ -57,344 +425,500 @@ document.addEventListener('DOMContentLoaded', async () => {
         orientation,
         population,
         bio,
-        photo_url,
-        user_role
+        photo_url
       `)
 
-      .eq('id', user.id)
+      .eq('id', id)
+
+      .eq('is_public', true)
 
       .single();
 
 
     if (error) {
+      throw error;
+    }
 
-      console.error(
-        'Error cargando perfil:',
-        error
+
+    if (!p) {
+
+      throw new Error(
+        'Perfil no encontrado'
       );
 
-      if (welcome) {
-        welcome.textContent =
-          'No se pudo cargar el perfil.';
-      }
-
-      return null;
-
     }
 
 
-    const name =
-      data.display_name ||
-      'Profesional';
+    /*
+     * =====================================================
+     * INICIALES
+     * =====================================================
+     */
+
+    const initials =
+      (p.display_name || 'PS')
+
+        .split(' ')
+
+        .filter(Boolean)
+
+        .map(x => x[0])
+
+        .join('')
+
+        .slice(0, 2)
+
+        .toUpperCase();
 
 
-    if (professionalName) {
-      professionalName.textContent =
-        name;
-    }
+    /*
+     * =====================================================
+     * FOTO / AVATAR
+     * =====================================================
+     */
+
+    const avatar =
+
+      p.photo_url
+
+        ? `
+
+          <div class="profile-avatar">
+
+            <img
+              src="${escapeHTML(p.photo_url)}"
+              alt="Foto de ${escapeHTML(
+                p.display_name || 'profesional'
+              )}"
+            >
+
+          </div>
+
+        `
+
+        : `
+
+          <div class="profile-avatar">
+
+            ${escapeHTML(initials)}
+
+          </div>
+
+        `;
 
 
-    if (welcome) {
-      welcome.textContent =
-        `Hola, ${name}.`;
-    }
+    /*
+     * =====================================================
+     * CHIPS
+     * =====================================================
+     */
 
+    const chips = [
 
-    const profileName =
-      document.getElementById(
-        'profileName'
-      );
+      p.orientation,
+      p.population,
+      p.modality,
+      p.zone
 
-    if (profileName) {
-      profileName.textContent =
-        data.display_name ||
-        'Profesional';
-    }
+    ]
 
+      .filter(Boolean)
 
-    const profileLicense =
-      document.getElementById(
-        'profileLicense'
-      );
+      .map(x => `
 
-    if (profileLicense) {
-      profileLicense.textContent =
-        data.license ||
-        'No especificada';
-    }
+        <span class="chip">
+          ${escapeHTML(x)}
+        </span>
 
-
-    const profileModality =
-      document.getElementById(
-        'profileModality'
-      );
-
-    if (profileModality) {
-      profileModality.textContent =
-        data.modality ||
-        'No especificada';
-    }
-
-
-    const profileZone =
-      document.getElementById(
-        'profileZone'
-      );
-
-    if (profileZone) {
-      profileZone.textContent =
-        data.zone ||
-        'No especificada';
-    }
-
-
-    return data;
-
-  }
-
-
-  // =====================================================
-  // SUSCRIPCIÓN
-  // =====================================================
-
-  async function loadSubscription() {
-
-    const { data, error } = await sb
-
-      .from('professional_subscriptions')
-
-      .select(`
-        id,
-        profile_id,
-        plan,
-        status,
-        expires_at,
-        created_at
       `)
 
-      .eq('profile_id', user.id)
-
-      .order(
-        'created_at',
-        {
-          ascending: false
-        }
-      )
-
-      .limit(1)
-
-      .maybeSingle();
+      .join('');
 
 
-    if (error) {
+    /*
+     * =====================================================
+     * RENDER DEL PERFIL
+     * =====================================================
+     */
 
-      console.error(
-        'Error cargando suscripción:',
-        error
-      );
+    box.innerHTML = `
 
-      subscription = null;
+      <!-- ENCABEZADO -->
 
-      isPro = false;
+      <div class="profile-header">
 
-      updatePlanUI();
-
-      return;
-
-    }
+        ${avatar}
 
 
-    subscription = data;
+        <div style="min-width:0;">
+
+          <span class="eyebrow">
+            Perfil profesional
+          </span>
 
 
-    isPro =
-      !!subscription &&
-      subscription.plan === 'pro' &&
-      subscription.status === 'active' &&
-      (
-        !subscription.expires_at ||
-        new Date(
-          subscription.expires_at
-        ) > new Date()
-      );
+          <h1
+            style="
+              margin:4px 0 8px;
+              font-size:clamp(32px,5vw,48px);
+            "
+          >
+
+            ${escapeHTML(
+              p.display_name || 'Profesional'
+            )}
+
+          </h1>
 
 
-    updatePlanUI();
+          <div class="small">
 
-  }
+            Matrícula:
+
+            <strong>
+              ${escapeHTML(
+                p.license || '—'
+              )}
+            </strong>
+
+            ·
+
+            ${escapeHTML(
+              p.jurisdiction || '—'
+            )}
+
+          </div>
+
+        </div>
+
+      </div>
 
 
-  // =====================================================
-  // UI DEL PLAN
-  // =====================================================
+      <!-- VERIFICACIÓN EXTERNA -->
 
-  function updatePlanUI() {
+      ${
+        p.license
 
-    if (planBadge) {
+          ? `
 
-      if (isPro) {
+            <div
+              style="
+                background:var(--soft);
+                border-radius:16px;
+                padding:16px 18px;
+                margin-bottom:28px;
+              "
+            >
 
-        planBadge.textContent =
-          'PRO';
+              <div
+                style="
+                  font-weight:700;
+                  margin-bottom:5px;
+                "
+              >
 
-        planBadge.className =
-          'badge success';
+                🔎 ¿Querés comprobar la matrícula?
 
-      } else {
+              </div>
 
-        planBadge.textContent =
-          'GRATUITO';
 
-        planBadge.className =
-          'badge';
+              <p
+                class="small"
+                style="
+                  margin:0 0 12px;
+                "
+              >
+
+                Podés consultar esta matrícula
+                directamente en el registro oficial
+                del Ministerio de Salud.
+
+              </p>
+
+
+              <a
+                href="https://www.argentina.gob.ar/salud/buscador-nacional-de-profesionales-de-la-salud"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn secondary"
+                style="font-size:13px;"
+              >
+
+                Consultar matrícula en registro oficial
+
+              </a>
+
+            </div>
+
+          `
+
+          : ''
 
       }
 
-    }
+
+      <!-- INFORMACIÓN PROFESIONAL -->
+
+      ${
+        chips
+
+          ? `
+
+            <div
+              class="chips"
+              style="
+                margin:0 0 32px;
+              "
+            >
+
+              ${chips}
+
+            </div>
+
+          `
+
+          : ''
+
+      }
 
 
-    if (subscriptionTitle) {
+      <!-- PRESENTACIÓN -->
 
-      subscriptionTitle.textContent =
-        isPro
-          ? 'PsiCerca PRO'
-          : 'PsiCerca FREE';
+      <section>
 
-    }
-
-
-    if (subscriptionDescription) {
-
-      subscriptionDescription.textContent =
-        isPro
-          ? 'Tenés activo el plan PRO.'
-          : 'Estás utilizando el plan gratuito.';
-
-    }
+        <h2>
+          Sobre mi práctica
+        </h2>
 
 
-    if (subscriptionLabel) {
+        <p
+          style="
+            white-space:pre-line;
+            margin-bottom:28px;
+          "
+        >
 
-      subscriptionLabel.textContent =
-        isPro
-          ? 'PLAN ACTIVO'
-          : 'SUSCRIPCIÓN';
-
-    }
-
-
-    if (subscriptionButton) {
-
-      subscriptionButton.textContent =
-        isPro
-          ? 'Ver detalles'
-          : 'Conocer PRO';
-
-      subscriptionButton.href =
-        '#suscripcion';
-
-    }
-
-  }
-
-
-  // =====================================================
-  // CONSULTAS
-  // =====================================================
-
-  async function loadProfessionalInquiries() {
-
-    if (!consultasContent) return;
-
-
-    // ---------------------------------------------------
-    // FREE
-    // ---------------------------------------------------
-
-    if (!isPro) {
-
-      consultasContent.innerHTML = `
-
-        <strong>
-          🔒 Disponible con PsiCerca PRO
-        </strong>
-
-        <p class="small">
-
-          Recibí consultas de personas interesadas
-          y gestioná sus datos de contacto desde
-          tu panel profesional.
+          ${
+            escapeHTML(
+              p.bio ||
+              'El profesional todavía no agregó una presentación.'
+            )
+          }
 
         </p>
 
-        <a
-          class="btn primary"
-          href="#suscripcion"
+      </section>
+
+
+      <!-- CONTACTO -->
+
+      <div
+        id="contactArea"
+        class="whatsapp-area"
+      >
+
+        <div class="small">
+          Verificando acceso al contacto…
+        </div>
+
+      </div>
+
+
+      <!-- CONSULTA -->
+
+      <div id="inquiryArea"></div>
+
+
+      <!-- ACLARACIONES -->
+
+      <div
+        style="
+          margin-top:32px;
+          padding-top:20px;
+          border-top:1px solid var(--line);
+        "
+      >
+
+        <p
+          class="small"
+          style="margin:0 0 10px;"
         >
 
-          Conocer PsiCerca PRO
+          La información de matrícula es declarada
+          por el profesional. PsiCerca recomienda
+          verificarla en el
 
-        </a>
+          <a
+            href="https://www.argentina.gob.ar/salud/buscador-nacional-de-profesionales-de-la-salud"
+            target="_blank"
+            rel="noopener noreferrer"
+            style="
+              color:var(--accent);
+              font-weight:700;
+            "
+          >
+
+            registro oficial del Ministerio de Salud
+
+          </a>.
+
+        </p>
+
+
+        <p
+          class="small"
+          style="margin:0;"
+        >
+
+          PsiCerca facilita el contacto y no determina
+          qué profesional es clínicamente adecuado
+          para una persona.
+
+        </p>
+
+      </div>
+
+    `;
+
+
+    /*
+     * =====================================================
+     * ELEMENTOS
+     * =====================================================
+     */
+
+    const contactArea =
+      document.getElementById(
+        'contactArea'
+      );
+
+
+    const inquiryArea =
+      document.getElementById(
+        'inquiryArea'
+      );
+
+
+    /*
+     * =====================================================
+     * USUARIO ACTUAL
+     * =====================================================
+     */
+
+    const {
+      data: {
+        user
+      }
+    } =
+      await sb.auth.getUser();
+
+
+    /*
+     * =====================================================
+     * SIN SESIÓN
+     * =====================================================
+     */
+
+    if (!user) {
+
+      contactArea.innerHTML = `
+
+        <div class="access-box">
+
+          <div
+            style="
+              font-weight:700;
+              margin-bottom:6px;
+            "
+          >
+
+            🔐 ¿Querés contactar a este profesional?
+
+          </div>
+
+
+          <p
+            class="small"
+            style="
+              margin:0 0 15px;
+            "
+          >
+
+            Creá una cuenta gratuita para
+            poder contactar a profesionales
+            a través de PsiCerca.
+
+          </p>
+
+
+          <div
+            style="
+              display:flex;
+              gap:10px;
+              flex-wrap:wrap;
+            "
+          >
+
+            <a
+              href="registro-paciente.html"
+              class="btn primary"
+            >
+
+              Crear cuenta
+
+            </a>
+
+
+            <a
+              href="login.html"
+              class="btn secondary"
+            >
+
+              Iniciar sesión
+
+            </a>
+
+          </div>
+
+        </div>
 
       `;
 
-      return;
 
-    }
+      inquiryArea.innerHTML = `
 
+        <div
+          class="inquiry-card"
+          style="
+            background:var(--soft);
+            box-shadow:none;
+          "
+        >
 
-    // ---------------------------------------------------
-    // CONSULTAS PRO
-    // ---------------------------------------------------
+          <div class="inquiry-header">
 
-    const {
-      data,
-      error
-    } = await sb
+            <div class="inquiry-icon">
+              💬
+            </div>
 
-      .from('professional_inquiries')
+            <div>
 
-      .select(`
-        id,
-        patient_name,
-        patient_age,
-        patient_whatsapp,
-        patient_email,
-        modality,
-        availability,
-        zone,
-        reason,
-        message,
-        status,
-        created_at,
-        updated_at
-      `)
+              <span class="eyebrow">
+                Contacto
+              </span>
 
-      .eq(
-        'professional_id',
-        user.id
-      )
+              <h2 class="inquiry-title">
+                Enviar consulta
+              </h2>
 
-      .order(
-        'created_at',
-        {
-          ascending: false
-        }
-      );
+              <p class="inquiry-subtitle">
+                Iniciá sesión o creá una cuenta de paciente
+                para enviar una consulta.
+              </p>
 
+            </div>
 
-    if (error) {
-
-      console.error(
-        'Error cargando consultas:',
-        error
-      );
-
-      consultasContent.innerHTML = `
-
-        <div class="message error">
-
-          No se pudieron cargar las consultas.
+          </div>
 
         </div>
 
@@ -405,867 +929,894 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
-    // ---------------------------------------------------
-    // SIN CONSULTAS
-    // ---------------------------------------------------
+    /*
+     * =====================================================
+     * ROL
+     * =====================================================
+     */
 
-    if (!data || data.length === 0) {
-
-      consultasContent.innerHTML = `
-
-        <strong>
-          📩 Consultas de pacientes
-        </strong>
-
-        <p class="small">
-
-          Todavía no recibiste ninguna consulta.
-          Cuando una persona interesada te contacte,
-          aparecerá aquí.
-
-        </p>
-
-      `;
-
-      return;
-
-    }
+    const role =
+      user.user_metadata?.role;
 
 
-    // ---------------------------------------------------
-    // RENDER
-    // ---------------------------------------------------
+    /*
+     * =====================================================
+     * PACIENTE
+     * =====================================================
+     */
 
-    consultasContent.innerHTML = data
-
-      .map(inquiry => {
-
-        const safeName =
-          escapeHTML(
-            inquiry.patient_name || ''
-          );
+    if (role === 'patient') {
 
 
-        const safeAge =
-          inquiry.patient_age !== null &&
-          inquiry.patient_age !== undefined
+      /*
+       * ---------------------------------------------------
+       * WHATSAPP DEL PROFESIONAL
+       * ---------------------------------------------------
+       */
 
-            ? escapeHTML(
-                String(
-                  inquiry.patient_age
-                )
-              )
-
-            : '';
-
-
-        const safeWhatsapp =
-          escapeHTML(
-            inquiry.patient_whatsapp || ''
-          );
-
-
-        const safeEmail =
-          escapeHTML(
-            inquiry.patient_email || ''
-          );
-
-
-        const safeModality =
-          escapeHTML(
-            inquiry.modality || ''
-          );
-
-
-        const safeAvailability =
-          escapeHTML(
-            inquiry.availability || ''
-          );
-
-
-        const safeZone =
-          escapeHTML(
-            inquiry.zone || ''
-          );
-
-
-        const safeReason =
-          escapeHTML(
-            inquiry.reason || ''
-          );
-
-
-        const safeMessage =
-          escapeHTML(
-            inquiry.message || ''
-          );
-
-
-        const createdDate =
-          inquiry.created_at
-
-            ? new Date(
-                inquiry.created_at
-              ).toLocaleString(
-                'es-AR',
-                {
-                  dateStyle: 'short',
-                  timeStyle: 'short'
-                }
-              )
-
-            : '';
-
-
-        let statusLabel =
-          'Nueva';
-
-        let statusClass =
-          'warning';
-
-
-        if (
-          inquiry.status ===
-          'responded'
-        ) {
-
-          statusLabel =
-            'Respondida';
-
-          statusClass =
-            'success';
-
+      const {
+        data: contacts,
+        error: contactError
+      } = await sb.rpc(
+        'get_professional_contact',
+        {
+          target_profile_id: id
         }
+      );
 
 
-        if (
-          inquiry.status ===
-          'archived'
-        ) {
+      if (
+        contactError ||
+        !contacts ||
+        !contacts.length ||
+        !contacts[0].whatsapp
+      ) {
 
-          statusLabel =
-            'Archivada';
+        contactArea.innerHTML = `
 
-          statusClass =
-            '';
+          <div class="access-box">
 
-        }
+            <div class="small">
+
+              Este profesional todavía no
+              agregó un medio de contacto.
+
+            </div>
+
+          </div>
+
+        `;
+
+      } else {
+
+        const whatsapp =
+          String(
+            contacts[0].whatsapp
+          ).replace(/\D/g, '');
 
 
-        return `
+        if (whatsapp) {
 
-          <article
-            class="card"
-            style="
-              padding:20px;
-              margin-bottom:16px;
-            "
-          >
+          contactArea.innerHTML = `
 
-            <!-- ENCABEZADO -->
-
-            <div
-              style="
-                display:flex;
-                justify-content:space-between;
-                align-items:flex-start;
-                gap:12px;
-                flex-wrap:wrap;
-              "
-            >
+            <div class="whatsapp-box">
 
               <div>
 
-                <h3 style="margin:0;">
+                <div class="whatsapp-title">
+                  ¿Preferís un contacto directo?
+                </div>
 
-                  ${safeName}
-
-                </h3>
-
-
-                ${
-                  createdDate
-                    ? `
-
-                      <div
-                        class="small muted"
-                        style="
-                          margin-top:4px;
-                        "
-                      >
-
-                        ${createdDate}
-
-                      </div>
-
-                    `
-                    : ''
-                }
+                <p class="small whatsapp-description">
+                  También podés comunicarte con este
+                  profesional por WhatsApp.
+                </p>
 
               </div>
 
 
-              <span
-                class="badge ${statusClass}"
+              <a
+                class="btn primary"
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://wa.me/${escapeHTML(whatsapp)}"
               >
 
-                ${statusLabel}
+                Contactar por WhatsApp
 
+              </a>
+
+            </div>
+
+          `;
+
+        }
+
+      }
+
+
+      /*
+       * ---------------------------------------------------
+       * FORMULARIO DE CONSULTA
+       * ---------------------------------------------------
+       */
+
+      inquiryArea.innerHTML = `
+
+        <section class="inquiry-card">
+
+          <div class="inquiry-header">
+
+            <div class="inquiry-icon">
+              💬
+            </div>
+
+
+            <div>
+
+              <span class="eyebrow">
+                Contacto
               </span>
+
+
+              <h2 class="inquiry-title">
+                Enviar consulta
+              </h2>
+
+
+              <p class="inquiry-subtitle">
+
+                Completá tus datos y contale brevemente
+                a este profesional qué estás buscando.
+                Luego podrá contactarte directamente.
+
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <form id="inquiryForm">
+
+
+            <div class="inquiry-fields">
+
+
+              <!-- NOMBRE -->
+
+              <label class="inquiry-field">
+
+                <span class="inquiry-label">
+                  Nombre y apellido *
+                </span>
+
+                <input
+                  id="inquiryName"
+                  type="text"
+                  required
+                  maxlength="100"
+                  placeholder="Tu nombre y apellido"
+                >
+
+              </label>
+
+
+              <!-- EDAD -->
+
+              <label class="inquiry-field">
+
+                <span class="inquiry-label">
+                  Edad
+                </span>
+
+                <input
+                  id="inquiryAge"
+                  type="number"
+                  min="1"
+                  max="120"
+                  placeholder="Edad"
+                >
+
+              </label>
+
+
+              <!-- WHATSAPP -->
+
+              <label class="inquiry-field">
+
+                <span class="inquiry-label">
+                  WhatsApp *
+                </span>
+
+                <input
+                  id="inquiryWhatsapp"
+                  type="tel"
+                  required
+                  maxlength="30"
+                  placeholder="Ej.: 11 1234-5678"
+                >
+
+                <span class="inquiry-hint">
+                  El profesional utilizará este número
+                  para contactarte.
+
+                </span>
+
+              </label>
+
+
+              <!-- EMAIL -->
+
+              <label class="inquiry-field">
+
+                <span class="inquiry-label">
+                  Email
+                </span>
+
+                <input
+                  id="inquiryEmail"
+                  type="email"
+                  maxlength="150"
+                  placeholder="tuemail@ejemplo.com"
+                >
+
+                <span class="inquiry-hint">
+                  Opcional. Podés dejarlo como medio
+                  de contacto alternativo.
+
+                </span>
+
+              </label>
+
+
+              <!-- MODALIDAD -->
+
+              <label class="inquiry-field">
+
+                <span class="inquiry-label">
+                  Modalidad
+                </span>
+
+                <select id="inquiryModality">
+
+                  <option value="">
+                    Seleccionar
+                  </option>
+
+                  <option value="Presencial">
+                    Presencial
+                  </option>
+
+                  <option value="Virtual">
+                    Virtual
+                  </option>
+
+                  <option value="Indistinta">
+                    Indistinta
+                  </option>
+
+                </select>
+
+              </label>
+
+
+              <!-- ZONA -->
+
+              <label class="inquiry-field">
+
+                <span class="inquiry-label">
+                  Zona
+                </span>
+
+                <input
+                  id="inquiryZone"
+                  type="text"
+                  maxlength="100"
+                  placeholder="Ej.: Avellaneda"
+                >
+
+              </label>
+
+
+              <!-- DISPONIBILIDAD -->
+
+              <label class="inquiry-field full">
+
+                <span class="inquiry-label">
+                  Disponibilidad
+                </span>
+
+                <input
+                  id="inquiryAvailability"
+                  type="text"
+                  maxlength="150"
+                  placeholder="Ej.: lunes y miércoles por la tarde"
+                >
+
+              </label>
+
+
+              <!-- MOTIVO -->
+
+              <label class="inquiry-field full">
+
+                <span class="inquiry-label">
+                  Motivo general
+                </span>
+
+                <select id="inquiryReason">
+
+                  <option value="">
+                    Seleccionar
+                  </option>
+
+                  <option value="Inicio de proceso">
+                    Inicio de proceso
+                  </option>
+
+                  <option value="Orientación">
+                    Orientación
+                  </option>
+
+                  <option value="Consulta personal">
+                    Consulta personal
+                  </option>
+
+                  <option value="Consulta de pareja">
+                    Consulta de pareja
+                  </option>
+
+                  <option value="Consulta familiar">
+                    Consulta familiar
+                  </option>
+
+                  <option value="Otro">
+                    Otro
+                  </option>
+
+                </select>
+
+              </label>
+
+
+              <!-- MENSAJE -->
+
+              <label class="inquiry-field full">
+
+                <span class="inquiry-label">
+                  Mensaje *
+                </span>
+
+
+                <div class="inquiry-textarea-wrap">
+
+                  <textarea
+                    id="inquiryMessage"
+                    required
+                    maxlength="1000"
+                    rows="6"
+                    placeholder="Contale brevemente qué estás buscando y qué necesitás."
+                  ></textarea>
+
+
+                  <span
+                    id="characterCounter"
+                    class="character-counter"
+                  >
+                    0 / 1000
+                  </span>
+
+                </div>
+
+              </label>
+
 
             </div>
 
 
-            <!-- DATOS DE CONTACTO -->
+            <!-- PRIVACIDAD -->
 
-            ${
-              safeWhatsapp ||
-              safeEmail
+            <div class="privacy-box">
 
-                ? `
-
-                  <div
-                    style="
-                      margin-top:20px;
-                      padding:16px;
-                      border-radius:14px;
-                      background:var(--soft);
-                    "
-                  >
-
-                    <div
-                      class="small muted"
-                      style="
-                        margin-bottom:10px;
-                      "
-                    >
-
-                      Datos de contacto
-
-                    </div>
-
-
-                    ${
-                      safeWhatsapp
-                        ? `
-
-                          <div
-                            style="
-                              display:flex;
-                              align-items:center;
-                              gap:10px;
-                              flex-wrap:wrap;
-                              margin-bottom:
-                                ${safeEmail ? '9px' : '0'};
-                            "
-                          >
-
-                            <strong>
-                              📱 WhatsApp
-                            </strong>
-
-                            <span>
-                              ${safeWhatsapp}
-                            </span>
-
-
-                            <a
-                              class="btn secondary"
-                              href="https://wa.me/${escapeHTML(
-                                safeWhatsapp
-                                  .replace(
-                                    /\\D/g,
-                                    ''
-                                  )
-                              )}"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              style="
-                                font-size:12px;
-                                padding:
-                                  7px 11px;
-                              "
-                            >
-
-                              Abrir WhatsApp
-
-                            </a>
-
-                          </div>
-
-                        `
-                        : ''
-                    }
-
-
-                    ${
-                      safeEmail
-                        ? `
-
-                          <div
-                            style="
-                              display:flex;
-                              align-items:center;
-                              gap:10px;
-                              flex-wrap:wrap;
-                            "
-                          >
-
-                            <strong>
-                              ✉️ Email
-                            </strong>
-
-                            <a
-                              href="mailto:${safeEmail}"
-                            >
-
-                              ${safeEmail}
-
-                            </a>
-
-                          </div>
-
-                        `
-                        : ''
-                    }
-
-                  </div>
-
-                `
-
-                : `
-
-                  <div
-                    class="message error"
-                    style="
-                      margin-top:20px;
-                    "
-                  >
-
-                    Esta consulta no tiene
-                    datos de contacto.
-
-                  </div>
-
-                `
-
-            }
-
-
-            <!-- DATOS DE LA CONSULTA -->
-
-            ${
-              safeAge ||
-              safeModality ||
-              safeZone ||
-              safeAvailability
-
-                ? `
-
-                  <div
-                    style="
-                      display:grid;
-                      grid-template-columns:
-                        repeat(
-                          auto-fit,
-                          minmax(
-                            180px,
-                            1fr
-                          )
-                        );
-                      gap:12px;
-                      margin-top:18px;
-                    "
-                  >
-
-                    ${
-                      safeAge
-                        ? `
-
-                          <div>
-
-                            <div class="small muted">
-                              Edad
-                            </div>
-
-                            <strong>
-                              ${safeAge} años
-                            </strong>
-
-                          </div>
-
-                        `
-                        : ''
-                    }
-
-
-                    ${
-                      safeModality
-                        ? `
-
-                          <div>
-
-                            <div class="small muted">
-                              Modalidad
-                            </div>
-
-                            <strong>
-                              ${safeModality}
-                            </strong>
-
-                          </div>
-
-                        `
-                        : ''
-                    }
-
-
-                    ${
-                      safeZone
-                        ? `
-
-                          <div>
-
-                            <div class="small muted">
-                              Zona
-                            </div>
-
-                            <strong>
-                              ${safeZone}
-                            </strong>
-
-                          </div>
-
-                        `
-                        : ''
-                    }
-
-
-                    ${
-                      safeAvailability
-                        ? `
-
-                          <div>
-
-                            <div class="small muted">
-                              Disponibilidad
-                            </div>
-
-                            <strong>
-                              ${safeAvailability}
-                            </strong>
-
-                          </div>
-
-                        `
-                        : ''
-                    }
-
-                  </div>
-
-                `
-
-                : ''
-
-            }
-
-
-            <!-- MOTIVO -->
-
-            ${
-              safeReason
-
-                ? `
-
-                  <div
-                    style="
-                      margin-top:18px;
-                    "
-                  >
-
-                    <div class="small muted">
-
-                      Motivo de consulta
-
-                    </div>
-
-                    <div
-                      style="
-                        margin-top:5px;
-                      "
-                    >
-
-                      ${safeReason}
-
-                    </div>
-
-                  </div>
-
-                `
-
-                : ''
-
-            }
-
-
-            <!-- MENSAJE -->
-
-            <div
-              style="
-                margin-top:18px;
-              "
-            >
-
-              <div class="small muted">
-
-                Mensaje
-
+              <div class="privacy-icon">
+                🔒
               </div>
 
 
-              <div
-                style="
-                  margin-top:5px;
-                  white-space:pre-wrap;
-                  line-height:1.5;
-                "
-              >
+              <p class="privacy-text">
 
-                ${safeMessage}
+                Por privacidad, evitá incluir diagnósticos,
+                antecedentes clínicos detallados, medicación
+                o historias clínicas. Este formulario está
+                pensado únicamente para un primer contacto.
 
-              </div>
+              </p>
+
+            </div>
+
+
+            <div class="contact-note">
+
+              <strong>¿Qué pasa después?</strong><br>
+
+              Tu consulta será recibida por el profesional.
+              Si considera que puede responder a tu búsqueda,
+              podrá contactarte directamente mediante el
+              WhatsApp o email que indiques.
 
             </div>
 
 
             <!-- ACCIONES -->
 
-            <div
-              style="
-                margin-top:20px;
-                display:flex;
-                gap:10px;
-                flex-wrap:wrap;
-              "
-            >
-
-              ${
-                inquiry.status ===
-                'new'
-
-                  ? `
-
-                    <button
-                      type="button"
-                      class="
-                        btn
-                        secondary
-                        mark-inquiry-responded
-                      "
-                      data-id="${inquiry.id}"
-                    >
-
-                      Marcar como respondida
-
-                    </button>
-
-                  `
-
-                  : ''
-
-              }
-
+            <div class="inquiry-actions">
 
               <button
-                type="button"
-                class="
-                  btn
-                  secondary
-                  delete-inquiry
-                "
-                data-id="${inquiry.id}"
-                style="
-                  border-color:#b91c1c;
-                  color:#b91c1c;
-                "
+                type="submit"
+                class="btn primary inquiry-submit"
+                id="sendInquiryButton"
               >
 
-                🗑 Eliminar consulta
+                Enviar consulta
 
               </button>
 
+
+              <span
+                id="inquiryMessageStatus"
+                class="inquiry-status"
+              ></span>
+
             </div>
 
-          </article>
 
-        `;
+          </form>
 
-      })
+        </section>
 
-      .join('');
-
-
-    // ===================================================
-    // MARCAR COMO RESPONDIDA
-    // ===================================================
-
-    consultasContent
-
-      .querySelectorAll(
-        '.mark-inquiry-responded'
-      )
-
-      .forEach(button => {
-
-        button.addEventListener(
-          'click',
-          async () => {
-
-            const inquiryId =
-              button.dataset.id;
+      `;
 
 
-            if (!inquiryId) return;
+      /*
+       * ---------------------------------------------------
+       * ELEMENTOS DEL FORMULARIO
+       * ---------------------------------------------------
+       */
 
-
-            button.disabled =
-              true;
-
-            button.textContent =
-              'Guardando…';
-
-
-            const {
-              error
-            } = await sb
-
-              .from(
-                'professional_inquiries'
-              )
-
-              .update({
-
-                status:
-                  'responded',
-
-                updated_at:
-                  new Date().toISOString()
-
-              })
-
-              .eq(
-                'id',
-                inquiryId
-              )
-
-              .eq(
-                'professional_id',
-                user.id
-              );
-
-
-            if (error) {
-
-              console.error(
-                'Error actualizando consulta:',
-                error
-              );
-
-              button.disabled =
-                false;
-
-              button.textContent =
-                'Marcar como respondida';
-
-              alert(
-                'No se pudo actualizar la consulta.'
-              );
-
-              return;
-
-            }
-
-
-            await loadProfessionalInquiries();
-
-          }
-
+      const inquiryForm =
+        document.getElementById(
+          'inquiryForm'
         );
 
-      });
 
-
-    // ===================================================
-    // ELIMINAR
-    // ===================================================
-
-    consultasContent
-
-      .querySelectorAll(
-        '.delete-inquiry'
-      )
-
-      .forEach(button => {
-
-        button.addEventListener(
-          'click',
-          async () => {
-
-            const inquiryId =
-              button.dataset.id;
-
-
-            if (!inquiryId) return;
-
-
-            const confirmed =
-              confirm(
-                '¿Eliminar esta consulta?\n\n' +
-                'La consulta se eliminará definitivamente. ' +
-                'Esta acción no se puede deshacer.'
-              );
-
-
-            if (!confirmed) return;
-
-
-            button.disabled =
-              true;
-
-            button.textContent =
-              'Eliminando…';
-
-
-            const {
-              error
-            } = await sb
-
-              .from(
-                'professional_inquiries'
-              )
-
-              .delete()
-
-              .eq(
-                'id',
-                inquiryId
-              )
-
-              .eq(
-                'professional_id',
-                user.id
-              );
-
-
-            if (error) {
-
-              console.error(
-                'Error eliminando consulta:',
-                error
-              );
-
-              button.disabled =
-                false;
-
-              button.textContent =
-                '🗑 Eliminar consulta';
-
-              alert(
-                'No se pudo eliminar la consulta.'
-              );
-
-              return;
-
-            }
-
-
-            await loadProfessionalInquiries();
-
-          }
-
+      const sendButton =
+        document.getElementById(
+          'sendInquiryButton'
         );
 
-      });
 
-  }
-
-
-  // =====================================================
-  // LOGOUT
-  // =====================================================
-
-  const logoutButton =
-    document.getElementById(
-      'logoutButton'
-    );
+      const inquiryStatus =
+        document.getElementById(
+          'inquiryMessageStatus'
+        );
 
 
-  if (logoutButton) {
+      const messageField =
+        document.getElementById(
+          'inquiryMessage'
+        );
 
-    logoutButton.addEventListener(
-      'click',
-      async () => {
 
-        await logout();
+      const characterCounter =
+        document.getElementById(
+          'characterCounter'
+        );
+
+
+      /*
+       * ---------------------------------------------------
+       * CONTADOR
+       * ---------------------------------------------------
+       */
+
+      function updateCharacterCounter() {
+
+        const length =
+          messageField.value.length;
+
+
+        characterCounter.textContent =
+          `${length} / 1000`;
 
       }
-    );
-
-  }
 
 
-  // =====================================================
-  // CARGA INICIAL
-  // =====================================================
-
-  try {
-
-    await loadProfile();
-
-    await loadSubscription();
-
-    await loadProfessionalInquiries();
+      messageField.addEventListener(
+        'input',
+        updateCharacterCounter
+      );
 
 
-    console.log(
-      'Dashboard cargado correctamente.'
-    );
+      /*
+       * ---------------------------------------------------
+       * ENVÍO DE CONSULTA
+       * ---------------------------------------------------
+       */
+
+      inquiryForm.addEventListener(
+        'submit',
+        async function (event) {
+
+          event.preventDefault();
+
+
+          sendButton.disabled = true;
+
+          sendButton.textContent =
+            'Enviando…';
+
+          inquiryStatus.textContent =
+            '';
+
+          inquiryStatus.style.color =
+            '';
+
+
+          try {
+
+            /*
+             * Verificamos nuevamente
+             * que siga existiendo la sesión.
+             */
+
+            const {
+              data: {
+                user: currentUser
+              }
+            } =
+              await sb.auth.getUser();
+
+
+            if (!currentUser) {
+
+              throw new Error(
+                'Tu sesión expiró. Iniciá sesión nuevamente.'
+              );
+
+            }
+
+
+            /*
+             * DATOS
+             */
+
+            const patientName =
+              document.getElementById(
+                'inquiryName'
+              ).value.trim();
+
+
+            const ageValue =
+              document.getElementById(
+                'inquiryAge'
+              ).value;
+
+
+            const patientAge =
+              ageValue
+                ? Number(ageValue)
+                : null;
+
+
+            const patientWhatsapp =
+              document.getElementById(
+                'inquiryWhatsapp'
+              ).value.trim();
+
+
+            const patientEmail =
+              document.getElementById(
+                'inquiryEmail'
+              ).value.trim();
+
+
+            const modality =
+              document.getElementById(
+                'inquiryModality'
+              ).value;
+
+
+            const availability =
+              document.getElementById(
+                'inquiryAvailability'
+              ).value.trim();
+
+
+            const zone =
+              document.getElementById(
+                'inquiryZone'
+              ).value.trim();
+
+
+            const reason =
+              document.getElementById(
+                'inquiryReason'
+              ).value;
+
+
+            const message =
+              document.getElementById(
+                'inquiryMessage'
+              ).value.trim();
+
+
+            /*
+             * VALIDACIONES
+             */
+
+            if (!patientName) {
+
+              throw new Error(
+                'Ingresá tu nombre y apellido.'
+              );
+
+            }
+
+
+            if (!patientWhatsapp) {
+
+              throw new Error(
+                'Ingresá un número de WhatsApp para que el profesional pueda contactarte.'
+              );
+
+            }
+
+
+            if (
+              patientWhatsapp.replace(/\D/g, '').length < 8
+            ) {
+
+              throw new Error(
+                'Ingresá un número de WhatsApp válido.'
+              );
+
+            }
+
+
+            if (
+              patientEmail &&
+              !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+                patientEmail
+              )
+            ) {
+
+              throw new Error(
+                'Ingresá un email válido o dejá el campo vacío.'
+              );
+
+            }
+
+
+            if (!message) {
+
+              throw new Error(
+                'Escribí un mensaje antes de enviar la consulta.'
+              );
+
+            }
+
+
+            /*
+             * INSERT
+             */
+
+            const {
+              error: insertError
+            } = await sb
+
+              .from('professional_inquiries')
+
+              .insert({
+
+                professional_id: id,
+
+                patient_id: currentUser.id,
+
+                patient_name: patientName,
+
+                patient_age: patientAge,
+
+                patient_whatsapp:
+                  patientWhatsapp,
+
+                patient_email:
+                  patientEmail || null,
+
+                modality:
+                  modality || null,
+
+                availability:
+                  availability || null,
+
+                zone:
+                  zone || null,
+
+                reason:
+                  reason || null,
+
+                message
+
+              });
+
+
+            if (insertError) {
+
+              console.error(
+                'Error creando consulta:',
+                insertError
+              );
+
+              throw insertError;
+
+            }
+
+
+            /*
+             * ÉXITO
+             */
+
+            inquiryForm.reset();
+
+            updateCharacterCounter();
+
+
+            sendButton.textContent =
+              'Consulta enviada ✓';
+
+
+            sendButton.disabled =
+              true;
+
+
+            inquiryStatus.textContent =
+              'La consulta fue enviada correctamente.';
+
+
+            inquiryStatus.style.color =
+              'var(--accent)';
+
+
+          } catch (error) {
+
+            console.error(
+              'Error enviando consulta:',
+              error
+            );
+
+
+            inquiryStatus.textContent =
+              error.message ||
+              'No se pudo enviar la consulta.';
+
+
+            inquiryStatus.style.color =
+              '#b42318';
+
+
+            sendButton.disabled =
+              false;
+
+
+            sendButton.textContent =
+              'Enviar consulta';
+
+          }
+
+        }
+      );
+
+
+      return;
+
+    }
+
+
+    /*
+     * =====================================================
+     * PROFESIONAL
+     * =====================================================
+     */
+
+    contactArea.innerHTML = `
+
+      <div class="access-box">
+
+        <div class="small">
+
+          Iniciaste sesión como profesional.
+          Para contactar a este profesional
+          necesitás utilizar una cuenta de paciente.
+
+        </div>
+
+      </div>
+
+    `;
+
+
+    inquiryArea.innerHTML = `
+
+      <div
+        class="inquiry-card"
+        style="
+          background:var(--soft);
+          box-shadow:none;
+        "
+      >
+
+        <div class="inquiry-header">
+
+          <div class="inquiry-icon">
+            💬
+          </div>
+
+
+          <div>
+
+            <span class="eyebrow">
+              Contacto
+            </span>
+
+
+            <h2 class="inquiry-title">
+              Enviar consulta
+            </h2>
+
+
+            <p class="inquiry-subtitle">
+
+              Las consultas desde PsiCerca están
+              disponibles para cuentas de paciente.
+
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    `;
 
 
   } catch (error) {
 
     console.error(
-      'Error general del dashboard:',
+      'Error cargando perfil:',
       error
     );
 
 
-    if (subscriptionTitle) {
+    box.innerHTML = `
 
-      subscriptionTitle.textContent =
-        'No se pudo cargar el panel';
+      <div class="empty">
 
-    }
+        Este perfil no está disponible
+        o no es público.
 
+      </div>
 
-    if (subscriptionDescription) {
-
-      subscriptionDescription.textContent =
-        'Ocurrió un error al consultar los datos.';
-
-    }
-
-
-    if (subscriptionMessage) {
-
-      subscriptionMessage.textContent =
-        'Ocurrió un error al cargar el dashboard.';
-
-      subscriptionMessage.className =
-        'message error';
-
-    }
+    `;
 
   }
 
-});
+
+})();
+
+</script>
+
+
+</body>
+
+</html>
