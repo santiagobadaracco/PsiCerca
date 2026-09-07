@@ -98,6 +98,723 @@
 
 
     // ============================================================
+    // SUSCRIPCIÓN
+    // ============================================================
+
+    async function loadSubscription() {
+
+      const subscriptionTitle =
+        document.getElementById(
+          'subscriptionTitle'
+        );
+
+      const subscriptionDescription =
+        document.getElementById(
+          'subscriptionDescription'
+        );
+
+      const subscriptionLabel =
+        document.getElementById(
+          'subscriptionLabel'
+        );
+
+      const subscriptionButton =
+        document.getElementById(
+          'subscriptionButton'
+        );
+
+      const subscriptionDetails =
+        document.getElementById(
+          'subscriptionDetails'
+        );
+
+      const consultasContent =
+        document.getElementById(
+          'consultasContent'
+        );
+
+      const availabilityContent =
+        document.getElementById(
+          'availabilityContent'
+        );
+
+      const statisticsContent =
+        document.getElementById(
+          'statisticsContent'
+        );
+
+
+      if (subscriptionTitle) {
+        subscriptionTitle.textContent =
+          'Cargando…';
+      }
+
+
+      const {
+        data: subscription,
+        error: subscriptionError
+      } =
+        await sb
+          .from('professional_subscriptions')
+          .select(`
+            plan,
+            status,
+            started_at,
+            expires_at
+          `)
+          .eq('profile_id', user.id)
+          .maybeSingle();
+
+
+      if (subscriptionError) {
+        console.error(
+          'Error al cargar suscripción:',
+          subscriptionError
+        );
+
+        if (subscriptionTitle) {
+          subscriptionTitle.textContent =
+            'No se pudo cargar el estado';
+        }
+
+        if (subscriptionDescription) {
+          subscriptionDescription.textContent =
+            'Intentá recargar la página.';
+        }
+
+        return;
+      }
+
+
+      /*
+       * Si por alguna razón una cuenta profesional
+       * existente no tiene todavía una fila de suscripción,
+       * la consideramos FREE desde el punto de vista visual.
+       *
+       * No creamos filas desde el frontend.
+       */
+
+      const plan =
+        subscription?.plan || 'free';
+
+      const status =
+        subscription?.status || 'active';
+
+      const expiresAt =
+        subscription?.expires_at
+          ? new Date(subscription.expires_at)
+          : null;
+
+
+      const isExpired =
+        expiresAt &&
+        expiresAt.getTime() <= Date.now();
+
+
+      const isPro =
+        plan === 'pro' &&
+        status === 'active' &&
+        !isExpired;
+
+
+      // ==========================================================
+      // FREE
+      // ==========================================================
+
+      if (!isPro) {
+
+        if (subscriptionLabel) {
+          subscriptionLabel.textContent =
+            'PLAN ACTUAL';
+        }
+
+        if (subscriptionTitle) {
+          subscriptionTitle.textContent =
+            'PsiCerca FREE';
+        }
+
+        if (subscriptionDescription) {
+
+          if (
+            plan === 'pro' &&
+            isExpired
+          ) {
+
+            subscriptionDescription.textContent =
+              'Tu suscripción PRO está vencida. Podés renovarla desde Suscripción.';
+
+          } else if (
+            plan === 'pro' &&
+            status !== 'active'
+          ) {
+
+            subscriptionDescription.textContent =
+              'Tu suscripción PRO no está activa actualmente.';
+
+          } else {
+
+            subscriptionDescription.textContent =
+              'Tenés acceso a las herramientas básicas de PsiCerca.';
+
+          }
+
+        }
+
+        if (subscriptionButton) {
+          subscriptionButton.textContent =
+            'Conocer PsiCerca PRO';
+
+          subscriptionButton.href =
+            '#suscripcion';
+        }
+
+
+        if (subscriptionDetails) {
+
+          subscriptionDetails.innerHTML = `
+
+            <h3>
+              PsiCerca FREE
+            </h3>
+
+            <p class="small">
+              Tu perfil profesional puede aparecer en el directorio público
+              y recibir contactos de pacientes registrados.
+            </p>
+
+            <div
+              style="
+                margin-top:20px;
+                padding:18px;
+                border:1px solid var(--line);
+                border-radius:14px;
+              "
+            >
+
+              <strong>
+                ⭐ PsiCerca PRO
+              </strong>
+
+              <p class="small">
+                Desbloqueá herramientas adicionales para mejorar tu presencia
+                dentro de PsiCerca y conocer el rendimiento de tu perfil.
+              </p>
+
+              <a
+                class="btn primary"
+                href="#suscripcion"
+              >
+                Conocer PsiCerca PRO
+              </a>
+
+            </div>
+
+          `;
+
+        }
+
+
+        if (consultasContent) {
+
+          consultasContent.innerHTML = `
+
+            <strong>
+              🔒 Disponible con PsiCerca PRO
+            </strong>
+
+            <p class="small">
+              Recibí y gestioná consultas directamente desde PsiCerca,
+              sin necesidad de compartir automáticamente tus datos personales.
+            </p>
+
+            <a
+              class="btn primary"
+              href="#suscripcion"
+            >
+              Conocer PsiCerca PRO
+            </a>
+
+          `;
+
+        }
+
+
+        if (availabilityContent) {
+
+          availabilityContent.innerHTML = `
+
+            <strong>
+              🔒 Disponible con PsiCerca PRO
+            </strong>
+
+            <p class="small">
+              Informá si estás tomando pacientes, si tenés disponibilidad
+              limitada o si trabajás con lista de espera.
+            </p>
+
+            <a
+              class="btn primary"
+              href="#suscripcion"
+            >
+              Conocer PsiCerca PRO
+            </a>
+
+          `;
+
+        }
+
+
+        if (statisticsContent) {
+
+          statisticsContent.innerHTML = `
+
+            <strong>
+              🔒 Disponible con PsiCerca PRO
+            </strong>
+
+            <p class="small">
+              Consultá visitas a tu perfil, apariciones en búsquedas,
+              consultas y otras métricas.
+            </p>
+
+            <a
+              class="btn primary"
+              href="#suscripcion"
+            >
+              Conocer PsiCerca PRO
+            </a>
+
+          `;
+
+        }
+
+        return;
+      }
+
+
+      // ==========================================================
+      // PRO
+      // ==========================================================
+
+      if (subscriptionLabel) {
+        subscriptionLabel.textContent =
+          'PLAN ACTUAL';
+      }
+
+      if (subscriptionTitle) {
+        subscriptionTitle.textContent =
+          '⭐ PsiCerca PRO';
+      }
+
+      if (subscriptionDescription) {
+
+        if (expiresAt) {
+
+          const formattedDate =
+            expiresAt.toLocaleDateString(
+              'es-AR',
+              {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+              }
+            );
+
+          subscriptionDescription.textContent =
+            `Tu suscripción PRO está activa. Renovación: ${formattedDate}.`;
+
+        } else {
+
+          subscriptionDescription.textContent =
+            'Tu suscripción PRO está activa.';
+
+        }
+
+      }
+
+      if (subscriptionButton) {
+        subscriptionButton.textContent =
+          'Administrar suscripción';
+
+        subscriptionButton.href =
+          '#suscripcion';
+      }
+
+
+      // ==========================================================
+      // DETALLE PRO
+      // ==========================================================
+
+      if (subscriptionDetails) {
+
+        let renewalText =
+          'Suscripción activa.';
+
+        if (expiresAt) {
+
+          renewalText =
+            `Próxima renovación: ${
+              expiresAt.toLocaleDateString(
+                'es-AR',
+                {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric'
+                }
+              )
+            }.`;
+
+        }
+
+        subscriptionDetails.innerHTML = `
+
+          <div
+            style="
+              display:flex;
+              justify-content:space-between;
+              align-items:flex-start;
+              gap:20px;
+              flex-wrap:wrap;
+            "
+          >
+
+            <div>
+
+              <span class="eyebrow">
+                PLAN ACTUAL
+              </span>
+
+              <h3 style="margin:6px 0;">
+                ⭐ PsiCerca PRO
+              </h3>
+
+              <p class="small">
+                ${escapeHTML(renewalText)}
+              </p>
+
+            </div>
+
+            <span
+              style="
+                display:inline-flex;
+                align-items:center;
+                padding:7px 12px;
+                border-radius:999px;
+                border:1px solid var(--line);
+                font-size:13px;
+                font-weight:600;
+              "
+            >
+              Activa
+            </span>
+
+          </div>
+
+
+          <div
+            style="
+              margin-top:24px;
+              display:grid;
+              grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+              gap:14px;
+            "
+          >
+
+            <div
+              style="
+                padding:18px;
+                border:1px solid var(--line);
+                border-radius:14px;
+              "
+            >
+
+              <strong>
+                ⭐ Mayor visibilidad
+              </strong>
+
+              <p class="small">
+                Distintivo PRO y mayor presencia dentro de las herramientas
+                de descubrimiento de PsiCerca.
+              </p>
+
+            </div>
+
+
+            <div
+              style="
+                padding:18px;
+                border:1px solid var(--line);
+                border-radius:14px;
+              "
+            >
+
+              <strong>
+                📩 Consultas
+              </strong>
+
+              <p class="small">
+                Recibí consultas de personas interesadas directamente
+                dentro de la plataforma.
+              </p>
+
+            </div>
+
+
+            <div
+              style="
+                padding:18px;
+                border:1px solid var(--line);
+                border-radius:14px;
+              "
+            >
+
+              <strong>
+                🗓️ Disponibilidad
+              </strong>
+
+              <p class="small">
+                Mostrá de forma clara si actualmente estás tomando pacientes.
+              </p>
+
+            </div>
+
+
+            <div
+              style="
+                padding:18px;
+                border:1px solid var(--line);
+                border-radius:14px;
+              "
+            >
+
+              <strong>
+                📊 Estadísticas
+              </strong>
+
+              <p class="small">
+                Conocé el rendimiento de tu perfil dentro de PsiCerca.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div
+            style="
+              margin-top:24px;
+              padding-top:20px;
+              border-top:1px solid var(--line);
+            "
+          >
+
+            <p class="small">
+              La condición PRO mejora las herramientas y la visibilidad
+              dentro de la plataforma. No representa una certificación
+              ni implica una valoración superior de la calidad clínica
+              del profesional.
+            </p>
+
+          </div>
+
+        `;
+
+      }
+
+
+      // ==========================================================
+      // CONSULTAS PRO
+      // ==========================================================
+
+      if (consultasContent) {
+
+        consultasContent.innerHTML = `
+
+          <strong>
+            📩 Consultas
+          </strong>
+
+          <p class="small">
+            Próximamente vas a poder recibir y gestionar consultas
+            directamente desde PsiCerca.
+          </p>
+
+          <div
+            style="
+              margin-top:16px;
+              padding:16px;
+              border:1px solid var(--line);
+              border-radius:12px;
+            "
+          >
+
+            <span class="small">
+              Tu acceso PRO está activo.
+            </span>
+
+            <p
+              class="small"
+              style="margin-bottom:0;"
+            >
+              El módulo de consultas todavía está en desarrollo.
+            </p>
+
+          </div>
+
+        `;
+
+      }
+
+
+      // ==========================================================
+      // DISPONIBILIDAD PRO
+      // ==========================================================
+
+      if (availabilityContent) {
+
+        availabilityContent.innerHTML = `
+
+          <strong>
+            🗓️ Disponibilidad
+          </strong>
+
+          <p class="small">
+            Próximamente vas a poder configurar tu estado de disponibilidad,
+            modalidad y horarios generales.
+          </p>
+
+          <div
+            style="
+              margin-top:16px;
+              padding:16px;
+              border:1px solid var(--line);
+              border-radius:12px;
+            "
+          >
+
+            <span class="small">
+              Tu acceso PRO está activo.
+            </span>
+
+            <p
+              class="small"
+              style="margin-bottom:0;"
+            >
+              El módulo de disponibilidad todavía está en desarrollo.
+            </p>
+
+          </div>
+
+        `;
+
+      }
+
+
+      // ==========================================================
+      // ESTADÍSTICAS PRO
+      // ==========================================================
+
+      if (statisticsContent) {
+
+        statisticsContent.innerHTML = `
+
+          <strong>
+            📊 Estadísticas
+          </strong>
+
+          <p class="small">
+            Próximamente vas a poder consultar las métricas de rendimiento
+            de tu perfil profesional.
+          </p>
+
+          <div
+            style="
+              margin-top:16px;
+              padding:16px;
+              border:1px solid var(--line);
+              border-radius:12px;
+            "
+          >
+
+            <span class="small">
+              Tu acceso PRO está activo.
+            </span>
+
+            <p
+              class="small"
+              style="margin-bottom:0;"
+            >
+              El módulo de estadísticas todavía está en desarrollo.
+            </p>
+
+          </div>
+
+        `;
+
+      }
+
+    }
+
+
+    // Cargar suscripción sin bloquear el resto del dashboard.
+
+    loadSubscription().catch(error => {
+
+      console.error(
+        'Error inesperado al cargar la suscripción:',
+        error
+      );
+
+    });
+
+
+    // ============================================================
+    // NAVEGACIÓN INTERNA
+    // ============================================================
+
+    document
+      .querySelectorAll(
+        'a[href^="#"]'
+      )
+      .forEach(link => {
+
+        link.addEventListener(
+          'click',
+          event => {
+
+            const targetId =
+              link.getAttribute('href');
+
+            if (
+              !targetId ||
+              targetId === '#'
+            ) {
+              return;
+            }
+
+            const target =
+              document.querySelector(
+                targetId
+              );
+
+            if (!target) {
+              return;
+            }
+
+            event.preventDefault();
+
+            target.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
+            });
+
+          }
+        );
+
+      });
+
+
+    // ============================================================
     // ELIMINAR CUENTA
     // ============================================================
 
@@ -272,9 +989,11 @@
       .eq('id', user.id)
       .maybeSingle();
 
+
     if (profileError) {
       throw profileError;
     }
+
 
     currentProfile = profile;
 
@@ -286,11 +1005,13 @@
     const {
       data: contact,
       error: contactError
-    } = await sb
-      .from('professional_contacts')
-      .select('whatsapp')
-      .eq('profile_id', user.id)
-      .maybeSingle();
+    } =
+      await sb
+        .from('professional_contacts')
+        .select('whatsapp')
+        .eq('profile_id', user.id)
+        .maybeSingle();
+
 
     if (contactError) {
       throw contactError;
@@ -309,6 +1030,7 @@
           document.getElementById(field);
 
         if (!element) return;
+
 
         if (element.type === 'checkbox') {
 
@@ -332,6 +1054,7 @@
       const whatsappField =
         document.getElementById('whatsapp');
 
+
       if (whatsappField) {
 
         whatsappField.value =
@@ -347,11 +1070,13 @@
       const savedPopulation =
         profile.population || '';
 
+
       const selectedPopulation =
         savedPopulation
           .split(',')
           .map(item => item.trim())
           .filter(Boolean);
+
 
       document
         .querySelectorAll('.population-option')
@@ -399,8 +1124,10 @@
           )
         ).map(option => option.value);
 
+
       const populationField =
         document.getElementById('population');
+
 
       if (populationField) {
 
@@ -436,6 +1163,7 @@
       const response =
         await fetch(url);
 
+
       if (!response.ok) {
 
         throw new Error(
@@ -443,6 +1171,7 @@
         );
 
       }
+
 
       return await response.json();
 
@@ -457,24 +1186,30 @@
         </option>
       `;
 
+
       const data =
         await georef(
           'https://apis.datos.gob.ar/georef/api/provincias?orden=nombre'
         );
+
 
       data.provincias.forEach(province => {
 
         const option =
           document.createElement('option');
 
+
         option.value =
           province.nombre;
+
 
         option.dataset.id =
           province.id;
 
+
         option.textContent =
           province.nombre;
+
 
         select.appendChild(option);
 
@@ -494,7 +1229,9 @@
         </option>
       `;
 
+
       select.disabled = true;
+
 
       if (!provinceId) {
 
@@ -508,10 +1245,12 @@
 
       }
 
+
       const data =
         await georef(
           `https://apis.datos.gob.ar/georef/api/departamentos?provincia=${encodeURIComponent(provinceId)}&max=500&orden=nombre`
         );
+
 
       select.innerHTML = `
         <option value="">
@@ -519,23 +1258,29 @@
         </option>
       `;
 
+
       data.departamentos.forEach(department => {
 
         const option =
           document.createElement('option');
 
+
         option.value =
           department.nombre;
+
 
         option.dataset.id =
           department.id;
 
+
         option.textContent =
           department.nombre;
+
 
         select.appendChild(option);
 
       });
+
 
       select.disabled = false;
 
@@ -554,7 +1299,9 @@
         </option>
       `;
 
+
       select.disabled = true;
+
 
       if (!provinceId || !departmentId) {
 
@@ -568,10 +1315,12 @@
 
       }
 
+
       const data =
         await georef(
           `https://apis.datos.gob.ar/georef/api/localidades?provincia=${encodeURIComponent(provinceId)}&departamento=${encodeURIComponent(departmentId)}&max=500&orden=nombre`
         );
+
 
       select.innerHTML = `
         <option value="">
@@ -579,23 +1328,29 @@
         </option>
       `;
 
+
       data.localidades.forEach(locality => {
 
         const option =
           document.createElement('option');
 
+
         option.value =
           locality.nombre;
+
 
         option.dataset.id =
           locality.id;
 
+
         option.textContent =
           locality.nombre;
+
 
         select.appendChild(option);
 
       });
+
 
       select.disabled = false;
 
@@ -613,20 +1368,26 @@
       const row =
         document.createElement('div');
 
+
       row.className =
         'location-row';
+
 
       row.style.border =
         '1px solid var(--line)';
 
+
       row.style.borderRadius =
         '14px';
+
 
       row.style.padding =
         '15px';
 
+
       row.style.marginBottom =
         '12px';
+
 
       row.innerHTML = `
 
@@ -708,30 +1469,36 @@
           '.location-province'
         );
 
+
       const departmentSelect =
         row.querySelector(
           '.location-department'
         );
+
 
       const localitySelect =
         row.querySelector(
           '.location-locality'
         );
 
+
       const neighborhoodSelect =
         row.querySelector(
           '.location-neighborhood'
         );
+
 
       const departmentWrap =
         row.querySelector(
           '.location-department-wrap'
         );
 
+
       const localityWrap =
         row.querySelector(
           '.location-locality-wrap'
         );
+
 
       const neighborhoodWrap =
         row.querySelector(
@@ -757,11 +1524,14 @@
         const savedProvince =
           savedLocation.province || '';
 
+
         const savedParty =
           savedLocation.party || '';
 
+
         const savedLocality =
           savedLocation.locality || '';
+
 
         const savedNeighborhood =
           savedLocation.neighborhood || '';
@@ -780,6 +1550,7 @@
                 'Ciudad Autónoma de Buenos Aires'
             );
 
+
           if (cabaOption) {
 
             provinceSelect.value =
@@ -787,11 +1558,14 @@
 
           }
 
+
           departmentWrap.style.display =
             'none';
 
+
           localityWrap.style.display =
             'none';
+
 
           neighborhoodWrap.style.display =
             'block';
@@ -803,6 +1577,7 @@
             </option>
           `;
 
+
           CABA_BARRIOS.forEach(
             barrio => {
 
@@ -811,11 +1586,14 @@
                   'option'
                 );
 
+
               option.value =
                 barrio;
 
+
               option.textContent =
                 barrio;
+
 
               neighborhoodSelect.appendChild(
                 option
@@ -823,6 +1601,7 @@
 
             }
           );
+
 
           neighborhoodSelect.value =
             savedNeighborhood;
@@ -832,8 +1611,10 @@
           departmentWrap.style.display =
             'block';
 
+
           localityWrap.style.display =
             'block';
+
 
           neighborhoodWrap.style.display =
             'none';
@@ -855,6 +1636,7 @@
             provinceSelect.value =
               provinceOption.value;
 
+
             await loadDepartments(
               provinceOption.dataset.id,
               departmentSelect
@@ -874,6 +1656,7 @@
 
               departmentSelect.value =
                 departmentOption.value;
+
 
               await loadLocalities(
                 provinceOption.dataset.id,
@@ -907,8 +1690,10 @@
               provinceSelect.selectedIndex
             ];
 
+
           const provinceName =
             selectedOption?.textContent || '';
+
 
           const provinceId =
             selectedOption?.dataset.id || '';
@@ -919,6 +1704,7 @@
               Seleccioná un partido
             </option>
           `;
+
 
           localitySelect.innerHTML = `
             <option value="">
@@ -935,8 +1721,10 @@
             departmentWrap.style.display =
               'none';
 
+
             localityWrap.style.display =
               'none';
+
 
             neighborhoodWrap.style.display =
               'block';
@@ -948,6 +1736,7 @@
               </option>
             `;
 
+
             CABA_BARRIOS.forEach(
               barrio => {
 
@@ -956,11 +1745,14 @@
                     'option'
                   );
 
+
                 option.value =
                   barrio;
 
+
                 option.textContent =
                   barrio;
+
 
                 neighborhoodSelect.appendChild(
                   option
@@ -974,8 +1766,10 @@
             departmentWrap.style.display =
               'block';
 
+
             localityWrap.style.display =
               'block';
+
 
             neighborhoodWrap.style.display =
               'none';
@@ -1005,10 +1799,12 @@
               provinceSelect.selectedIndex
             ];
 
+
           const departmentOption =
             departmentSelect.options[
               departmentSelect.selectedIndex
             ];
+
 
           await loadLocalities(
             provinceOption?.dataset.id || '',
@@ -1050,6 +1846,7 @@
 
           console.error(error);
 
+
           showMessage(
             'msg',
             'No se pudieron cargar las zonas geográficas.',
@@ -1079,9 +1876,7 @@
 
 
     if (locationsError) {
-
       throw locationsError;
-
     }
 
 
@@ -1112,20 +1907,26 @@
       const row =
         document.createElement('div');
 
+
       row.className =
         'license-row';
+
 
       row.style.display =
         'grid';
 
+
       row.style.gridTemplateColumns =
         '1fr 1fr auto';
+
 
       row.style.gap =
         '10px';
 
+
       row.style.alignItems =
         'end';
+
 
       row.style.marginBottom =
         '12px';
@@ -1199,6 +2000,7 @@
         ).value =
           savedLicense.jurisdiction || '';
 
+
         row.querySelector(
           '.additional-license-number'
         ).value =
@@ -1248,9 +2050,7 @@
 
 
     if (licensesError) {
-
       throw licensesError;
-
     }
 
 
@@ -1258,6 +2058,7 @@
 
       const primaryLicense =
         profile?.license || '';
+
 
       const primaryJurisdiction =
         profile?.jurisdiction || '';
@@ -1296,6 +2097,7 @@
         const file =
           photoInput.files[0];
 
+
         if (!file) return;
 
 
@@ -1310,7 +2112,9 @@
             true
           );
 
+
           photoInput.value = '';
+
 
           return;
 
@@ -1332,7 +2136,9 @@
               >
             `;
 
+
             showRemoveButton();
+
 
             photoWasRemoved = false;
 
@@ -1365,17 +2171,22 @@
           'button'
         );
 
+
       removeButton.id =
         'removePhoto';
+
 
       removeButton.type =
         'button';
 
+
       removeButton.className =
         'btn secondary';
 
+
       removeButton.style.marginTop =
         '8px';
+
 
       removeButton.textContent =
         'Eliminar foto';
@@ -1394,11 +2205,14 @@
 
           photoInput.value = '';
 
+
           photoPreview.innerHTML =
             'PS';
 
+
           photoWasRemoved =
             true;
+
 
           removeButton.remove();
 
@@ -1564,15 +2378,18 @@
                   '.location-province'
                 );
 
+
               const departmentSelect =
                 row.querySelector(
                   '.location-department'
                 );
 
+
               const localitySelect =
                 row.querySelector(
                   '.location-locality'
                 );
+
 
               const neighborhoodSelect =
                 row.querySelector(
@@ -1749,9 +2566,7 @@
 
 
             if (uploadError) {
-
               throw uploadError;
-
             }
 
 
@@ -1856,9 +2671,7 @@
 
 
           if (saveError) {
-
             throw saveError;
-
           }
 
 
@@ -1894,10 +2707,9 @@
                   }
                 );
 
+
             if (contactSaveError) {
-
               throw contactSaveError;
-
             }
 
           } else {
@@ -1913,10 +2725,9 @@
                   user.id
                 );
 
+
             if (contactDeleteError) {
-
               throw contactDeleteError;
-
             }
 
           }
@@ -1941,9 +2752,7 @@
 
 
           if (deleteLicensesError) {
-
             throw deleteLicensesError;
-
           }
 
 
@@ -1979,9 +2788,7 @@
 
 
             if (insertLicensesError) {
-
               throw insertLicensesError;
-
             }
 
           }
@@ -2006,9 +2813,7 @@
 
 
           if (deleteLocationsError) {
-
             throw deleteLocationsError;
-
           }
 
 
@@ -2050,9 +2855,7 @@
 
 
             if (insertLocationsError) {
-
               throw insertLocationsError;
-
             }
 
           }
@@ -2076,6 +2879,7 @@
               >
             `;
 
+
             showRemoveButton();
 
           } else {
@@ -2091,9 +2895,7 @@
 
 
             if (removeButton) {
-
               removeButton.remove();
-
             }
 
           }
