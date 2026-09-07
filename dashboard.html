@@ -48,6 +48,10 @@
 
   <div class="container">
 
+    <!-- ========================================================
+         CABECERA
+    ========================================================= -->
+
     <div class="dash-head">
 
       <div>
@@ -81,443 +85,828 @@
 
     <div class="dash-grid">
 
+      <!-- ======================================================
+           NAVEGACIÓN LATERAL
+      ======================================================= -->
+
       <aside class="side">
 
         <a
           class="active"
-          href="#perfil"
+          href="#inicio"
         >
-          Mi perfil
+          Inicio
         </a>
 
         <a href="#perfil">
-          Información profesional
+          Mi perfil
         </a>
 
-        <a href="#proximamente">
-          Agenda
-          <small>(próximamente)</small>
+        <a href="#consultas">
+          Consultas
         </a>
 
-        <a href="#proximamente">
+        <a href="#disponibilidad">
+          Disponibilidad
+        </a>
+
+        <a href="#estadisticas">
           Estadísticas
-          <small>(próximamente)</small>
+        </a>
+
+        <a href="#suscripcion">
+          Suscripción
         </a>
 
       </aside>
 
 
-      <section
-        class="panel"
-        id="perfil"
-      >
+      <!-- ======================================================
+           CONTENIDO PRINCIPAL
+      ======================================================= -->
 
-        <h2>
-          Mi perfil profesional
-        </h2>
-
-        <p class="small">
-          Completá tu información. Solo se mostrará públicamente cuando actives “Publicar perfil”.
-        </p>
+      <section class="panel">
 
 
-        <form
-          id="profileForm"
-          class="profile-form"
+        <!-- ====================================================
+             INICIO
+        ===================================================== -->
+
+        <div
+          id="inicio"
+          style="margin-bottom:40px;"
         >
 
+          <h2>
+            Inicio
+          </h2>
 
-          <!-- FOTO -->
+          <p class="small">
+            Acá vas a encontrar un resumen de tu actividad en PsiCerca.
+          </p>
 
-          <div class="field span-2">
 
-            <label for="photo">
-              Foto de perfil
-            </label>
+          <!-- ESTADO DE SUSCRIPCIÓN -->
 
-            <div class="photo-upload">
+          <div
+            id="subscriptionCard"
+            style="
+              margin-top:24px;
+              padding:22px;
+              border:1px solid var(--line);
+              border-radius:16px;
+              background:var(--surface);
+            "
+          >
 
-              <div
-                id="photoPreview"
-                class="avatar"
-                style="overflow:hidden;"
-              >
-                PS
-              </div>
+            <div
+              style="
+                display:flex;
+                justify-content:space-between;
+                align-items:flex-start;
+                gap:20px;
+                flex-wrap:wrap;
+              "
+            >
 
               <div>
 
-                <input
-                  id="photo"
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
+                <span
+                  id="subscriptionLabel"
+                  class="eyebrow"
                 >
+                  Suscripción
+                </span>
 
-                <p class="small">
-                  JPG, PNG o WEBP · Máximo 2 MB
+                <h3
+                  id="subscriptionTitle"
+                  style="margin:6px 0;"
+                >
+                  Cargando…
+                </h3>
+
+                <p
+                  id="subscriptionDescription"
+                  class="small"
+                  style="margin:0;"
+                >
+                  Consultando el estado de tu cuenta.
                 </p>
 
               </div>
 
-            </div>
-
-          </div>
-
-
-          <!-- NOMBRE -->
-
-          <div class="field">
-
-            <label for="display_name">
-              Nombre profesional
-            </label>
-
-            <input
-              id="display_name"
-              type="text"
-              required
-            >
-
-          </div>
-
-
-          <!-- JURISDICCIÓN PRINCIPAL -->
-
-          <div class="field">
-
-            <label for="jurisdiction">
-              Jurisdicción principal
-            </label>
-
-            <select id="jurisdiction">
-
-              <option value="Ciudad de Buenos Aires">
-                Ciudad de Buenos Aires
-              </option>
-
-              <option value="Provincia de Buenos Aires">
-                Provincia de Buenos Aires
-              </option>
-
-              <option value="Otra">
-                Otra
-              </option>
-
-            </select>
-
-          </div>
-
-
-          <!-- MATRÍCULA PRINCIPAL -->
-
-          <div class="field">
-
-            <label for="license">
-              Matrícula principal
-            </label>
-
-            <input
-              id="license"
-              type="text"
-              required
-            >
-
-          </div>
-
-
-          <!-- MATRÍCULAS -->
-
-          <div class="field span-2">
-
-            <label>
-              Otras matrículas
-            </label>
-
-            <p class="small">
-              Si tenés matrícula en otra jurisdicción, podés agregarla.
-            </p>
-
-            <div id="licensesContainer"></div>
-
-            <button
-              id="addLicense"
-              class="btn secondary"
-              type="button"
-            >
-              + Agregar matrícula
-            </button>
-
-          </div>
-
-
-          <!-- MODALIDAD -->
-
-          <div class="field">
-
-            <label for="modality">
-              Modalidad
-            </label>
-
-            <select id="modality">
-
-              <option value="">
-                Seleccionar
-              </option>
-
-              <option value="Presencial y online">
-                Presencial y online
-              </option>
-
-              <option value="Solo online">
-                Solo online
-              </option>
-
-              <option value="Solo presencial">
-                Solo presencial
-              </option>
-
-            </select>
-
-          </div>
-
-
-          <!-- ZONAS -->
-
-          <div class="field span-2">
-
-            <label>
-              Zonas de atención presencial
-            </label>
-
-            <p class="small">
-              Seleccioná dónde atendés presencialmente. Podés agregar más de una zona.
-            </p>
-
-            <div id="locationsContainer"></div>
-
-            <button
-              id="addLocation"
-              class="btn secondary"
-              type="button"
-            >
-              + Agregar zona de atención
-            </button>
-
-          </div>
-
-
-          <!-- POBLACIÓN -->
-
-          <div class="field span-2">
-
-            <label>
-              Población
-            </label>
-
-            <input
-              id="population"
-              type="hidden"
-            >
-
-            <div class="population-options">
-
-              <label class="check">
-                <input
-                  type="checkbox"
-                  class="population-option"
-                  value="Niños"
-                >
-                <span>Niños</span>
-              </label>
-
-              <label class="check">
-                <input
-                  type="checkbox"
-                  class="population-option"
-                  value="Adolescentes"
-                >
-                <span>Adolescentes</span>
-              </label>
-
-              <label class="check">
-                <input
-                  type="checkbox"
-                  class="population-option"
-                  value="Adultos"
-                >
-                <span>Adultos</span>
-              </label>
-
-              <label class="check">
-                <input
-                  type="checkbox"
-                  class="population-option"
-                  value="Adultos mayores"
-                >
-                <span>Adultos mayores</span>
-              </label>
-
-              <label class="check">
-                <input
-                  type="checkbox"
-                  class="population-option"
-                  value="Parejas"
-                >
-                <span>Parejas</span>
-              </label>
-
-              <label class="check">
-                <input
-                  type="checkbox"
-                  class="population-option"
-                  value="Familias"
-                >
-                <span>Familias</span>
-              </label>
-
-            </div>
-
-            <p class="small">
-              Podés seleccionar más de una opción.
-            </p>
-
-          </div>
-
-
-          <!-- ORIENTACIÓN -->
-
-          <div class="field">
-
-            <label for="orientation">
-              Orientación
-            </label>
-
-            <input
-              id="orientation"
-              type="text"
-              placeholder="Ej. Psicoanálisis"
-            >
-
-          </div>
-
-
-          <!-- WHATSAPP -->
-
-          <div class="field">
-
-            <label for="whatsapp">
-              WhatsApp público (opcional)
-            </label>
-
-            <input
-              id="whatsapp"
-              type="tel"
-              placeholder="Ej. 5491123456789"
-            >
-
-          </div>
-
-
-          <!-- BIO -->
-
-          <div class="field span-2">
-
-            <label for="bio">
-              Presentación
-            </label>
-
-            <textarea
-              id="bio"
-              maxlength="1000"
-              placeholder="Contá brevemente sobre tu práctica profesional."
-            ></textarea>
-
-          </div>
-
-
-          <!-- PUBLICAR -->
-
-          <div class="field span-2">
-
-            <label class="check">
-
-              <input
-                id="is_public"
-                type="checkbox"
+              <a
+                id="subscriptionButton"
+                class="btn secondary"
+                href="#suscripcion"
               >
+                Ver suscripción
+              </a>
 
-              <span>
-                <strong>Publicar perfil</strong>
-                <br>
-                Al activarlo, tu perfil podrá aparecer en el directorio público.
-              </span>
-
-            </label>
+            </div>
 
           </div>
 
 
-          <!-- GUARDAR -->
-
-          <div class="span-2">
-
-            <button
-              class="btn primary"
-              type="submit"
-            >
-              Guardar cambios
-            </button>
-
-            <div
-              id="msg"
-              class="message"
-            ></div>
-
-          </div>
-
-
-          <!-- ELIMINAR CUENTA -->
+          <!-- RESUMEN -->
 
           <div
-            class="span-2"
             style="
-              margin-top:32px;
-              padding-top:24px;
-              border-top:1px solid var(--line);
+              display:grid;
+              grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+              gap:14px;
+              margin-top:20px;
+            "
+          >
+
+            <div
+              style="
+                padding:20px;
+                border:1px solid var(--line);
+                border-radius:14px;
+              "
+            >
+
+              <div class="small">
+                Visitas al perfil
+              </div>
+
+              <strong
+                id="dashboardViews"
+                style="font-size:28px;"
+              >
+                —
+              </strong>
+
+            </div>
+
+
+            <div
+              style="
+                padding:20px;
+                border:1px solid var(--line);
+                border-radius:14px;
+              "
+            >
+
+              <div class="small">
+                Apariciones en búsquedas
+              </div>
+
+              <strong
+                id="dashboardSearches"
+                style="font-size:28px;"
+              >
+                —
+              </strong>
+
+            </div>
+
+
+            <div
+              style="
+                padding:20px;
+                border:1px solid var(--line);
+                border-radius:14px;
+              "
+            >
+
+              <div class="small">
+                Consultas recibidas
+              </div>
+
+              <strong
+                id="dashboardInquiries"
+                style="font-size:28px;"
+              >
+                —
+              </strong>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- ====================================================
+             MI PERFIL
+        ===================================================== -->
+
+        <div
+          id="perfil"
+          style="
+            padding-top:20px;
+            margin-bottom:40px;
+          "
+        >
+
+          <h2>
+            Mi perfil profesional
+          </h2>
+
+          <p class="small">
+            Completá tu información. Solo se mostrará públicamente cuando actives “Publicar perfil”.
+          </p>
+
+
+          <form
+            id="profileForm"
+            class="profile-form"
+          >
+
+
+            <!-- FOTO -->
+
+            <div class="field span-2">
+
+              <label for="photo">
+                Foto de perfil
+              </label>
+
+              <div class="photo-upload">
+
+                <div
+                  id="photoPreview"
+                  class="avatar"
+                  style="overflow:hidden;"
+                >
+                  PS
+                </div>
+
+                <div>
+
+                  <input
+                    id="photo"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                  >
+
+                  <p class="small">
+                    JPG, PNG o WEBP · Máximo 2 MB
+                  </p>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <!-- NOMBRE -->
+
+            <div class="field">
+
+              <label for="display_name">
+                Nombre profesional
+              </label>
+
+              <input
+                id="display_name"
+                type="text"
+                required
+              >
+
+            </div>
+
+
+            <!-- JURISDICCIÓN PRINCIPAL -->
+
+            <div class="field">
+
+              <label for="jurisdiction">
+                Jurisdicción principal
+              </label>
+
+              <select id="jurisdiction">
+
+                <option value="Ciudad de Buenos Aires">
+                  Ciudad de Buenos Aires
+                </option>
+
+                <option value="Provincia de Buenos Aires">
+                  Provincia de Buenos Aires
+                </option>
+
+                <option value="Otra">
+                  Otra
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <!-- MATRÍCULA PRINCIPAL -->
+
+            <div class="field">
+
+              <label for="license">
+                Matrícula principal
+              </label>
+
+              <input
+                id="license"
+                type="text"
+                required
+              >
+
+            </div>
+
+
+            <!-- MATRÍCULAS -->
+
+            <div class="field span-2">
+
+              <label>
+                Otras matrículas
+              </label>
+
+              <p class="small">
+                Si tenés matrícula en otra jurisdicción, podés agregarla.
+              </p>
+
+              <div id="licensesContainer"></div>
+
+              <button
+                id="addLicense"
+                class="btn secondary"
+                type="button"
+              >
+                + Agregar matrícula
+              </button>
+
+            </div>
+
+
+            <!-- MODALIDAD -->
+
+            <div class="field">
+
+              <label for="modality">
+                Modalidad
+              </label>
+
+              <select id="modality">
+
+                <option value="">
+                  Seleccionar
+                </option>
+
+                <option value="Presencial y online">
+                  Presencial y online
+                </option>
+
+                <option value="Solo online">
+                  Solo online
+                </option>
+
+                <option value="Solo presencial">
+                  Solo presencial
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <!-- ZONAS -->
+
+            <div class="field span-2">
+
+              <label>
+                Zonas de atención presencial
+              </label>
+
+              <p class="small">
+                Seleccioná dónde atendés presencialmente. Podés agregar más de una zona.
+              </p>
+
+              <div id="locationsContainer"></div>
+
+              <button
+                id="addLocation"
+                class="btn secondary"
+                type="button"
+              >
+                + Agregar zona de atención
+              </button>
+
+            </div>
+
+
+            <!-- POBLACIÓN -->
+
+            <div class="field span-2">
+
+              <label>
+                Población
+              </label>
+
+              <input
+                id="population"
+                type="hidden"
+              >
+
+              <div class="population-options">
+
+                <label class="check">
+                  <input
+                    type="checkbox"
+                    class="population-option"
+                    value="Niños"
+                  >
+                  <span>Niños</span>
+                </label>
+
+                <label class="check">
+                  <input
+                    type="checkbox"
+                    class="population-option"
+                    value="Adolescentes"
+                  >
+                  <span>Adolescentes</span>
+                </label>
+
+                <label class="check">
+                  <input
+                    type="checkbox"
+                    class="population-option"
+                    value="Adultos"
+                  >
+                  <span>Adultos</span>
+                </label>
+
+                <label class="check">
+                  <input
+                    type="checkbox"
+                    class="population-option"
+                    value="Adultos mayores"
+                  >
+                  <span>Adultos mayores</span>
+                </label>
+
+                <label class="check">
+                  <input
+                    type="checkbox"
+                    class="population-option"
+                    value="Parejas"
+                  >
+                  <span>Parejas</span>
+                </label>
+
+                <label class="check">
+                  <input
+                    type="checkbox"
+                    class="population-option"
+                    value="Familias"
+                  >
+                  <span>Familias</span>
+                </label>
+
+              </div>
+
+              <p class="small">
+                Podés seleccionar más de una opción.
+              </p>
+
+            </div>
+
+
+            <!-- ORIENTACIÓN -->
+
+            <div class="field">
+
+              <label for="orientation">
+                Orientación
+              </label>
+
+              <input
+                id="orientation"
+                type="text"
+                placeholder="Ej. Psicoanálisis"
+              >
+
+            </div>
+
+
+            <!-- WHATSAPP -->
+
+            <div class="field">
+
+              <label for="whatsapp">
+                WhatsApp público (opcional)
+              </label>
+
+              <input
+                id="whatsapp"
+                type="tel"
+                placeholder="Ej. 5491123456789"
+              >
+
+            </div>
+
+
+            <!-- BIO -->
+
+            <div class="field span-2">
+
+              <label for="bio">
+                Presentación
+              </label>
+
+              <textarea
+                id="bio"
+                maxlength="1000"
+                placeholder="Contá brevemente sobre tu práctica profesional."
+              ></textarea>
+
+            </div>
+
+
+            <!-- PUBLICAR -->
+
+            <div class="field span-2">
+
+              <label class="check">
+
+                <input
+                  id="is_public"
+                  type="checkbox"
+                >
+
+                <span>
+                  <strong>Publicar perfil</strong>
+                  <br>
+                  Al activarlo, tu perfil podrá aparecer en el directorio público.
+                </span>
+
+              </label>
+
+            </div>
+
+
+            <!-- GUARDAR -->
+
+            <div class="span-2">
+
+              <button
+                class="btn primary"
+                type="submit"
+              >
+                Guardar cambios
+              </button>
+
+              <div
+                id="msg"
+                class="message"
+              ></div>
+
+            </div>
+
+
+            <!-- ELIMINAR CUENTA -->
+
+            <div
+              class="span-2"
+              style="
+                margin-top:32px;
+                padding-top:24px;
+                border-top:1px solid var(--line);
+              "
+            >
+
+              <h3>
+                Eliminar perfil y cuenta
+              </h3>
+
+              <p class="small">
+                Esta acción eliminará permanentemente tu cuenta y todos los datos asociados a tu perfil profesional.
+                No se puede deshacer.
+              </p>
+
+              <button
+                id="deleteAccount"
+                class="btn secondary"
+                type="button"
+                style="
+                  margin-top:10px;
+                  border-color:#b91c1c;
+                  color:#b91c1c;
+                "
+              >
+                Eliminar mi cuenta
+              </button>
+
+              <div
+                id="deleteAccountMsg"
+                class="message"
+              ></div>
+
+            </div>
+
+
+          </form>
+
+        </div>
+
+
+        <!-- ====================================================
+             CONSULTAS
+        ===================================================== -->
+
+        <div
+          id="consultas"
+          style="
+            padding-top:20px;
+            margin-bottom:40px;
+          "
+        >
+
+          <h2>
+            Consultas
+          </h2>
+
+          <p class="small">
+            Gestioná las consultas que recibas de personas interesadas en comenzar un proceso.
+          </p>
+
+          <div
+            id="consultasContent"
+            style="
+              margin-top:20px;
+              padding:24px;
+              border:1px solid var(--line);
+              border-radius:14px;
+            "
+          >
+
+            <strong>
+              🔒 Disponible con PsiCerca PRO
+            </strong>
+
+            <p class="small">
+              Recibí consultas directamente dentro de PsiCerca y organizalas desde tu panel profesional.
+            </p>
+
+            <a
+              class="btn primary"
+              href="#suscripcion"
+            >
+              Conocer PsiCerca PRO
+            </a>
+
+          </div>
+
+        </div>
+
+
+        <!-- ====================================================
+             DISPONIBILIDAD
+        ===================================================== -->
+
+        <div
+          id="disponibilidad"
+          style="
+            padding-top:20px;
+            margin-bottom:40px;
+          "
+        >
+
+          <h2>
+            Disponibilidad
+          </h2>
+
+          <p class="small">
+            Indicá si actualmente estás tomando pacientes y qué modalidad de atención ofrecés.
+          </p>
+
+          <div
+            id="availabilityContent"
+            style="
+              margin-top:20px;
+              padding:24px;
+              border:1px solid var(--line);
+              border-radius:14px;
+            "
+          >
+
+            <strong>
+              🔒 Disponible con PsiCerca PRO
+            </strong>
+
+            <p class="small">
+              Mostrá tu disponibilidad para que las personas puedan saber cuándo tiene sentido contactarte.
+            </p>
+
+            <a
+              class="btn primary"
+              href="#suscripcion"
+            >
+              Conocer PsiCerca PRO
+            </a>
+
+          </div>
+
+        </div>
+
+
+        <!-- ====================================================
+             ESTADÍSTICAS
+        ===================================================== -->
+
+        <div
+          id="estadisticas"
+          style="
+            padding-top:20px;
+            margin-bottom:40px;
+          "
+        >
+
+          <h2>
+            Estadísticas
+          </h2>
+
+          <p class="small">
+            Conocé cómo está funcionando tu perfil dentro de PsiCerca.
+          </p>
+
+          <div
+            id="statisticsContent"
+            style="
+              margin-top:20px;
+              padding:24px;
+              border:1px solid var(--line);
+              border-radius:14px;
+            "
+          >
+
+            <strong>
+              🔒 Disponible con PsiCerca PRO
+            </strong>
+
+            <p class="small">
+              Accedé a visitas, apariciones en búsquedas, consultas y otras métricas de tu perfil.
+            </p>
+
+            <a
+              class="btn primary"
+              href="#suscripcion"
+            >
+              Conocer PsiCerca PRO
+            </a>
+
+          </div>
+
+        </div>
+
+
+        <!-- ====================================================
+             SUSCRIPCIÓN
+        ===================================================== -->
+
+        <div
+          id="suscripcion"
+          style="
+            padding-top:20px;
+            margin-bottom:20px;
+          "
+        >
+
+          <h2>
+            Suscripción
+          </h2>
+
+          <p class="small">
+            Administrá tu plan de PsiCerca.
+          </p>
+
+          <div
+            id="subscriptionDetails"
+            style="
+              margin-top:20px;
+              padding:24px;
+              border:1px solid var(--line);
+              border-radius:14px;
             "
           >
 
             <h3>
-              Eliminar perfil y cuenta
+              PsiCerca PRO
             </h3>
 
             <p class="small">
-              Esta acción eliminará permanentemente tu cuenta y todos los datos asociados a tu perfil profesional.
-              No se puede deshacer.
+              Próximamente vas a poder contratar y administrar tu suscripción desde acá.
             </p>
 
-            <button
-              id="deleteAccount"
-              class="btn secondary"
-              type="button"
-              style="
-                margin-top:10px;
-                border-color:#b91c1c;
-                color:#b91c1c;
-              "
-            >
-              Eliminar mi cuenta
-            </button>
-
-            <div
-              id="deleteAccountMsg"
-              class="message"
-            ></div>
+            <p class="small">
+              Por ahora, esta sección es únicamente informativa.
+            </p>
 
           </div>
 
+        </div>
 
-        </form>
 
       </section>
 
