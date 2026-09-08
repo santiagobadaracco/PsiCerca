@@ -1894,15 +1894,15 @@ async function renderAgenda(
 
       if (error) {
 
-        console.error(
-          'Error obteniendo turnos:',
-          error
-        );
+       console.error(
+  'ERROR DETALLADO OBTENIENDO TURNOS:',
+  JSON.stringify(error, null, 2)
+);
 
         slotsArea.innerHTML = `
           <div class="agenda-message">
-            No pudimos cargar los horarios disponibles.
           </div>
+            No pudimos cargar los horarios disponibles.
         `;
 
         return;
