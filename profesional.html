@@ -1,29 +1,30 @@
 <!doctype html>
+
 <html lang="es">
 
 <head>
 
   <meta charset="utf-8">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1"
-  >
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1"
+
+>
 
   <title>Perfil profesional — PsiCerca</title>
 
   <link rel="stylesheet" href="styles.css">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script src="config.js"></script>
+
   <script src="supabase.js"></script>
+
   <script src="auth.js"></script>
 
   <style>
-
-    /* =====================================================
-       PERFIL PROFESIONAL
-       ===================================================== */
 
     .profile-header {
       display:flex;
@@ -52,7 +53,6 @@
       object-fit:cover;
       display:block;
     }
-
 
     /* =====================================================
        AGENDA DIGITAL
@@ -201,7 +201,6 @@
       font-weight:600;
     }
 
-
     /* =====================================================
        CONSULTA
        ===================================================== */
@@ -345,7 +344,6 @@
       font-weight:600;
     }
 
-
     /* =====================================================
        CONTACTO
        ===================================================== */
@@ -390,7 +388,6 @@
       border-radius:16px;
       padding:18px;
     }
-
 
     /* =====================================================
        RESPONSIVE
@@ -464,31 +461,31 @@
 
 </head>
 
-
 <body>
 
 <header>
 
   <div class="container nav">
 
-    <a
-      class="logo"
-      href="index.html"
-    >
-      Psi<span>Cerca</span>
-    </a>
+```
+<a
+  class="logo"
+  href="index.html"
+>
+  Psi<span>Cerca</span>
+</a>
 
-    <a
-      href="profesionales.html"
-      class="btn secondary"
-    >
-      ← Volver al directorio
-    </a>
+<a
+  href="profesionales.html"
+  class="btn secondary"
+>
+  ← Volver al directorio
+</a>
+```
 
   </div>
 
 </header>
-
 
 <main
   class="form-wrap"
@@ -500,14 +497,15 @@
     class="panel"
   >
 
-    <div class="empty">
-      Cargando perfil…
-    </div>
+```
+<div class="empty">
+  Cargando perfil…
+</div>
+```
 
   </div>
 
 </main>
-
 
 <footer class="footer">
 
@@ -516,7 +514,6 @@
   </div>
 
 </footer>
-
 
 <script>
 
@@ -530,7 +527,6 @@
       window.location.search
     ).get('id');
 
-
   if (!id) {
 
     box.innerHTML = `
@@ -543,12 +539,10 @@
 
   }
 
-
   try {
 
     const sb =
       requireSupabase();
-
 
     /* =====================================================
        PERFIL PÚBLICO
@@ -575,16 +569,13 @@
       .eq('is_public', true)
       .single();
 
-
     if (error) {
       throw error;
     }
 
-
     if (!p) {
       throw new Error('Perfil no encontrado');
     }
-
 
     /* =====================================================
        INICIALES
@@ -598,7 +589,6 @@
         .join('')
         .slice(0,2)
         .toUpperCase();
-
 
     /* =====================================================
        FOTO / AVATAR
@@ -624,7 +614,6 @@
           </div>
         `;
 
-
     /* =====================================================
        CHIPS
        ===================================================== */
@@ -642,7 +631,6 @@
         </span>
       `)
       .join('');
-
 
     /* =====================================================
        PERFIL
@@ -693,7 +681,6 @@
 
       </div>
 
-
       ${
         p.license
           ? `
@@ -739,7 +726,6 @@
           : ''
       }
 
-
       ${
         chips
           ? `
@@ -752,7 +738,6 @@
           `
           : ''
       }
-
 
       <section>
 
@@ -776,9 +761,7 @@
 
       </section>
 
-
       <div id="agendaArea"></div>
-
 
       <div
         id="contactArea"
@@ -791,9 +774,7 @@
 
       </div>
 
-
       <div id="inquiryArea"></div>
-
 
       <div
         style="
@@ -839,7 +820,6 @@
 
     `;
 
-
     const contactArea =
       document.getElementById('contactArea');
 
@@ -848,7 +828,6 @@
 
     const agendaArea =
       document.getElementById('agendaArea');
-
 
     /* =====================================================
        USUARIO ACTUAL
@@ -861,7 +840,6 @@
     } =
       await sb.auth.getUser();
 
-
     /* =====================================================
        AGENDA
        ===================================================== */
@@ -873,7 +851,6 @@
       user,
       agendaArea
     );
-
 
     /* =====================================================
        SIN SESIÓN
@@ -931,7 +908,6 @@
 
       `;
 
-
       inquiryArea.innerHTML = `
 
         <div
@@ -975,14 +951,12 @@
 
     }
 
-
     /* =====================================================
        ROL
        ===================================================== */
 
     const role =
       user.user_metadata?.role;
-
 
     /* =====================================================
        PACIENTE
@@ -1000,7 +974,6 @@
             target_profile_id:id
           }
         );
-
 
       if (
         contactError ||
@@ -1028,7 +1001,6 @@
           String(
             contacts[0].whatsapp
           ).replace(/\D/g,'');
-
 
         if (whatsapp) {
 
@@ -1066,7 +1038,6 @@
 
       }
 
-
       /* ===================================================
          FORMULARIO
          =================================================== */
@@ -1101,7 +1072,6 @@
 
           </div>
 
-
           <form id="inquiryForm">
 
             <div class="inquiry-fields">
@@ -1122,7 +1092,6 @@
 
               </label>
 
-
               <label class="inquiry-field">
 
                 <span class="inquiry-label">
@@ -1138,7 +1107,6 @@
                 >
 
               </label>
-
 
               <label class="inquiry-field">
 
@@ -1161,7 +1129,6 @@
 
               </label>
 
-
               <label class="inquiry-field">
 
                 <span class="inquiry-label">
@@ -1180,7 +1147,6 @@
                 </span>
 
               </label>
-
 
               <label class="inquiry-field">
 
@@ -1210,7 +1176,6 @@
 
               </label>
 
-
               <label class="inquiry-field">
 
                 <span class="inquiry-label">
@@ -1226,7 +1191,6 @@
 
               </label>
 
-
               <label class="inquiry-field full">
 
                 <span class="inquiry-label">
@@ -1241,7 +1205,6 @@
                 >
 
               </label>
-
 
               <label class="inquiry-field full">
 
@@ -1283,7 +1246,6 @@
 
               </label>
 
-
               <label class="inquiry-field full">
 
                 <span class="inquiry-label">
@@ -1300,1532 +1262,1529 @@
                     placeholder="Contale brevemente qué estás buscando y qué necesitás."
                   ></textarea>
 
-                  <span
-                    id="characterCounter"
-                    class="character-counter"
-                  >
-                    0 / 1000
-                  </span>
-
-                </div>
-
-              </label>
-
-            </div>
-
-
-            <div class="privacy-box">
-
-              <div class="privacy-icon">
-                🔒
-              </div>
-
-              <p class="privacy-text">
-                Por privacidad, evitá incluir diagnósticos,
-                antecedentes clínicos detallados, medicación
-                o historias clínicas.
-              </p>
-
-            </div>
-
-
-            <div class="contact-note">
-
-              <strong>¿Qué pasa después?</strong><br>
-
-              Tu consulta será recibida por el profesional.
-              Si considera que puede responder a tu búsqueda,
-              podrá contactarte directamente.
-
-            </div>
-
-
-            <div class="inquiry-actions">
-
-              <button
-                type="submit"
-                class="btn primary inquiry-submit"
-                id="sendInquiryButton"
-              >
-                Enviar consulta
-              </button>
-
+```
               <span
-                id="inquiryMessageStatus"
-                class="inquiry-status"
-              ></span>
+                id="characterCounter"
+                class="character-counter"
+              >
+                0 / 1000
+              </span>
 
             </div>
 
-          </form>
-
-        </section>
-
-      `;
-
-
-      const inquiryForm =
-        document.getElementById('inquiryForm');
-
-      const sendButton =
-        document.getElementById('sendInquiryButton');
-
-      const inquiryStatus =
-        document.getElementById('inquiryMessageStatus');
-
-      const messageField =
-        document.getElementById('inquiryMessage');
-
-      const characterCounter =
-        document.getElementById('characterCounter');
-
-
-      function updateCharacterCounter() {
-
-        characterCounter.textContent =
-          `${messageField.value.length} / 1000`;
-
-      }
-
-
-      messageField.addEventListener(
-        'input',
-        updateCharacterCounter
-      );
-
-
-      inquiryForm.addEventListener(
-        'submit',
-        async function (event) {
-
-          event.preventDefault();
-
-          sendButton.disabled = true;
-
-          sendButton.textContent = 'Enviando…';
-
-          inquiryStatus.textContent = '';
-
-          inquiryStatus.style.color = '';
-
-
-          try {
-
-            const {
-              data:{
-                user:currentUser
-              }
-            } =
-              await sb.auth.getUser();
-
-
-            if (!currentUser) {
-
-              throw new Error(
-                'Tu sesión expiró. Iniciá sesión nuevamente.'
-              );
-
-            }
-
-
-            const patientName =
-              document
-                .getElementById('inquiryName')
-                .value
-                .trim();
-
-
-            const ageValue =
-              document
-                .getElementById('inquiryAge')
-                .value;
-
-
-            const patientAge =
-              ageValue
-                ? Number(ageValue)
-                : null;
-
-
-            const patientWhatsapp =
-              document
-                .getElementById('inquiryWhatsapp')
-                .value
-                .trim();
-
-
-            const patientEmail =
-              document
-                .getElementById('inquiryEmail')
-                .value
-                .trim();
-
-
-            const modality =
-              document
-                .getElementById('inquiryModality')
-                .value;
-
-
-            const availability =
-              document
-                .getElementById('inquiryAvailability')
-                .value
-                .trim();
-
-
-            const zone =
-              document
-                .getElementById('inquiryZone')
-                .value
-                .trim();
-
-
-            const reason =
-              document
-                .getElementById('inquiryReason')
-                .value;
-
-
-            const message =
-              document
-                .getElementById('inquiryMessage')
-                .value
-                .trim();
-
-
-            if (!patientName) {
-
-              throw new Error(
-                'Ingresá tu nombre y apellido.'
-              );
-
-            }
-
-
-            if (!patientWhatsapp) {
-
-              throw new Error(
-                'Ingresá un número de WhatsApp para que el profesional pueda contactarte.'
-              );
-
-            }
-
-
-            if (
-              patientWhatsapp.replace(/\D/g,'').length < 8
-            ) {
-
-              throw new Error(
-                'Ingresá un número de WhatsApp válido.'
-              );
-
-            }
-
-
-            if (
-              patientEmail &&
-              !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-                patientEmail
-              )
-            ) {
-
-              throw new Error(
-                'Ingresá un email válido o dejá el campo vacío.'
-              );
-
-            }
-
-
-            if (!message) {
-
-              throw new Error(
-                'Escribí un mensaje antes de enviar la consulta.'
-              );
-
-            }
-
-
-            const {
-              error:insertError
-            } =
-              await sb
-                .from('professional_inquiries')
-                .insert({
-
-                  professional_id:id,
-
-                  patient_id:currentUser.id,
-
-                  patient_name:patientName,
-
-                  patient_age:patientAge,
-
-                  patient_whatsapp:
-                    patientWhatsapp,
-
-                  patient_email:
-                    patientEmail || null,
-
-                  modality:
-                    modality || null,
-
-                  availability:
-                    availability || null,
-
-                  zone:
-                    zone || null,
-
-                  reason:
-                    reason || null,
-
-                  message
-
-                });
-
-
-            if (insertError) {
-              throw insertError;
-            }
-
-
-            inquiryForm.reset();
-
-            updateCharacterCounter();
-
-            sendButton.textContent =
-              'Consulta enviada ✓';
-
-            sendButton.disabled = true;
-
-            inquiryStatus.textContent =
-              'La consulta fue enviada correctamente.';
-
-            inquiryStatus.style.color =
-              'var(--accent)';
-
-
-          } catch (error) {
-
-            console.error(
-              'Error enviando consulta:',
-              error
-            );
-
-            inquiryStatus.textContent =
-              error.message ||
-              'No se pudo enviar la consulta.';
-
-            inquiryStatus.style.color =
-              '#b42318';
-
-            sendButton.disabled = false;
-
-            sendButton.textContent =
-              'Enviar consulta';
-
-          }
-
-        }
-      );
-
-      return;
-
-    }
-
-
-    /* =====================================================
-       PROFESIONAL
-       ===================================================== */
-
-    contactArea.innerHTML = `
-
-      <div class="access-box">
-
-        <div class="small">
-
-          Iniciaste sesión como profesional.
-          Para contactar a este profesional
-          necesitás utilizar una cuenta de paciente.
+          </label>
 
         </div>
 
-      </div>
+        <div class="privacy-box">
 
-    `;
-
-
-    inquiryArea.innerHTML = `
-
-      <div
-        class="inquiry-card"
-        style="
-          background:var(--soft);
-          box-shadow:none;
-        "
-      >
-
-        <div class="inquiry-header">
-
-          <div class="inquiry-icon">
-            💬
+          <div class="privacy-icon">
+            🔒
           </div>
 
-          <div>
-
-            <span class="eyebrow">
-              Contacto
-            </span>
-
-            <h2 class="inquiry-title">
-              Enviar consulta
-            </h2>
-
-            <p class="inquiry-subtitle">
-              Las consultas desde PsiCerca están
-              disponibles para cuentas de paciente.
-            </p>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    `;
-
-
-  } catch (error) {
-
-    console.error(
-      'Error cargando perfil:',
-      error
-    );
-
-    box.innerHTML = `
-
-      <div class="empty">
-
-        Este perfil no está disponible
-        o no es público.
-
-      </div>
-
-    `;
-
-  }
-
-})();
-
-
-/* =========================================================
-   AGENDA DIGITAL
-   ========================================================= */
-
-async function renderAgenda(
-  sb,
-  professionalId,
-  professional,
-  user,
-  agendaArea
-) {
-
-  const today =
-    new Date();
-
-  const todayString =
-    formatDateInput(today);
-
-
-  agendaArea.innerHTML = `
-
-    <section class="agenda-card">
-
-      <div class="agenda-header">
-
-        <div class="agenda-icon">
-          📅
-        </div>
-
-        <div>
-
-          <span class="eyebrow">
-            Agenda digital
-          </span>
-
-          <h2 class="agenda-title">
-            Reservá tu turno
-          </h2>
-
-          <p class="agenda-subtitle">
-            Elegí una fecha para consultar los horarios
-            disponibles con este profesional.
+          <p class="privacy-text">
+            Por privacidad, evitá incluir diagnósticos,
+            antecedentes clínicos detallados, medicación
+            o historias clínicas.
           </p>
 
         </div>
 
-      </div>
+        <div class="contact-note">
 
+          <strong>¿Qué pasa después?</strong><br>
 
-      <div class="agenda-controls">
+          Tu consulta será recibida por el profesional.
+          Si considera que puede responder a tu búsqueda,
+          podrá contactarte directamente.
 
-        <div class="agenda-control">
+        </div>
 
-          <label for="agendaDate">
-            Fecha
-          </label>
+        <div class="inquiry-actions">
 
-          <input
-            id="agendaDate"
-            type="date"
-            min="${todayString}"
-            value="${todayString}"
+          <button
+            type="submit"
+            class="btn primary inquiry-submit"
+            id="sendInquiryButton"
           >
+            Enviar consulta
+          </button>
+
+          <span
+            id="inquiryMessageStatus"
+            class="inquiry-status"
+          ></span>
 
         </div>
 
-
-        <div
-          class="agenda-control"
-          id="agendaModalityControl"
-          style="display:none;"
-        >
-
-          <label for="agendaModality">
-            Modalidad
-          </label>
-
-          <select id="agendaModality">
-
-            <option value="virtual">
-              Virtual
-            </option>
-
-            <option value="presencial">
-              Presencial
-            </option>
-
-          </select>
-
-        </div>
-
-      </div>
-
-
-      <div id="agendaSlots">
-
-        <div class="agenda-message">
-          Buscando horarios disponibles…
-        </div>
-
-      </div>
-
-
-      <div
-        id="agendaConfirm"
-        style="display:none;"
-      ></div>
+      </form>
 
     </section>
 
   `;
 
+  const inquiryForm =
+    document.getElementById('inquiryForm');
 
-  const dateInput =
-    document.getElementById('agendaDate');
+  const sendButton =
+    document.getElementById('sendInquiryButton');
 
-  const modalityControl =
-    document.getElementById(
-      'agendaModalityControl'
-    );
+  const inquiryStatus =
+    document.getElementById('inquiryMessageStatus');
 
-  const modalitySelect =
-    document.getElementById('agendaModality');
+  const messageField =
+    document.getElementById('inquiryMessage');
 
-  const slotsArea =
-    document.getElementById('agendaSlots');
+  const characterCounter =
+    document.getElementById('characterCounter');
 
-  const confirmArea =
-    document.getElementById('agendaConfirm');
+  function updateCharacterCounter() {
 
-
-  let selectedSlot = null;
-
-  let currentSlots = [];
-
-
-  /* =======================================================
-     NORMALIZAR SLOT
-     ======================================================= */
-
-  function normalizeSlot(slot) {
-
-    if (!slot) {
-      return null;
-    }
-
-
-    const start =
-      slot.slot_start ??
-      slot.start_time ??
-      slot.start ??
-      slot.hora_inicio ??
-      null;
-
-
-    const end =
-      slot.slot_end ??
-      slot.end_time ??
-      slot.end ??
-      slot.hora_fin ??
-      null;
-
-
-    const modality =
-      slot.modality ??
-      slot.modalidad ??
-      'virtual';
-
-
-    const zone =
-      slot.zone ??
-      slot.zona ??
-      null;
-
-
-    if (!start || !end) {
-      return null;
-    }
-
-
-    return {
-
-      slot_start:
-        String(start),
-
-      slot_end:
-        String(end),
-
-      modality:
-        String(modality),
-
-      zone:
-        zone
-          ? String(zone)
-          : null
-
-    };
+    characterCounter.textContent =
+      `${messageField.value.length} / 1000`;
 
   }
 
+  messageField.addEventListener(
+    'input',
+    updateCharacterCounter
+  );
 
-  /* =======================================================
-     CARGAR SLOTS
-     ======================================================= */
+  inquiryForm.addEventListener(
+    'submit',
+    async function (event) {
 
-  async function loadSlots() {
+      event.preventDefault();
 
-    selectedSlot = null;
+      sendButton.disabled = true;
 
-    confirmArea.style.display =
-      'none';
+      sendButton.textContent = 'Enviando…';
 
-    confirmArea.innerHTML =
-      '';
+      inquiryStatus.textContent = '';
 
+      inquiryStatus.style.color = '';
+
+      try {
+
+        const {
+          data:{
+            user:currentUser
+          }
+        } =
+          await sb.auth.getUser();
+
+        if (!currentUser) {
+
+          throw new Error(
+            'Tu sesión expiró. Iniciá sesión nuevamente.'
+          );
+
+        }
+
+        const patientName =
+          document
+            .getElementById('inquiryName')
+            .value
+            .trim();
+
+        const ageValue =
+          document
+            .getElementById('inquiryAge')
+            .value;
+
+        const patientAge =
+          ageValue
+            ? Number(ageValue)
+            : null;
+
+        const patientWhatsapp =
+          document
+            .getElementById('inquiryWhatsapp')
+            .value
+            .trim();
+
+        const patientEmail =
+          document
+            .getElementById('inquiryEmail')
+            .value
+            .trim();
+
+        const modality =
+          document
+            .getElementById('inquiryModality')
+            .value;
+
+        const availability =
+          document
+            .getElementById('inquiryAvailability')
+            .value
+            .trim();
+
+        const zone =
+          document
+            .getElementById('inquiryZone')
+            .value
+            .trim();
+
+        const reason =
+          document
+            .getElementById('inquiryReason')
+            .value;
+
+        const message =
+          document
+            .getElementById('inquiryMessage')
+            .value
+            .trim();
+
+        if (!patientName) {
+
+          throw new Error(
+            'Ingresá tu nombre y apellido.'
+          );
+
+        }
+
+        if (!patientWhatsapp) {
+
+          throw new Error(
+            'Ingresá un número de WhatsApp para que el profesional pueda contactarte.'
+          );
+
+        }
+
+        if (
+          patientWhatsapp.replace(/\D/g,'').length < 8
+        ) {
+
+          throw new Error(
+            'Ingresá un número de WhatsApp válido.'
+          );
+
+        }
+
+        if (
+          patientEmail &&
+          !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+            patientEmail
+          )
+        ) {
+
+          throw new Error(
+            'Ingresá un email válido o dejá el campo vacío.'
+          );
+
+        }
+
+        if (!message) {
+
+          throw new Error(
+            'Escribí un mensaje antes de enviar la consulta.'
+          );
+
+        }
+
+        const {
+          error:insertError
+        } =
+          await sb
+            .from('professional_inquiries')
+            .insert({
+
+              professional_id:id,
+
+              patient_id:currentUser.id,
+
+              patient_name:patientName,
+
+              patient_age:patientAge,
+
+              patient_whatsapp:
+                patientWhatsapp,
+
+              patient_email:
+                patientEmail || null,
+
+              modality:
+                modality || null,
+
+              availability:
+                availability || null,
+
+              zone:
+                zone || null,
+
+              reason:
+                reason || null,
+
+              message
+
+            });
+
+        if (insertError) {
+          throw insertError;
+        }
+
+        inquiryForm.reset();
+
+        updateCharacterCounter();
+
+        sendButton.textContent =
+          'Consulta enviada ✓';
+
+        sendButton.disabled = true;
+
+        inquiryStatus.textContent =
+          'La consulta fue enviada correctamente.';
+
+        inquiryStatus.style.color =
+          'var(--accent)';
+
+      } catch (error) {
+
+        console.error(
+          'Error enviando consulta:',
+          error
+        );
+
+        inquiryStatus.textContent =
+          error.message ||
+          'No se pudo enviar la consulta.';
+
+        inquiryStatus.style.color =
+          '#b42318';
+
+        sendButton.disabled = false;
+
+        sendButton.textContent =
+          'Enviar consulta';
+
+      }
+
+    }
+  );
+
+  return;
+
+}
+
+/* =====================================================
+   PROFESIONAL
+   ===================================================== */
+
+contactArea.innerHTML = `
+
+  <div class="access-box">
+
+    <div class="small">
+
+      Iniciaste sesión como profesional.
+      Para contactar a este profesional
+      necesitás utilizar una cuenta de paciente.
+
+    </div>
+
+  </div>
+
+`;
+
+inquiryArea.innerHTML = `
+
+  <div
+    class="inquiry-card"
+    style="
+      background:var(--soft);
+      box-shadow:none;
+    "
+  >
+
+    <div class="inquiry-header">
+
+      <div class="inquiry-icon">
+        💬
+      </div>
+
+      <div>
+
+        <span class="eyebrow">
+          Contacto
+        </span>
+
+        <h2 class="inquiry-title">
+          Enviar consulta
+        </h2>
+
+        <p class="inquiry-subtitle">
+          Las consultas desde PsiCerca están
+          disponibles para cuentas de paciente.
+        </p>
+
+      </div>
+
+    </div>
+
+  </div>
+
+`;
+```
+
+} catch (error) {
+
+```
+console.error(
+  'Error cargando perfil:',
+  error
+);
+
+box.innerHTML = `
+
+  <div class="empty">
+
+    Este perfil no está disponible
+    o no es público.
+
+  </div>
+
+`;
+```
+
+}
+
+})();
+
+/* =========================================================
+AGENDA DIGITAL
+========================================================= */
+
+async function renderAgenda(
+sb,
+professionalId,
+professional,
+user,
+agendaArea
+) {
+
+const today =
+new Date();
+
+const todayString =
+formatDateInput(today);
+
+agendaArea.innerHTML = `
+
+```
+<section class="agenda-card">
+
+  <div class="agenda-header">
+
+    <div class="agenda-icon">
+      📅
+    </div>
+
+    <div>
+
+      <span class="eyebrow">
+        Agenda digital
+      </span>
+
+      <h2 class="agenda-title">
+        Reservá tu turno
+      </h2>
+
+      <p class="agenda-subtitle">
+        Elegí una fecha para consultar los horarios
+        disponibles con este profesional.
+      </p>
+
+    </div>
+
+  </div>
+
+  <div class="agenda-controls">
+
+    <div class="agenda-control">
+
+      <label for="agendaDate">
+        Fecha
+      </label>
+
+      <input
+        id="agendaDate"
+        type="date"
+        min="${todayString}"
+        value="${todayString}"
+      >
+
+    </div>
+
+    <div
+      class="agenda-control"
+      id="agendaModalityControl"
+      style="display:none;"
+    >
+
+      <label for="agendaModality">
+        Modalidad
+      </label>
+
+      <select id="agendaModality">
+
+        <option value="virtual">
+          Virtual
+        </option>
+
+        <option value="presencial">
+          Presencial
+        </option>
+
+      </select>
+
+    </div>
+
+  </div>
+
+  <div id="agendaSlots">
+
+    <div class="agenda-message">
+      Buscando horarios disponibles…
+    </div>
+
+  </div>
+
+  <div
+    id="agendaConfirm"
+    style="display:none;"
+  ></div>
+
+</section>
+```
+
+`;
+
+const dateInput =
+document.getElementById('agendaDate');
+
+const modalityControl =
+document.getElementById(
+'agendaModalityControl'
+);
+
+const modalitySelect =
+document.getElementById('agendaModality');
+
+const slotsArea =
+document.getElementById('agendaSlots');
+
+const confirmArea =
+document.getElementById('agendaConfirm');
+
+let selectedSlot = null;
+
+let currentSlots = [];
+
+/* =======================================================
+NORMALIZAR SLOT
+======================================================= */
+
+function normalizeSlot(slot) {
+
+```
+if (!slot) {
+  return null;
+}
+
+/*
+ * Supabase/PostgreSQL puede devolver los nombres
+ * definidos en RETURNS TABLE:
+ *
+ * slot_start
+ * slot_end
+ *
+ * También dejamos compatibilidad con nombres
+ * anteriores por seguridad.
+ */
+
+const start =
+  slot.slot_start ??
+  slot.slot_start_time ??
+  slot.start_time ??
+  slot.start ??
+  slot.hora_inicio ??
+  null;
+
+const end =
+  slot.slot_end ??
+  slot.slot_end_time ??
+  slot.end_time ??
+  slot.end ??
+  slot.hora_fin ??
+  null;
+
+const modality =
+  slot.modality ??
+  slot.modalidad ??
+  'virtual';
+
+const zone =
+  slot.zone ??
+  slot.zona ??
+  null;
+
+if (
+  start === null ||
+  start === undefined ||
+  end === null ||
+  end === undefined
+) {
+
+  console.warn(
+    'Slot descartado por no tener inicio/fin:',
+    slot
+  );
+
+  return null;
+
+}
+
+return {
+
+  slot_start:
+    String(start),
+
+  slot_end:
+    String(end),
+
+  modality:
+    String(modality).toLowerCase(),
+
+  zone:
+    zone !== null &&
+    zone !== undefined &&
+    String(zone).trim()
+      ? String(zone)
+      : null
+
+};
+```
+
+}
+
+/* =======================================================
+CARGAR SLOTS
+======================================================= */
+
+async function loadSlots() {
+
+```
+selectedSlot = null;
+
+confirmArea.style.display =
+  'none';
+
+confirmArea.innerHTML =
+  '';
+
+slotsArea.innerHTML = `
+  <div class="agenda-message">
+    Buscando horarios disponibles…
+  </div>
+`;
+
+const selectedDate =
+  dateInput.value;
+
+if (!selectedDate) {
+
+  slotsArea.innerHTML = `
+    <div class="agenda-message">
+      Seleccioná una fecha.
+    </div>
+  `;
+
+  return;
+
+}
+
+try {
+
+  const {
+    data,
+    error
+  } =
+    await sb.rpc(
+      'get_available_slots',
+      {
+        target_professional_id:
+          professionalId,
+
+        target_date:
+          selectedDate
+      }
+    );
+
+  if (error) {
+
+    console.error(
+      'Error obteniendo turnos:',
+      error
+    );
 
     slotsArea.innerHTML = `
       <div class="agenda-message">
-        Buscando horarios disponibles…
+
+        No pudimos cargar los horarios disponibles.
+
       </div>
     `;
 
+    return;
 
-    const selectedDate =
-      dateInput.value;
+  }
 
+  console.log(
+    'Slots recibidos de Supabase:',
+    data
+  );
 
-    if (!selectedDate) {
+  /*
+   * RETURNS TABLE de Supabase devuelve normalmente
+   * un array de objetos.
+   */
 
-      slotsArea.innerHTML = `
-        <div class="agenda-message">
-          Seleccioná una fecha.
-        </div>
-      `;
+  const rawSlots =
+    Array.isArray(data)
+      ? data
+      : [];
 
-      return;
+  currentSlots =
+    rawSlots
+      .map(normalizeSlot)
+      .filter(Boolean);
 
-    }
+  console.log(
+    'Slots normalizados:',
+    currentSlots
+  );
 
+  /*
+   * Detectamos modalidades disponibles.
+   */
 
-    try {
+  const hasVirtual =
+    currentSlots.some(
+      slot =>
+        slot.modality === 'virtual' ||
+        slot.modality === 'ambas'
+    );
 
-      const {
-        data,
-        error
-      } =
-        await sb.rpc(
-          'get_available_slots',
-          {
-            target_professional_id:
-              professionalId,
+  const hasPresencial =
+    currentSlots.some(
+      slot =>
+        slot.modality === 'presencial' ||
+        slot.modality === 'ambas'
+    );
 
-            target_date:
-              selectedDate
-          }
-        );
+  if (
+    hasVirtual &&
+    hasPresencial
+  ) {
 
+    modalityControl.style.display =
+      'flex';
 
-      if (error) {
+  } else {
 
-        console.error(
-          'Error obteniendo turnos:',
-          error
-        );
+    modalityControl.style.display =
+      'none';
 
-        slotsArea.innerHTML = `
-          <div class="agenda-message">
+    if (hasPresencial) {
 
-            No pudimos cargar los horarios disponibles.
+      modalitySelect.value =
+        'presencial';
 
-          </div>
-        `;
+    } else {
 
-        return;
-
-      }
-
-
-      console.log(
-        'Slots recibidos de Supabase:',
-        data
-      );
-
-
-      currentSlots =
-        (Array.isArray(data)
-          ? data
-          : []
-        )
-        .map(normalizeSlot)
-        .filter(Boolean);
-
-
-      console.log(
-        'Slots normalizados:',
-        currentSlots
-      );
-
-
-      const hasVirtual =
-        currentSlots.some(
-          slot =>
-            slot.modality === 'virtual' ||
-            slot.modality === 'ambas'
-        );
-
-
-      const hasPresencial =
-        currentSlots.some(
-          slot =>
-            slot.modality === 'presencial' ||
-            slot.modality === 'ambas'
-        );
-
-
-      if (
-        hasVirtual &&
-        hasPresencial
-      ) {
-
-        modalityControl.style.display =
-          'flex';
-
-      } else {
-
-        modalityControl.style.display =
-          'none';
-
-
-        if (hasPresencial) {
-
-          modalitySelect.value =
-            'presencial';
-
-        } else {
-
-          modalitySelect.value =
-            'virtual';
-
-        }
-
-      }
-
-
-      if (!currentSlots.length) {
-
-        slotsArea.innerHTML = `
-          <div class="agenda-message">
-
-            No hay turnos disponibles para esta fecha.
-
-            <br><br>
-
-            Probá seleccionando otro día.
-
-          </div>
-        `;
-
-        return;
-
-      }
-
-
-      renderSlots();
-
-    } catch (error) {
-
-      console.error(
-        'Error cargando agenda:',
-        error
-      );
-
-      slotsArea.innerHTML = `
-        <div class="agenda-message">
-          No pudimos cargar la agenda.
-        </div>
-      `;
+      modalitySelect.value =
+        'virtual';
 
     }
 
   }
 
-
-  /* =======================================================
-     RENDER DE SLOTS
-     ======================================================= */
-
-  function renderSlots() {
-
-    const selectedModality =
-      modalitySelect.value;
-
-
-    const filteredSlots =
-      currentSlots.filter(
-        slot => {
-
-          if (
-            slot.modality === 'ambas'
-          ) {
-
-            return true;
-
-          }
-
-          return (
-            slot.modality ===
-            selectedModality
-          );
-
-        }
-      );
-
-
-    if (!filteredSlots.length) {
-
-      slotsArea.innerHTML = `
-        <div class="agenda-message">
-
-          No hay horarios disponibles para
-          la modalidad seleccionada.
-
-        </div>
-      `;
-
-      return;
-
-    }
-
+  if (!currentSlots.length) {
 
     slotsArea.innerHTML = `
+      <div class="agenda-message">
 
-      <div class="agenda-slots">
+        No hay turnos disponibles para esta fecha.
 
-        ${
-          filteredSlots
-            .map(
-              (slot, index) => {
+        <br><br>
 
-                const start =
-                  slot.slot_start;
-
-                const end =
-                  slot.slot_end;
-
-
-                return `
-
-                  <button
-                    type="button"
-                    class="agenda-slot"
-                    data-index="${index}"
-                  >
-
-                    <span class="agenda-slot-time">
-                      ${escapeHTML(
-                        formatTime(start)
-                      )}
-                    </span>
-
-                    <small>
-                      hasta ${escapeHTML(
-                        formatTime(end)
-                      )}
-                    </small>
-
-                  </button>
-
-                `;
-
-              }
-            )
-            .join('')
-        }
+        Probá seleccionando otro día.
 
       </div>
-
     `;
 
-
-    document
-      .querySelectorAll('.agenda-slot')
-      .forEach(
-        button => {
-
-          button.addEventListener(
-            'click',
-            function () {
-
-              const index =
-                Number(
-                  this.dataset.index
-                );
-
-
-              const slot =
-                filteredSlots[index];
-
-
-              if (!slot) {
-                return;
-              }
-
-
-              let selectedModality =
-                modalitySelect.value;
-
-
-              if (
-                slot.modality ===
-                'presencial'
-              ) {
-
-                selectedModality =
-                  'presencial';
-
-              }
-
-
-              if (
-                slot.modality ===
-                'virtual'
-              ) {
-
-                selectedModality =
-                  'virtual';
-
-              }
-
-
-              selectedSlot = {
-
-                date:
-                  dateInput.value,
-
-                startTime:
-                  slot.slot_start,
-
-                endTime:
-                  slot.slot_end,
-
-                modality:
-                  selectedModality,
-
-                zone:
-                  slot.zone || null
-
-              };
-
-
-              showConfirmation();
-
-            }
-          );
-
-        }
-      );
+    return;
 
   }
 
+  renderSlots();
 
-  /* =======================================================
-     CONFIRMACIÓN
-     ======================================================= */
+} catch (error) {
 
-  function showConfirmation() {
+  console.error(
+    'Error cargando agenda:',
+    error
+  );
 
-    if (!selectedSlot) {
-      return;
-    }
+  slotsArea.innerHTML = `
+    <div class="agenda-message">
+      No pudimos cargar la agenda.
+    </div>
+  `;
 
+}
+```
 
-    const formattedDate =
-      formatSpanishDate(
-        selectedSlot.date
+}
+
+/* =======================================================
+RENDER DE SLOTS
+======================================================= */
+
+function renderSlots() {
+
+```
+const selectedModality =
+  modalitySelect.value;
+
+const filteredSlots =
+  currentSlots.filter(
+    slot => {
+
+      if (
+        slot.modality === 'ambas'
+      ) {
+
+        return true;
+
+      }
+
+      return (
+        slot.modality ===
+        selectedModality
       );
 
+    }
+  );
 
-    const modalityText =
-      selectedSlot.modality === 'presencial'
-        ? 'Presencial'
-        : 'Virtual';
+if (!filteredSlots.length) {
 
+  slotsArea.innerHTML = `
+    <div class="agenda-message">
 
-    confirmArea.style.display =
-      'block';
+      No hay horarios disponibles para
+      la modalidad seleccionada.
 
+    </div>
+  `;
 
-    confirmArea.innerHTML = `
+  return;
 
-      <div class="agenda-confirm">
+}
 
-        <div class="agenda-confirm-title">
-          Confirmar turno
-        </div>
+slotsArea.innerHTML = `
 
+  <div class="agenda-slots">
 
-        <p class="agenda-confirm-details">
+    ${
+      filteredSlots
+        .map(
+          (slot, index) => {
 
-          <strong>
-            ${escapeHTML(formattedDate)}
-          </strong>
+            const start =
+              formatTime(
+                slot.slot_start
+              );
 
-          <br>
+            const end =
+              formatTime(
+                slot.slot_end
+              );
 
-          ${escapeHTML(
-            formatTime(
-              selectedSlot.startTime
-            )
-          )}
+            /*
+             * Si por alguna razón PostgreSQL devolviera
+             * valores inesperados, no mostramos "hasta"
+             * vacío.
+             */
 
-          a
+            if (!start || !end) {
+              return '';
+            }
 
-          ${escapeHTML(
-            formatTime(
-              selectedSlot.endTime
-            )
-          )}
+            return `
 
-          ·
-
-          ${escapeHTML(modalityText)}
-
-        </p>
-
-
-        ${
-          selectedSlot.zone &&
-          selectedSlot.modality === 'presencial'
-            ? `
-              <p
-                class="small"
-                style="margin:-6px 0 14px;"
+              <button
+                type="button"
+                class="agenda-slot"
+                data-index="${index}"
               >
-                Zona:
-                ${escapeHTML(
-                  selectedSlot.zone
-                )}
-              </p>
-            `
-            : ''
-        }
 
+                <span class="agenda-slot-time">
+                  ${escapeHTML(start)}
+                </span>
 
-        ${
-          user
-            ? `
-              <div class="agenda-confirm-actions">
+                <small>
+                  hasta ${escapeHTML(end)}
+                </small>
 
-                <button
-                  type="button"
-                  class="btn primary"
-                  id="confirmAppointmentButton"
-                >
-                  Confirmar turno
-                </button>
+              </button>
 
-                <button
-                  type="button"
-                  class="btn secondary"
-                  id="cancelAppointmentSelection"
-                >
-                  Cancelar
-                </button>
+            `;
 
-              </div>
-
-              <div
-                id="bookingStatus"
-                class="agenda-status"
-              ></div>
-            `
-            : `
-              <div class="access-box">
-
-                <div
-                  style="
-                    font-weight:700;
-                    margin-bottom:6px;
-                  "
-                >
-                  🔐 Iniciá sesión para reservar
-                </div>
-
-                <p
-                  class="small"
-                  style="margin:0 0 12px;"
-                >
-                  Necesitás una cuenta de paciente
-                  para confirmar este turno.
-                </p>
-
-                <div
-                  style="
-                    display:flex;
-                    gap:10px;
-                    flex-wrap:wrap;
-                  "
-                >
-
-                  <a
-                    href="login.html"
-                    class="btn primary"
-                  >
-                    Iniciar sesión
-                  </a>
-
-                  <a
-                    href="registro-paciente.html"
-                    class="btn secondary"
-                  >
-                    Crear cuenta
-                  </a>
-
-                </div>
-
-              </div>
-            `
-        }
-
-      </div>
-
-    `;
-
-
-    const confirmButton =
-      document.getElementById(
-        'confirmAppointmentButton'
-      );
-
-
-    const cancelButton =
-      document.getElementById(
-        'cancelAppointmentSelection'
-      );
-
-
-    if (confirmButton) {
-
-      confirmButton.addEventListener(
-        'click',
-        bookSelectedAppointment
-      );
-
+          }
+        )
+        .join('')
     }
 
+  </div>
 
-    if (cancelButton) {
+`;
 
-      cancelButton.addEventListener(
+/*
+ * Si todos los slots fueron descartados por formato,
+ * mostramos un mensaje claro.
+ */
+
+if (
+  !slotsArea.querySelector('.agenda-slot')
+) {
+
+  slotsArea.innerHTML = `
+    <div class="agenda-message">
+      Los horarios configurados no pudieron
+      ser interpretados correctamente.
+    </div>
+  `;
+
+  return;
+
+}
+
+document
+  .querySelectorAll('.agenda-slot')
+  .forEach(
+    button => {
+
+      button.addEventListener(
         'click',
         function () {
 
-          selectedSlot = null;
+          const index =
+            Number(
+              this.dataset.index
+            );
 
-          confirmArea.style.display =
-            'none';
+          const slot =
+            filteredSlots[index];
 
-          confirmArea.innerHTML =
-            '';
+          if (!slot) {
+            return;
+          }
 
-        }
-      );
+          let selectedModality =
+            modalitySelect.value;
 
-    }
+          if (
+            slot.modality ===
+            'presencial'
+          ) {
 
-  }
-
-
-  /* =======================================================
-     RESERVAR TURNO
-     ======================================================= */
-
-  async function bookSelectedAppointment() {
-
-    if (!selectedSlot) {
-      return;
-    }
-
-
-    const button =
-      document.getElementById(
-        'confirmAppointmentButton'
-      );
-
-
-    const status =
-      document.getElementById(
-        'bookingStatus'
-      );
-
-
-    if (button) {
-
-      button.disabled = true;
-
-      button.textContent =
-        'Reservando…';
-
-    }
-
-
-    if (status) {
-
-      status.textContent = '';
-
-      status.style.color = '';
-
-    }
-
-
-    try {
-
-      const {
-        data:{
-          user:currentUser
-        }
-      } =
-        await sb.auth.getUser();
-
-
-      if (!currentUser) {
-
-        throw new Error(
-          'Tu sesión expiró. Iniciá sesión nuevamente.'
-        );
-
-      }
-
-
-      const {
-        data:appointmentId,
-        error
-      } =
-        await sb.rpc(
-          'book_appointment',
-          {
-
-            target_professional_id:
-              professionalId,
-
-            target_date:
-              selectedSlot.date,
-
-            target_start_time:
-              selectedSlot.startTime,
-
-            target_modality:
-              selectedSlot.modality
+            selectedModality =
+              'presencial';
 
           }
-        );
 
+          if (
+            slot.modality ===
+            'virtual'
+          ) {
 
-      if (error) {
+            selectedModality =
+              'virtual';
 
-        console.error(
-          'Error reservando turno:',
-          error
-        );
+          }
 
-        throw error;
+          selectedSlot = {
 
-      }
+            date:
+              dateInput.value,
 
+            startTime:
+              slot.slot_start,
 
-      if (!appointmentId) {
+            endTime:
+              slot.slot_end,
 
-        throw new Error(
-          'No se pudo confirmar el turno.'
-        );
+            modality:
+              selectedModality,
 
-      }
+            zone:
+              slot.zone || null
 
+          };
 
-      confirmArea.style.display =
-        'block';
+          showConfirmation();
 
+        }
+      );
 
-      confirmArea.innerHTML = `
+    }
+  );
+```
 
-        <div class="agenda-confirm">
+}
 
-          <div class="agenda-confirm-title">
-            ✅ Turno reservado
-          </div>
+/* =======================================================
+CONFIRMACIÓN
+======================================================= */
 
-          <p class="agenda-confirm-details">
+function showConfirmation() {
 
-            Tu turno con
+```
+if (!selectedSlot) {
+  return;
+}
 
-            <strong>
-              ${escapeHTML(
-                professional.display_name ||
-                'este profesional'
-              )}
-            </strong>
+const formattedDate =
+  formatSpanishDate(
+    selectedSlot.date
+  );
 
-            quedó reservado para:
+const modalityText =
+  selectedSlot.modality === 'presencial'
+    ? 'Presencial'
+    : 'Virtual';
 
-            <br><br>
+confirmArea.style.display =
+  'block';
 
-            <strong>
-              ${escapeHTML(
-                formatSpanishDate(
-                  selectedSlot.date
-                )
-              )}
-            </strong>
+confirmArea.innerHTML = `
 
-            <br>
+  <div class="agenda-confirm">
 
+    <div class="agenda-confirm-title">
+      Confirmar turno
+    </div>
+
+    <p class="agenda-confirm-details">
+
+      <strong>
+        ${escapeHTML(formattedDate)}
+      </strong>
+
+      <br>
+
+      ${escapeHTML(
+        formatTime(
+          selectedSlot.startTime
+        )
+      )}
+
+      a
+
+      ${escapeHTML(
+        formatTime(
+          selectedSlot.endTime
+        )
+      )}
+
+      ·
+
+      ${escapeHTML(modalityText)}
+
+    </p>
+
+    ${
+      selectedSlot.zone &&
+      selectedSlot.modality === 'presencial'
+        ? `
+          <p
+            class="small"
+            style="margin:-6px 0 14px;"
+          >
+            Zona:
             ${escapeHTML(
-              formatTime(
-                selectedSlot.startTime
-              )
+              selectedSlot.zone
             )}
-
-            a
-
-            ${escapeHTML(
-              formatTime(
-                selectedSlot.endTime
-              )
-            )}
-
-            ·
-
-            ${escapeHTML(
-              selectedSlot.modality === 'presencial'
-                ? 'Presencial'
-                : 'Virtual'
-            )}
-
           </p>
+        `
+        : ''
+    }
 
+    ${
+      user
+        ? `
+          <div class="agenda-confirm-actions">
 
-          <div class="agenda-message">
+            <button
+              type="button"
+              class="btn primary"
+              id="confirmAppointmentButton"
+            >
+              Confirmar turno
+            </button>
 
-            El turno fue registrado correctamente
-            en PsiCerca.
+            <button
+              type="button"
+              class="btn secondary"
+              id="cancelAppointmentSelection"
+            >
+              Cancelar
+            </button>
 
           </div>
 
-        </div>
+          <div
+            id="bookingStatus"
+            class="agenda-status"
+          ></div>
+        `
+        : `
+          <div class="access-box">
 
-      `;
+            <div
+              style="
+                font-weight:700;
+                margin-bottom:6px;
+              "
+            >
+              🔐 Iniciá sesión para reservar
+            </div>
 
+            <p
+              class="small"
+              style="margin:0 0 12px;"
+            >
+              Necesitás una cuenta de paciente
+              para confirmar este turno.
+            </p>
 
-      /*
-       * Actualizamos los horarios disponibles
-       * sin borrar el mensaje de confirmación.
-       */
+            <div
+              style="
+                display:flex;
+                gap:10px;
+                flex-wrap:wrap;
+              "
+            >
+
+              <a
+                href="login.html"
+                class="btn primary"
+              >
+                Iniciar sesión
+              </a>
+
+              <a
+                href="registro-paciente.html"
+                class="btn secondary"
+              >
+                Crear cuenta
+              </a>
+
+            </div>
+
+          </div>
+        `
+    }
+
+  </div>
+
+`;
+
+const confirmButton =
+  document.getElementById(
+    'confirmAppointmentButton'
+  );
+
+const cancelButton =
+  document.getElementById(
+    'cancelAppointmentSelection'
+  );
+
+if (confirmButton) {
+
+  confirmButton.addEventListener(
+    'click',
+    bookSelectedAppointment
+  );
+
+}
+
+if (cancelButton) {
+
+  cancelButton.addEventListener(
+    'click',
+    function () {
 
       selectedSlot = null;
 
+      confirmArea.style.display =
+        'none';
 
-    } catch (error) {
-
-      console.error(
-        'Error reservando turno:',
-        error
-      );
-
-
-      if (status) {
-
-        status.textContent =
-          error.message ||
-          'No se pudo reservar el turno.';
-
-        status.style.color =
-          '#b42318';
-
-      }
-
-
-      if (button) {
-
-        button.disabled = false;
-
-        button.textContent =
-          'Confirmar turno';
-
-      }
+      confirmArea.innerHTML =
+        '';
 
     }
-
-  }
-
-
-  /* =======================================================
-     EVENTOS
-     ======================================================= */
-
-  dateInput.addEventListener(
-    'change',
-    loadSlots
   );
 
-
-  modalitySelect.addEventListener(
-    'change',
-    renderSlots
-  );
-
-
-  await loadSlots();
+}
+```
 
 }
 
+/* =======================================================
+RESERVAR TURNO
+======================================================= */
+
+async function bookSelectedAppointment() {
+
+```
+if (!selectedSlot) {
+  return;
+}
+
+const button =
+  document.getElementById(
+    'confirmAppointmentButton'
+  );
+
+const status =
+  document.getElementById(
+    'bookingStatus'
+  );
+
+if (button) {
+
+  button.disabled = true;
+
+  button.textContent =
+    'Reservando…';
+
+}
+
+if (status) {
+
+  status.textContent = '';
+
+  status.style.color = '';
+
+}
+
+try {
+
+  const {
+    data:{
+      user:currentUser
+    }
+  } =
+    await sb.auth.getUser();
+
+  if (!currentUser) {
+
+    throw new Error(
+      'Tu sesión expiró. Iniciá sesión nuevamente.'
+    );
+
+  }
+
+  /*
+   * La RPC es la responsable de validar:
+   *
+   * - que el profesional pueda recibir turnos
+   * - que la fecha sea válida
+   * - que el horario esté dentro de disponibilidad
+   * - que no exista otro turno
+   * - que la modalidad sea válida
+   * - que el usuario pueda reservar
+   */
+
+  const {
+    data:appointmentId,
+    error
+  } =
+    await sb.rpc(
+      'book_appointment',
+      {
+
+        target_professional_id:
+          professionalId,
+
+        target_date:
+          selectedSlot.date,
+
+        target_start_time:
+          selectedSlot.startTime,
+
+        target_modality:
+          selectedSlot.modality
+
+      }
+    );
+
+  if (error) {
+
+    console.error(
+      'Error reservando turno:',
+      error
+    );
+
+    throw error;
+
+  }
+
+  if (!appointmentId) {
+
+    throw new Error(
+      'No se pudo confirmar el turno.'
+    );
+
+  }
+
+  confirmArea.style.display =
+    'block';
+
+  confirmArea.innerHTML = `
+
+    <div class="agenda-confirm">
+
+      <div class="agenda-confirm-title">
+        ✅ Turno reservado
+      </div>
+
+      <p class="agenda-confirm-details">
+
+        Tu turno con
+
+        <strong>
+          ${escapeHTML(
+            professional.display_name ||
+            'este profesional'
+          )}
+        </strong>
+
+        quedó reservado para:
+
+        <br><br>
+
+        <strong>
+          ${escapeHTML(
+            formatSpanishDate(
+              selectedSlot.date
+            )
+          )}
+        </strong>
+
+        <br>
+
+        ${escapeHTML(
+          formatTime(
+            selectedSlot.startTime
+          )
+        )}
+
+        a
+
+        ${escapeHTML(
+          formatTime(
+            selectedSlot.endTime
+          )
+        )}
+
+        ·
+
+        ${escapeHTML(
+          selectedSlot.modality === 'presencial'
+            ? 'Presencial'
+            : 'Virtual'
+        )}
+
+      </p>
+
+      <div class="agenda-message">
+
+        El turno fue registrado correctamente
+        en PsiCerca.
+
+      </div>
+
+    </div>
+
+  `;
+
+  selectedSlot = null;
+
+} catch (error) {
+
+  console.error(
+    'Error reservando turno:',
+    error
+  );
+
+  if (status) {
+
+    status.textContent =
+      error.message ||
+      'No se pudo reservar el turno.';
+
+    status.style.color =
+      '#b42318';
+
+  }
+
+  if (button) {
+
+    button.disabled = false;
+
+    button.textContent =
+      'Confirmar turno';
+
+  }
+
+}
+```
+
+}
+
+/* =======================================================
+EVENTOS
+======================================================= */
+
+dateInput.addEventListener(
+'change',
+loadSlots
+);
+
+modalitySelect.addEventListener(
+'change',
+renderSlots
+);
+
+await loadSlots();
+
+}
 
 /* =========================================================
-   UTILIDADES
-   ========================================================= */
+UTILIDADES
+========================================================= */
 
 function formatDateInput(date) {
 
-  const year =
-    date.getFullYear();
+const year =
+date.getFullYear();
 
-  const month =
-    String(
-      date.getMonth() + 1
-    ).padStart(2,'0');
+const month =
+String(
+date.getMonth() + 1
+).padStart(2,'0');
 
-  const day =
-    String(
-      date.getDate()
-    ).padStart(2,'0');
+const day =
+String(
+date.getDate()
+).padStart(2,'0');
 
-  return `${year}-${month}-${day}`;
+return `${year}-${month}-${day}`;
 
 }
-
 
 function formatTime(time) {
 
-  if (!time) {
-    return '';
-  }
+if (
+time === null ||
+time === undefined ||
+time === ''
+) {
 
-
-  const value =
-    String(time);
-
-
-  /*
-   * PostgreSQL normalmente devuelve TIME
-   * como HH:MM:SS.
-   */
-
-  if (
-    /^\d{2}:\d{2}:\d{2}/.test(value)
-  ) {
-
-    return value.slice(0,5);
-
-  }
-
-
-  if (
-    /^\d{2}:\d{2}/.test(value)
-  ) {
-
-    return value.slice(0,5);
-
-  }
-
-
-  return value;
+```
+return '';
+```
 
 }
 
+const value =
+String(time).trim();
+
+/*
+
+* PostgreSQL TIME:
+* HH:MM:SS
+  */
+
+const matchSeconds =
+value.match(
+/^(\d{2}):(\d{2}):(\d{2})/
+);
+
+if (matchSeconds) {
+
+```
+return `${matchSeconds[1]}:${matchSeconds[2]}`;
+```
+
+}
+
+/*
+
+* PostgreSQL también puede devolver HH:MM.
+  */
+
+const matchMinutes =
+value.match(
+/^(\d{2}):(\d{2})/
+);
+
+if (matchMinutes) {
+
+```
+return `${matchMinutes[1]}:${matchMinutes[2]}`;
+```
+
+}
+
+return value;
+
+}
 
 function formatSpanishDate(dateString) {
 
-  if (!dateString) {
-    return '';
-  }
+if (!dateString) {
+return '';
+}
 
+const parts =
+dateString.split('-');
 
-  const parts =
-    dateString.split('-');
+if (parts.length !== 3) {
+return dateString;
+}
 
+const date =
+new Date(
+Number(parts[0]),
+Number(parts[1]) - 1,
+Number(parts[2])
+);
 
-  if (parts.length !== 3) {
-    return dateString;
-  }
-
-
-  const date =
-    new Date(
-      Number(parts[0]),
-      Number(parts[1]) - 1,
-      Number(parts[2])
-    );
-
-
-  return date.toLocaleDateString(
-    'es-AR',
-    {
-      weekday:'long',
-      day:'numeric',
-      month:'long',
-      year:'numeric'
-    }
-  );
+return date.toLocaleDateString(
+'es-AR',
+{
+weekday:'long',
+day:'numeric',
+month:'long',
+year:'numeric'
+}
+);
 
 }
 
