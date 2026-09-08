@@ -1793,17 +1793,6 @@ if (!slot) {
   return null;
 }
 
-/*
- * Supabase/PostgreSQL puede devolver los nombres
- * definidos en RETURNS TABLE:
- *
- * slot_start
- * slot_end
- *
- * También dejamos compatibilidad con nombres
- * anteriores por seguridad.
- */
-
 const start =
   slot.slot_start ??
   slot.slot_start_time ??
@@ -1931,9 +1920,7 @@ try {
 
     slotsArea.innerHTML = `
       <div class="agenda-message">
-
         No pudimos cargar los horarios disponibles.
-
       </div>
     `;
 
@@ -1945,11 +1932,6 @@ try {
     'Slots recibidos de Supabase:',
     data
   );
-
-  /*
-   * RETURNS TABLE de Supabase devuelve normalmente
-   * un array de objetos.
-   */
 
   const rawSlots =
     Array.isArray(data)
@@ -1965,10 +1947,6 @@ try {
     'Slots normalizados:',
     currentSlots
   );
-
-  /*
-   * Detectamos modalidades disponibles.
-   */
 
   const hasVirtual =
     currentSlots.some(
@@ -2113,12 +2091,6 @@ slotsArea.innerHTML = `
                 slot.slot_end
               );
 
-            /*
-             * Si por alguna razón PostgreSQL devolviera
-             * valores inesperados, no mostramos "hasta"
-             * vacío.
-             */
-
             if (!start || !end) {
               return '';
             }
@@ -2151,11 +2123,6 @@ slotsArea.innerHTML = `
   </div>
 
 `;
-
-/*
- * Si todos los slots fueron descartados por formato,
- * mostramos un mensaje claro.
- */
 
 if (
   !slotsArea.querySelector('.agenda-slot')
@@ -2499,17 +2466,6 @@ try {
 
   }
 
-  /*
-   * La RPC es la responsable de validar:
-   *
-   * - que el profesional pueda recibir turnos
-   * - que la fecha sea válida
-   * - que el horario esté dentro de disponibilidad
-   * - que no exista otro turno
-   * - que la modalidad sea válida
-   * - que el usuario pueda reservar
-   */
-
   const {
     data:appointmentId,
     error
@@ -2715,12 +2671,6 @@ return '';
 const value =
 String(time).trim();
 
-/*
-
-* PostgreSQL TIME:
-* HH:MM:SS
-  */
-
 const matchSeconds =
 value.match(
 /^(\d{2}):(\d{2}):(\d{2})/
@@ -2733,11 +2683,6 @@ return `${matchSeconds[1]}:${matchSeconds[2]}`;
 ```
 
 }
-
-/*
-
-* PostgreSQL también puede devolver HH:MM.
-  */
 
 const matchMinutes =
 value.match(
@@ -2791,5 +2736,4 @@ year:'numeric'
 </script>
 
 </body>
-
 </html>
