@@ -1877,20 +1877,23 @@ async function renderAgenda(
 
     try {
 
-      const {
-        data,
-        error
-      } =
-        await sb.rpc(
-          'get_available_slots',
-          {
-            target_professional_id:
-              professionalId,
+     const {
+  data,
+  error
+} =
+  await sb.rpc(
+    'get_available_slots',
+    {
+      target_professional_id:
+        professionalId,
 
-            target_date:
-              selectedDate
-          }
-        );
+      target_date:
+        selectedDate,
+
+      target_modality:
+        modalitySelect.value
+    }
+  );
 
       if (error) {
 
