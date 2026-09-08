@@ -1,3 +1,4 @@
+```html
 <!doctype html>
 <html lang="es">
 
@@ -126,8 +127,7 @@
 
     .agenda-slots {
       display:grid;
-      grid-template-columns:
-        repeat(3, minmax(0, 1fr));
+      grid-template-columns:repeat(3,minmax(0,1fr));
       gap:10px;
     }
 
@@ -243,8 +243,7 @@
 
     .inquiry-fields {
       display:grid;
-      grid-template-columns:
-        repeat(2, minmax(0, 1fr));
+      grid-template-columns:repeat(2,minmax(0,1fr));
       gap:16px;
     }
 
@@ -355,11 +354,6 @@
       color:var(--muted);
     }
 
-
-    /* =====================================================
-       WHATSAPP
-       ===================================================== */
-
     .whatsapp-area {
       margin-top:8px;
       padding-top:24px;
@@ -384,11 +378,6 @@
     .whatsapp-description {
       margin:0;
     }
-
-
-    /* =====================================================
-       MENSAJES
-       ===================================================== */
 
     .access-box {
       background:var(--soft);
@@ -422,8 +411,7 @@
       }
 
       .agenda-slots {
-        grid-template-columns:
-          repeat(2, minmax(0, 1fr));
+        grid-template-columns:repeat(2,minmax(0,1fr));
       }
 
       .agenda-controls {
@@ -473,7 +461,6 @@
 
 <body>
 
-
 <header>
 
   <div class="container nav">
@@ -484,7 +471,6 @@
     >
       Psi<span>Cerca</span>
     </a>
-
 
     <a
       href="profesionales.html"
@@ -520,9 +506,7 @@
 <footer class="footer">
 
   <div class="container">
-
     PsiCerca · Plataforma tecnológica · 2026
-
   </div>
 
 </footer>
@@ -535,12 +519,10 @@
   const box =
     document.getElementById('profile');
 
-
   const id =
     new URLSearchParams(
       window.location.search
     ).get('id');
-
 
   if (!id) {
 
@@ -553,7 +535,6 @@
     return;
 
   }
-
 
   try {
 
@@ -569,9 +550,7 @@
       data: p,
       error
     } = await sb
-
       .from('profiles')
-
       .select(`
         id,
         display_name,
@@ -584,11 +563,8 @@
         bio,
         photo_url
       `)
-
       .eq('id', id)
-
       .eq('is_public', true)
-
       .single();
 
 
@@ -596,13 +572,8 @@
       throw error;
     }
 
-
     if (!p) {
-
-      throw new Error(
-        'Perfil no encontrado'
-      );
-
+      throw new Error('Perfil no encontrado');
     }
 
 
@@ -612,17 +583,11 @@
 
     const initials =
       (p.display_name || 'PS')
-
         .split(' ')
-
         .filter(Boolean)
-
         .map(x => x[0])
-
         .join('')
-
-        .slice(0, 2)
-
+        .slice(0,2)
         .toUpperCase();
 
 
@@ -631,32 +596,21 @@
        ===================================================== */
 
     const avatar =
-
       p.photo_url
-
         ? `
-
           <div class="profile-avatar">
-
             <img
               src="${escapeHTML(p.photo_url)}"
               alt="Foto de ${escapeHTML(
                 p.display_name || 'profesional'
               )}"
             >
-
           </div>
-
         `
-
         : `
-
           <div class="profile-avatar">
-
             ${escapeHTML(initials)}
-
           </div>
-
         `;
 
 
@@ -665,24 +619,17 @@
        ===================================================== */
 
     const chips = [
-
       p.orientation,
       p.population,
       p.modality,
       p.zone
-
     ]
-
       .filter(Boolean)
-
       .map(x => `
-
         <span class="chip">
           ${escapeHTML(x)}
         </span>
-
       `)
-
       .join('');
 
 
@@ -691,8 +638,6 @@
        ===================================================== */
 
     box.innerHTML = `
-
-      <!-- ENCABEZADO -->
 
       <div class="profile-header">
 
@@ -710,11 +655,9 @@
               font-size:clamp(32px,5vw,48px);
             "
           >
-
             ${escapeHTML(
               p.display_name || 'Profesional'
             )}
-
           </h1>
 
           <div class="small">
@@ -740,13 +683,9 @@
       </div>
 
 
-      <!-- VERIFICACIÓN EXTERNA -->
-
       ${
         p.license
-
           ? `
-
             <div
               style="
                 background:var(--soft);
@@ -762,22 +701,16 @@
                   margin-bottom:5px;
                 "
               >
-
                 🔎 ¿Querés comprobar la matrícula?
-
               </div>
 
               <p
                 class="small"
-                style="
-                  margin:0 0 12px;
-                "
+                style="margin:0 0 12px;"
               >
-
                 Podés consultar esta matrícula
                 directamente en el registro oficial
                 del Ministerio de Salud.
-
               </p>
 
               <a
@@ -787,46 +720,28 @@
                 class="btn secondary"
                 style="font-size:13px;"
               >
-
                 Consultar matrícula en registro oficial
-
               </a>
 
             </div>
-
           `
-
           : ''
-
       }
 
-
-      <!-- INFORMACIÓN PROFESIONAL -->
 
       ${
         chips
-
           ? `
-
             <div
               class="chips"
-              style="
-                margin:0 0 32px;
-              "
+              style="margin:0 0 32px;"
             >
-
               ${chips}
-
             </div>
-
           `
-
           : ''
-
       }
 
-
-      <!-- PRESENTACIÓN -->
 
       <section>
 
@@ -840,14 +755,12 @@
             margin-bottom:28px;
           "
         >
-
           ${
             escapeHTML(
               p.bio ||
               'El profesional todavía no agregó una presentación.'
             )
           }
-
         </p>
 
       </section>
@@ -877,8 +790,6 @@
       <div id="inquiryArea"></div>
 
 
-      <!-- ACLARACIONES -->
-
       <div
         style="
           margin-top:32px;
@@ -905,23 +816,18 @@
               font-weight:700;
             "
           >
-
             registro oficial del Ministerio de Salud
-
           </a>.
 
         </p>
-
 
         <p
           class="small"
           style="margin:0;"
         >
-
           PsiCerca facilita el contacto y no determina
           qué profesional es clínicamente adecuado
           para una persona.
-
         </p>
 
       </div>
@@ -929,26 +835,14 @@
     `;
 
 
-    /* =====================================================
-       ELEMENTOS
-       ===================================================== */
-
     const contactArea =
-      document.getElementById(
-        'contactArea'
-      );
-
+      document.getElementById('contactArea');
 
     const inquiryArea =
-      document.getElementById(
-        'inquiryArea'
-      );
-
+      document.getElementById('inquiryArea');
 
     const agendaArea =
-      document.getElementById(
-        'agendaArea'
-      );
+      document.getElementById('agendaArea');
 
 
     /* =====================================================
@@ -964,7 +858,7 @@
 
 
     /* =====================================================
-       AGENDA DIGITAL
+       AGENDA
        ===================================================== */
 
     await renderAgenda(
@@ -992,25 +886,17 @@
               margin-bottom:6px;
             "
           >
-
             🔐 ¿Querés contactar a este profesional?
-
           </div>
-
 
           <p
             class="small"
-            style="
-              margin:0 0 15px;
-            "
+            style="margin:0 0 15px;"
           >
-
             Creá una cuenta gratuita para
             poder contactar a profesionales
             a través de PsiCerca.
-
           </p>
-
 
           <div
             style="
@@ -1024,19 +910,14 @@
               href="registro-paciente.html"
               class="btn primary"
             >
-
               Crear cuenta
-
             </a>
-
 
             <a
               href="login.html"
               class="btn secondary"
             >
-
               Iniciar sesión
-
             </a>
 
           </div>
@@ -1104,20 +985,16 @@
 
     if (role === 'patient') {
 
-
-      /* ===================================================
-         WHATSAPP DEL PROFESIONAL
-         =================================================== */
-
       const {
         data: contacts,
         error: contactError
-      } = await sb.rpc(
-        'get_professional_contact',
-        {
-          target_profile_id: id
-        }
-      );
+      } =
+        await sb.rpc(
+          'get_professional_contact',
+          {
+            target_profile_id:id
+          }
+        );
 
 
       if (
@@ -1132,10 +1009,8 @@
           <div class="access-box">
 
             <div class="small">
-
               Este profesional todavía no
               agregó un medio de contacto.
-
             </div>
 
           </div>
@@ -1147,7 +1022,7 @@
         const whatsapp =
           String(
             contacts[0].whatsapp
-          ).replace(/\D/g, '');
+          ).replace(/\D/g,'');
 
 
         if (whatsapp) {
@@ -1169,16 +1044,13 @@
 
               </div>
 
-
               <a
                 class="btn primary"
                 target="_blank"
                 rel="noopener noreferrer"
                 href="https://wa.me/${escapeHTML(whatsapp)}"
               >
-
                 Contactar por WhatsApp
-
               </a>
 
             </div>
@@ -1191,7 +1063,7 @@
 
 
       /* ===================================================
-         FORMULARIO DE CONSULTA
+         FORMULARIO
          =================================================== */
 
       inquiryArea.innerHTML = `
@@ -1204,25 +1076,20 @@
               💬
             </div>
 
-
             <div>
 
               <span class="eyebrow">
                 Contacto
               </span>
 
-
               <h2 class="inquiry-title">
                 Enviar consulta
               </h2>
 
-
               <p class="inquiry-subtitle">
-
                 Completá tus datos y contale brevemente
                 a este profesional qué estás buscando.
                 Luego podrá contactarte directamente.
-
               </p>
 
             </div>
@@ -1232,11 +1099,7 @@
 
           <form id="inquiryForm">
 
-
             <div class="inquiry-fields">
-
-
-              <!-- NOMBRE -->
 
               <label class="inquiry-field">
 
@@ -1255,8 +1118,6 @@
               </label>
 
 
-              <!-- EDAD -->
-
               <label class="inquiry-field">
 
                 <span class="inquiry-label">
@@ -1273,8 +1134,6 @@
 
               </label>
 
-
-              <!-- WHATSAPP -->
 
               <label class="inquiry-field">
 
@@ -1298,8 +1157,6 @@
               </label>
 
 
-              <!-- EMAIL -->
-
               <label class="inquiry-field">
 
                 <span class="inquiry-label">
@@ -1320,8 +1177,6 @@
 
               </label>
 
-
-              <!-- MODALIDAD -->
 
               <label class="inquiry-field">
 
@@ -1352,8 +1207,6 @@
               </label>
 
 
-              <!-- ZONA -->
-
               <label class="inquiry-field">
 
                 <span class="inquiry-label">
@@ -1370,8 +1223,6 @@
               </label>
 
 
-              <!-- DISPONIBILIDAD -->
-
               <label class="inquiry-field full">
 
                 <span class="inquiry-label">
@@ -1387,8 +1238,6 @@
 
               </label>
 
-
-              <!-- MOTIVO -->
 
               <label class="inquiry-field full">
 
@@ -1431,14 +1280,11 @@
               </label>
 
 
-              <!-- MENSAJE -->
-
               <label class="inquiry-field full">
 
                 <span class="inquiry-label">
                   Mensaje *
                 </span>
-
 
                 <div class="inquiry-textarea-wrap">
 
@@ -1449,7 +1295,6 @@
                     rows="6"
                     placeholder="Contale brevemente qué estás buscando y qué necesitás."
                   ></textarea>
-
 
                   <span
                     id="characterCounter"
@@ -1462,11 +1307,8 @@
 
               </label>
 
-
             </div>
 
-
-            <!-- PRIVACIDAD -->
 
             <div class="privacy-box">
 
@@ -1474,14 +1316,11 @@
                 🔒
               </div>
 
-
               <p class="privacy-text">
-
                 Por privacidad, evitá incluir diagnósticos,
                 antecedentes clínicos detallados, medicación
                 o historias clínicas. Este formulario está
                 pensado únicamente para un primer contacto.
-
               </p>
 
             </div>
@@ -1499,8 +1338,6 @@
             </div>
 
 
-            <!-- ACCIONES -->
-
             <div class="inquiry-actions">
 
               <button
@@ -1508,11 +1345,8 @@
                 class="btn primary inquiry-submit"
                 id="sendInquiryButton"
               >
-
                 Enviar consulta
-
               </button>
-
 
               <span
                 id="inquiryMessageStatus"
@@ -1521,7 +1355,6 @@
 
             </div>
 
-
           </form>
 
         </section>
@@ -1529,52 +1362,26 @@
       `;
 
 
-      /* ===================================================
-         ELEMENTOS DEL FORMULARIO
-         =================================================== */
-
       const inquiryForm =
-        document.getElementById(
-          'inquiryForm'
-        );
-
+        document.getElementById('inquiryForm');
 
       const sendButton =
-        document.getElementById(
-          'sendInquiryButton'
-        );
-
+        document.getElementById('sendInquiryButton');
 
       const inquiryStatus =
-        document.getElementById(
-          'inquiryMessageStatus'
-        );
-
+        document.getElementById('inquiryMessageStatus');
 
       const messageField =
-        document.getElementById(
-          'inquiryMessage'
-        );
-
+        document.getElementById('inquiryMessage');
 
       const characterCounter =
-        document.getElementById(
-          'characterCounter'
-        );
+        document.getElementById('characterCounter');
 
-
-      /* ===================================================
-         CONTADOR
-         =================================================== */
 
       function updateCharacterCounter() {
 
-        const length =
-          messageField.value.length;
-
-
         characterCounter.textContent =
-          `${length} / 1000`;
+          `${messageField.value.length} / 1000`;
 
       }
 
@@ -1585,34 +1392,26 @@
       );
 
 
-      /* ===================================================
-         ENVÍO DE CONSULTA
-         =================================================== */
-
       inquiryForm.addEventListener(
         'submit',
         async function (event) {
 
           event.preventDefault();
 
-
           sendButton.disabled = true;
 
-          sendButton.textContent =
-            'Enviando…';
+          sendButton.textContent = 'Enviando…';
 
-          inquiryStatus.textContent =
-            '';
+          inquiryStatus.textContent = '';
 
-          inquiryStatus.style.color =
-            '';
+          inquiryStatus.style.color = '';
 
 
           try {
 
             const {
-              data: {
-                user: currentUser
+              data:{
+                user:currentUser
               }
             } =
               await sb.auth.getUser();
@@ -1628,15 +1427,16 @@
 
 
             const patientName =
-              document.getElementById(
-                'inquiryName'
-              ).value.trim();
+              document
+                .getElementById('inquiryName')
+                .value
+                .trim();
 
 
             const ageValue =
-              document.getElementById(
-                'inquiryAge'
-              ).value;
+              document
+                .getElementById('inquiryAge')
+                .value;
 
 
             const patientAge =
@@ -1646,45 +1446,50 @@
 
 
             const patientWhatsapp =
-              document.getElementById(
-                'inquiryWhatsapp'
-              ).value.trim();
+              document
+                .getElementById('inquiryWhatsapp')
+                .value
+                .trim();
 
 
             const patientEmail =
-              document.getElementById(
-                'inquiryEmail'
-              ).value.trim();
+              document
+                .getElementById('inquiryEmail')
+                .value
+                .trim();
 
 
             const modality =
-              document.getElementById(
-                'inquiryModality'
-              ).value;
+              document
+                .getElementById('inquiryModality')
+                .value;
 
 
             const availability =
-              document.getElementById(
-                'inquiryAvailability'
-              ).value.trim();
+              document
+                .getElementById('inquiryAvailability')
+                .value
+                .trim();
 
 
             const zone =
-              document.getElementById(
-                'inquiryZone'
-              ).value.trim();
+              document
+                .getElementById('inquiryZone')
+                .value
+                .trim();
 
 
             const reason =
-              document.getElementById(
-                'inquiryReason'
-              ).value;
+              document
+                .getElementById('inquiryReason')
+                .value;
 
 
             const message =
-              document.getElementById(
-                'inquiryMessage'
-              ).value.trim();
+              document
+                .getElementById('inquiryMessage')
+                .value
+                .trim();
 
 
             if (!patientName) {
@@ -1706,7 +1511,7 @@
 
 
             if (
-              patientWhatsapp.replace(/\D/g, '').length < 8
+              patientWhatsapp.replace(/\D/g,'').length < 8
             ) {
 
               throw new Error(
@@ -1740,42 +1545,41 @@
 
 
             const {
-              error: insertError
-            } = await sb
+              error:insertError
+            } =
+              await sb
+                .from('professional_inquiries')
+                .insert({
 
-              .from('professional_inquiries')
+                  professional_id:id,
 
-              .insert({
+                  patient_id:currentUser.id,
 
-                professional_id: id,
+                  patient_name:patientName,
 
-                patient_id: currentUser.id,
+                  patient_age:patientAge,
 
-                patient_name: patientName,
+                  patient_whatsapp:
+                    patientWhatsapp,
 
-                patient_age: patientAge,
+                  patient_email:
+                    patientEmail || null,
 
-                patient_whatsapp:
-                  patientWhatsapp,
+                  modality:
+                    modality || null,
 
-                patient_email:
-                  patientEmail || null,
+                  availability:
+                    availability || null,
 
-                modality:
-                  modality || null,
+                  zone:
+                    zone || null,
 
-                availability:
-                  availability || null,
+                  reason:
+                    reason || null,
 
-                zone:
-                  zone || null,
+                  message
 
-                reason:
-                  reason || null,
-
-                message
-
-              });
+                });
 
 
             if (insertError) {
@@ -1794,18 +1598,13 @@
 
             updateCharacterCounter();
 
-
             sendButton.textContent =
               'Consulta enviada ✓';
 
-
-            sendButton.disabled =
-              true;
-
+            sendButton.disabled = true;
 
             inquiryStatus.textContent =
               'La consulta fue enviada correctamente.';
-
 
             inquiryStatus.style.color =
               'var(--accent)';
@@ -1818,19 +1617,14 @@
               error
             );
 
-
             inquiryStatus.textContent =
               error.message ||
               'No se pudo enviar la consulta.';
 
-
             inquiryStatus.style.color =
               '#b42318';
 
-
-            sendButton.disabled =
-              false;
-
+            sendButton.disabled = false;
 
             sendButton.textContent =
               'Enviar consulta';
@@ -1839,7 +1633,6 @@
 
         }
       );
-
 
       return;
 
@@ -1883,24 +1676,19 @@
             💬
           </div>
 
-
           <div>
 
             <span class="eyebrow">
               Contacto
             </span>
 
-
             <h2 class="inquiry-title">
               Enviar consulta
             </h2>
 
-
             <p class="inquiry-subtitle">
-
               Las consultas desde PsiCerca están
               disponibles para cuentas de paciente.
-
             </p>
 
           </div>
@@ -1919,7 +1707,6 @@
       error
     );
 
-
     box.innerHTML = `
 
       <div class="empty">
@@ -1932,7 +1719,6 @@
     `;
 
   }
-
 
 })();
 
@@ -1949,24 +1735,12 @@ async function renderAgenda(
   agendaArea
 ) {
 
-  /*
-   * -------------------------------------------------------
-   * FECHA MÍNIMA
-   * -------------------------------------------------------
-   */
-
   const today =
     new Date();
 
   const todayString =
     formatDateInput(today);
 
-
-  /*
-   * -------------------------------------------------------
-   * HTML DE AGENDA
-   * -------------------------------------------------------
-   */
 
   agendaArea.innerHTML = `
 
@@ -2063,33 +1837,19 @@ async function renderAgenda(
 
 
   const dateInput =
-    document.getElementById(
-      'agendaDate'
-    );
-
+    document.getElementById('agendaDate');
 
   const modalityControl =
-    document.getElementById(
-      'agendaModalityControl'
-    );
-
+    document.getElementById('agendaModalityControl');
 
   const modalitySelect =
-    document.getElementById(
-      'agendaModality'
-    );
-
+    document.getElementById('agendaModality');
 
   const slotsArea =
-    document.getElementById(
-      'agendaSlots'
-    );
-
+    document.getElementById('agendaSlots');
 
   const confirmArea =
-    document.getElementById(
-      'agendaConfirm'
-    );
+    document.getElementById('agendaConfirm');
 
 
   let selectedSlot = null;
@@ -2105,19 +1865,15 @@ async function renderAgenda(
 
     selectedSlot = null;
 
-    confirmArea.style.display =
-      'none';
+    confirmArea.style.display = 'none';
 
-    confirmArea.innerHTML =
-      '';
+    confirmArea.innerHTML = '';
 
 
     slotsArea.innerHTML = `
-
       <div class="agenda-message">
         Buscando horarios disponibles…
       </div>
-
     `;
 
 
@@ -2128,11 +1884,9 @@ async function renderAgenda(
     if (!selectedDate) {
 
       slotsArea.innerHTML = `
-
         <div class="agenda-message">
           Seleccioná una fecha.
         </div>
-
       `;
 
       return;
@@ -2140,25 +1894,20 @@ async function renderAgenda(
     }
 
 
-    /*
-     * -----------------------------------------------------
-     * LLAMADA SEGURA A SUPABASE
-     * -----------------------------------------------------
-     */
-
     const {
       data,
       error
-    } = await sb.rpc(
-      'get_available_slots',
-      {
-        target_professional_id:
-          professionalId,
+    } =
+      await sb.rpc(
+        'get_available_slots',
+        {
+          target_professional_id:
+            professionalId,
 
-        target_date:
-          selectedDate
-      }
-    );
+          target_date:
+            selectedDate
+        }
+      );
 
 
     if (error) {
@@ -2168,15 +1917,10 @@ async function renderAgenda(
         error
       );
 
-
       slotsArea.innerHTML = `
-
         <div class="agenda-message">
-
           No pudimos cargar los horarios disponibles.
-
         </div>
-
       `;
 
       return;
@@ -2189,12 +1933,6 @@ async function renderAgenda(
         ? data
         : [];
 
-
-    /*
-     * -----------------------------------------------------
-     * DETERMINAR MODALIDADES
-     * -----------------------------------------------------
-     */
 
     const hasVirtual =
       currentSlots.some(
@@ -2241,16 +1979,9 @@ async function renderAgenda(
     }
 
 
-    /*
-     * -----------------------------------------------------
-     * SIN TURNOS
-     * -----------------------------------------------------
-     */
-
     if (!currentSlots.length) {
 
       slotsArea.innerHTML = `
-
         <div class="agenda-message">
 
           No hay turnos disponibles para esta fecha.
@@ -2260,7 +1991,6 @@ async function renderAgenda(
           Probá seleccionando otro día.
 
         </div>
-
       `;
 
       return;
@@ -2307,14 +2037,10 @@ async function renderAgenda(
     if (!filteredSlots.length) {
 
       slotsArea.innerHTML = `
-
         <div class="agenda-message">
-
           No hay horarios disponibles para
           la modalidad seleccionada.
-
         </div>
-
       `;
 
       return;
@@ -2329,32 +2055,34 @@ async function renderAgenda(
         ${
           filteredSlots
             .map(
-              slot => `
+              slot => {
 
-                <button
-                  type="button"
-                  class="agenda-slot"
-                  data-start="${escapeHTML(
-                    slot.start_time
-                  )}"
-                  data-end="${escapeHTML(
-                    slot.end_time
-                  )}"
-                >
+                const start =
+                  slot.slot_start;
 
-                  ${formatTime(
-                    slot.start_time
-                  )}
+                const end =
+                  slot.slot_end;
 
-                  <small>
-                    hasta ${formatTime(
-                      slot.end_time
-                    )}
-                  </small>
+                return `
 
-                </button>
+                  <button
+                    type="button"
+                    class="agenda-slot"
+                    data-start="${escapeHTML(start)}"
+                    data-end="${escapeHTML(end)}"
+                  >
 
-              `
+                    ${formatTime(start)}
+
+                    <small>
+                      hasta ${formatTime(end)}
+                    </small>
+
+                  </button>
+
+                `;
+
+              }
             )
             .join('')
         }
@@ -2365,9 +2093,7 @@ async function renderAgenda(
 
 
     document
-      .querySelectorAll(
-        '.agenda-slot'
-      )
+      .querySelectorAll('.agenda-slot')
       .forEach(
         button => {
 
@@ -2385,7 +2111,7 @@ async function renderAgenda(
               const slot =
                 filteredSlots.find(
                   item =>
-                    item.start_time ===
+                    item.slot_start ===
                     start
                 );
 
@@ -2443,8 +2169,7 @@ async function renderAgenda(
 
 
     const modalityText =
-      selectedSlot.modality ===
-      'presencial'
+      selectedSlot.modality === 'presencial'
         ? 'Presencial'
         : 'Virtual';
 
@@ -2458,9 +2183,7 @@ async function renderAgenda(
       <div class="agenda-confirm">
 
         <div class="agenda-confirm-title">
-
           Confirmar turno
-
         </div>
 
 
@@ -2488,9 +2211,7 @@ async function renderAgenda(
 
           ·
 
-          ${escapeHTML(
-            modalityText
-          )}
+          ${escapeHTML(modalityText)}
 
         </p>
 
@@ -2498,32 +2219,23 @@ async function renderAgenda(
         ${
           selectedSlot.zone &&
           selectedSlot.modality === 'presencial'
-
             ? `
-
               <p
                 class="small"
                 style="margin:-6px 0 14px;"
               >
-
                 Zona: ${escapeHTML(
                   selectedSlot.zone
                 )}
-
               </p>
-
             `
-
             : ''
-
         }
 
 
         ${
           user
-
             ? `
-
               <div class="agenda-confirm-actions">
 
                 <button
@@ -2531,34 +2243,25 @@ async function renderAgenda(
                   class="btn primary"
                   id="confirmAppointmentButton"
                 >
-
                   Confirmar turno
-
                 </button>
-
 
                 <button
                   type="button"
                   class="btn secondary"
                   id="cancelAppointmentSelection"
                 >
-
                   Cancelar
-
                 </button>
 
               </div>
-
 
               <div
                 id="bookingStatus"
                 class="agenda-status"
               ></div>
-
             `
-
             : `
-
               <div class="access-box">
 
                 <div
@@ -2567,22 +2270,16 @@ async function renderAgenda(
                     margin-bottom:6px;
                   "
                 >
-
                   🔐 Iniciá sesión para reservar
-
                 </div>
-
 
                 <p
                   class="small"
                   style="margin:0 0 12px;"
                 >
-
                   Necesitás una cuenta de paciente
                   para confirmar este turno.
-
                 </p>
-
 
                 <div
                   style="
@@ -2596,27 +2293,20 @@ async function renderAgenda(
                     href="login.html"
                     class="btn primary"
                   >
-
                     Iniciar sesión
-
                   </a>
-
 
                   <a
                     href="registro-paciente.html"
                     class="btn secondary"
                   >
-
                     Crear cuenta
-
                   </a>
 
                 </div>
 
               </div>
-
             `
-
         }
 
       </div>
@@ -2693,8 +2383,7 @@ async function renderAgenda(
 
     if (button) {
 
-      button.disabled =
-        true;
+      button.disabled = true;
 
       button.textContent =
         'Reservando…';
@@ -2704,26 +2393,18 @@ async function renderAgenda(
 
     if (status) {
 
-      status.textContent =
-        '';
+      status.textContent = '';
 
-      status.style.color =
-        '';
+      status.style.color = '';
 
     }
 
 
     try {
 
-      /*
-       * ---------------------------------------------------
-       * VERIFICAR SESIÓN NUEVAMENTE
-       * ---------------------------------------------------
-       */
-
       const {
-        data: {
-          user: currentUser
+        data:{
+          user:currentUser
         }
       } =
         await sb.auth.getUser();
@@ -2738,45 +2419,28 @@ async function renderAgenda(
       }
 
 
-      /*
-       * ---------------------------------------------------
-       * RESERVA SEGURA
-       *
-       * La función RPC valida en Supabase:
-       *
-       * - paciente autenticado
-       * - rol paciente
-       * - profesional válido
-       * - PRO
-       * - fecha
-       * - disponibilidad
-       * - duración
-       * - modalidad
-       * - conflictos
-       * ---------------------------------------------------
-       */
-
       const {
-        data: appointmentId,
+        data:appointmentId,
         error
-      } = await sb.rpc(
-        'book_appointment',
-        {
+      } =
+        await sb.rpc(
+          'book_appointment',
+          {
 
-          target_professional_id:
-            professionalId,
+            target_professional_id:
+              professionalId,
 
-          target_date:
-            selectedSlot.date,
+            target_date:
+              selectedSlot.date,
 
-          target_start_time:
-            selectedSlot.startTime,
+            target_start_time:
+              selectedSlot.startTime,
 
-          target_modality:
-            selectedSlot.modality
+            target_modality:
+              selectedSlot.modality
 
-        }
-      );
+          }
+        );
 
 
       if (error) {
@@ -2800,22 +2464,13 @@ async function renderAgenda(
       }
 
 
-      /*
-       * ---------------------------------------------------
-       * ÉXITO
-       * ---------------------------------------------------
-       */
-
       confirmArea.innerHTML = `
 
         <div class="agenda-confirm">
 
           <div class="agenda-confirm-title">
-
             ✅ Turno reservado
-
           </div>
-
 
           <p class="agenda-confirm-details">
 
@@ -2859,8 +2514,7 @@ async function renderAgenda(
             ·
 
             ${escapeHTML(
-              selectedSlot.modality ===
-              'presencial'
+              selectedSlot.modality === 'presencial'
                 ? 'Presencial'
                 : 'Virtual'
             )}
@@ -2879,11 +2533,6 @@ async function renderAgenda(
 
       `;
 
-
-      /*
-       * Actualizamos la agenda para que el turno
-       * recién reservado desaparezca.
-       */
 
       await loadSlots();
 
@@ -2910,8 +2559,7 @@ async function renderAgenda(
 
       if (button) {
 
-        button.disabled =
-          false;
+        button.disabled = false;
 
         button.textContent =
           'Confirmar turno';
@@ -2939,17 +2587,13 @@ async function renderAgenda(
   );
 
 
-  /*
-   * Primera carga
-   */
-
   await loadSlots();
 
 }
 
 
 /* =========================================================
-   UTILIDADES DE FECHA / HORA
+   UTILIDADES
    ========================================================= */
 
 function formatDateInput(date) {
@@ -2957,18 +2601,15 @@ function formatDateInput(date) {
   const year =
     date.getFullYear();
 
-
   const month =
     String(
       date.getMonth() + 1
-    ).padStart(2, '0');
-
+    ).padStart(2,'0');
 
   const day =
     String(
       date.getDate()
-    ).padStart(2, '0');
-
+    ).padStart(2,'0');
 
   return `${year}-${month}-${day}`;
 
@@ -2981,9 +2622,7 @@ function formatTime(time) {
     return '';
   }
 
-
-  return String(time)
-    .slice(0, 5);
+  return String(time).slice(0,5);
 
 }
 
@@ -3015,10 +2654,10 @@ function formatSpanishDate(dateString) {
   return date.toLocaleDateString(
     'es-AR',
     {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
+      weekday:'long',
+      day:'numeric',
+      month:'long',
+      year:'numeric'
     }
   );
 
@@ -3026,7 +2665,7 @@ function formatSpanishDate(dateString) {
 
 </script>
 
-
 </body>
 
 </html>
+```
