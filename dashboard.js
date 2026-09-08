@@ -4431,7 +4431,208 @@ document.addEventListener('DOMContentLoaded', async () => {
   // =====================================================
   // CONSULTAS
   // =====================================================
+async function loadAppointments() {
 
+  const container =
+    document.getElementById('appointmentsContent');
+
+  if (!container) return;
+
+  if (!isPro) {
+    container.innerHTML = `
+      <p class="small">
+        La gestión de turnos está disponible con el plan Pro.
+      </p>
+    `;
+    return;
+  }
+
+  container.innerHTML = `
+    <p class="small">
+      Cargando turnos…
+    </p>
+  `;
+
+  const {
+    data,
+    error
+  } = await sb
+    .from('professional_appointments')
+    .select(`
+      id,
+      appointment_date,
+      start_time,
+      end_time,
+      modality,
+      zone,
+      status,
+      patient_name,
+      patient_whatsapp,
+      patient_email,
+      notes,
+      created_at
+    `)
+    .eq('professional_id', user.id)
+    .order('appointment_date', { ascending: true })
+    .order('start_time', { ascending: true });
+
+  if (error) {
+    console.error('Error cargando turnos:', error);
+
+    container.innerHTML = `
+      <p class="small" style="color:#b42318;">
+        No se pudieron cargar los turnos.
+      </p>
+    `;
+
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    container.innerHTML = `
+      <p class="small">
+        Todavía no tenés solicitudes de turno.
+      </p>
+    `;
+
+    return;
+  }
+
+  container.innerHTML = data.map(appointment => {
+
+    const statusLabels = {
+      pending: 'Pendiente',
+      confirmed: 'Confirmado',
+      rejected: 'Rechazado'
+    };
+
+    const modalityLabels = {
+      virtual: 'Virtual',
+      presencial: 'Presencial'
+    };
+
+    return `
+      <div
+        style="
+          border:1px solid var(--line);
+          border-radius:14px;
+          padding:20px;
+          margin-bottom:16px;
+        "
+      >
+
+        <div
+          style="
+            display:flex;
+            justify-content:space-between;
+            gap:20px;
+            flex-wrap:wrap;
+          "
+        >
+
+          <div>
+
+            <strong>
+              ${escapeHTML(appointment.patient_name || 'Paciente')}
+            </strong>
+
+            <p class="small" style="margin-top:8px;">
+              ${escapeHTML(appointment.appointment_date || '')}
+              ·
+              ${escapeHTML((appointment.start_time || '').slice(0,5))}
+              –
+              ${escapeHTML((appointment.end_time || '').slice(0,5))}
+            </p>
+
+            <p class="small">
+              ${escapeHTML(
+                modalityLabels[appointment.modality]
+                || appointment.modality
+                || ''
+              )}
+              ${
+                appointment.zone
+                  ? ` · ${escapeHTML(appointment.zone)}`
+                  : ''
+              }
+            </p>
+
+          </div>
+
+          <div>
+
+            <span
+              style="
+                display:inline-block;
+                padding:6px 10px;
+                border-radius:999px;
+                background:#f2f2f2;
+                font-size:13px;
+              "
+            >
+              ${escapeHTML(
+                statusLabels[appointment.status]
+                || appointment.status
+                || ''
+              )}
+            </span>
+
+          </div>
+
+        </div>
+
+        ${
+          appointment.notes
+            ? `
+              <p class="small" style="margin-top:14px;">
+                <strong>Notas:</strong>
+                ${escapeHTML(appointment.notes)}
+              </p>
+            `
+            : ''
+        }
+
+        ${
+          appointment.status === 'pending'
+            ? `
+              <div
+                style="
+                  display:flex;
+                  gap:10px;
+                  margin-top:18px;
+                  flex-wrap:wrap;
+                "
+              >
+
+                <button
+                  type="button"
+                  class="button"
+                  data-appointment-action="confirm"
+                  data-appointment-id="${appointment.id}"
+                >
+                  Aceptar turno
+                </button>
+
+                <button
+                  type="button"
+                  class="button secondary"
+                  data-appointment-action="reject"
+                  data-appointment-id="${appointment.id}"
+                >
+                  Rechazar
+                </button>
+
+              </div>
+            `
+            : ''
+        }
+
+      </div>
+    `;
+
+  }).join('');
+
+}
   async function loadProfessionalInquiries() {
 
     if (!consultasContent) {
@@ -5273,6 +5474,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadSubscription();
 
     await loadProfessionalInquiries();
+
+    await loadAppointments();
 
     await loadAvailability();
 
