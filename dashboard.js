@@ -36,6 +36,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const subscriptionContent =
     document.getElementById('subscriptionContent');
 
+  const availabilityContent =
+    document.getElementById('availabilityContent');
+
 
   let subscription = null;
 
@@ -324,14 +327,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadCourtesyPro();
 
 
-    /*
-     * Una cuenta tiene PRO si:
-     *
-     * - tiene PRO pago activo
-     * O
-     * - tiene PRO de cortesía activo
-     */
-
     isPro =
       isPaidPro ||
       isCourtesyPro;
@@ -376,10 +371,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function updatePlanUI() {
 
-    // ---------------------------------------------------
-    // BADGE
-    // ---------------------------------------------------
-
     if (planBadge) {
 
       if (isPro) {
@@ -415,10 +406,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
-    // ---------------------------------------------------
-    // TÍTULO
-    // ---------------------------------------------------
-
     if (subscriptionTitle) {
 
       subscriptionTitle.textContent =
@@ -429,16 +416,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
-    // ---------------------------------------------------
-    // DESCRIPCIÓN
-    // ---------------------------------------------------
-
     if (subscriptionDescription) {
-
-
-      // -----------------------------------------------
-      // PRO DE CORTESÍA EXCLUSIVO
-      // -----------------------------------------------
 
       if (
         isCourtesyPro &&
@@ -450,11 +428,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       }
 
-
-      // -----------------------------------------------
-      // PRO PAGO + CORTESÍA
-      // -----------------------------------------------
-
       else if (
         isPaidPro &&
         isCourtesyPro
@@ -464,11 +437,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           'Tenés activo el plan PRO y además contás con un beneficio PRO de cortesía.';
 
       }
-
-
-      // -----------------------------------------------
-      // PRO PAGO CANCELADO
-      // -----------------------------------------------
 
       else if (
         isPaidPro &&
@@ -494,22 +462,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       }
 
-
-      // -----------------------------------------------
-      // PRO PAGO NORMAL
-      // -----------------------------------------------
-
       else if (isPaidPro) {
 
         subscriptionDescription.textContent =
           'Tenés activo el plan PRO.';
 
       }
-
-
-      // -----------------------------------------------
-      // FREE
-      // -----------------------------------------------
 
       else {
 
@@ -521,10 +479,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
-    // ---------------------------------------------------
-    // LABEL
-    // ---------------------------------------------------
-
     if (subscriptionLabel) {
 
       subscriptionLabel.textContent =
@@ -534,10 +488,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     }
 
-
-    // ---------------------------------------------------
-    // BOTÓN
-    // ---------------------------------------------------
 
     if (subscriptionButton) {
 
@@ -551,10 +501,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     }
 
-
-    // ---------------------------------------------------
-    // CANCELACIÓN
-    // ---------------------------------------------------
 
     renderCancellationUI();
 
@@ -580,12 +526,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
-    /*
-     * PRO exclusivamente de cortesía:
-     * no puede cancelar una suscripción
-     * porque no existe una suscripción paga.
-     */
-
     if (
       isCourtesyPro &&
       !isPaidPro
@@ -595,10 +535,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     }
 
-
-    // ---------------------------------------------------
-    // BUSCAR CONTENEDOR
-    // ---------------------------------------------------
 
     let container =
       document.getElementById(
@@ -645,20 +581,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
-    // ---------------------------------------------------
-    // SIN PRO PAGO
-    // ---------------------------------------------------
-
     if (!isPaidPro) {
 
       return;
 
     }
 
-
-    // ===================================================
-    // PRO PAGO YA CANCELADO
-    // ===================================================
 
     if (
       subscription?.cancel_at_period_end &&
@@ -726,10 +654,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     }
 
-
-    // ===================================================
-    // PRO PAGO ACTIVO — MOSTRAR CANCELAR
-    // ===================================================
 
     const box =
       document.createElement(
@@ -830,11 +754,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   // =====================================================
 
   async function cancelSubscription() {
-
-    /*
-     * Solo se puede cancelar una suscripción
-     * PRO paga.
-     */
 
     if (
       !subscription ||
@@ -948,6 +867,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       await loadProfessionalInquiries();
 
+      await loadAvailability();
 
     } catch (error) {
 
@@ -985,6 +905,959 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
   // =====================================================
+  // DISPONIBILIDAD
+  // =====================================================
+
+  async function loadAvailability() {
+
+    if (!availabilityContent) {
+
+      return;
+
+    }
+
+
+    // ---------------------------------------------------
+    // FREE
+    // ---------------------------------------------------
+
+    if (!isPro) {
+
+      availabilityContent.innerHTML = `
+
+        <strong>
+          🔒 Agenda digital disponible con PsiCerca PRO
+        </strong>
+
+        <p class="small">
+
+          Configurá tus horarios de atención,
+          organizá tu agenda y permití que tus pacientes
+          puedan reservar turnos online.
+
+        </p>
+
+        <a
+          class="btn primary"
+          href="#suscripcion"
+        >
+
+          Conocer PsiCerca PRO
+
+        </a>
+
+      `;
+
+      return;
+
+    }
+
+
+    // ---------------------------------------------------
+    // PRO
+    // ---------------------------------------------------
+
+    const {
+      data,
+      error
+    } = await sb
+      .from(
+        'professional_availability'
+      )
+      .select(`
+        id,
+        day_of_week,
+        start_time,
+        end_time,
+        modality,
+        zone,
+        is_active
+      `)
+      .eq(
+        'professional_id',
+        user.id
+      )
+      .order(
+        'day_of_week',
+        {
+          ascending: true
+        }
+      )
+      .order(
+        'start_time',
+        {
+          ascending: true
+        }
+      );
+
+
+    if (error) {
+
+      console.error(
+        'Error cargando disponibilidad:',
+        error
+      );
+
+
+      availabilityContent.innerHTML = `
+
+        <div class="message error">
+
+          No se pudo cargar tu disponibilidad.
+
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+
+    const days = [
+      'Domingo',
+      'Lunes',
+      'Martes',
+      'Miércoles',
+      'Jueves',
+      'Viernes',
+      'Sábado'
+    ];
+
+
+    const rows =
+      data || [];
+
+
+    availabilityContent.innerHTML = `
+
+      <div
+        style="
+          display:flex;
+          justify-content:space-between;
+          align-items:flex-start;
+          gap:15px;
+          flex-wrap:wrap;
+          margin-bottom:20px;
+        "
+      >
+
+        <div>
+
+          <h3 style="margin:0;">
+
+            🗓️ Mi agenda
+
+          </h3>
+
+          <p
+            class="small muted"
+            style="margin-top:6px;"
+          >
+
+            Configurá los días y horarios en los que
+            atendés habitualmente.
+
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <form
+        id="availabilityForm"
+        class="card"
+        style="
+          padding:20px;
+          margin-bottom:20px;
+        "
+      >
+
+        <h3 style="margin-top:0;">
+
+          Agregar horario
+
+        </h3>
+
+
+        <div
+          style="
+            display:grid;
+            grid-template-columns:
+              repeat(
+                auto-fit,
+                minmax(
+                  180px,
+                  1fr
+                )
+              );
+            gap:14px;
+          "
+        >
+
+          <label>
+
+            <span class="small">
+              Día
+            </span>
+
+            <select
+              id="availabilityDay"
+              required
+              style="
+                width:100%;
+                margin-top:5px;
+              "
+            >
+
+              <option value="">
+                Seleccionar día
+              </option>
+
+              <option value="1">
+                Lunes
+              </option>
+
+              <option value="2">
+                Martes
+              </option>
+
+              <option value="3">
+                Miércoles
+              </option>
+
+              <option value="4">
+                Jueves
+              </option>
+
+              <option value="5">
+                Viernes
+              </option>
+
+              <option value="6">
+                Sábado
+              </option>
+
+              <option value="0">
+                Domingo
+              </option>
+
+            </select>
+
+          </label>
+
+
+          <label>
+
+            <span class="small">
+              Desde
+            </span>
+
+            <input
+              type="time"
+              id="availabilityStart"
+              required
+              style="
+                width:100%;
+                margin-top:5px;
+              "
+            >
+
+          </label>
+
+
+          <label>
+
+            <span class="small">
+              Hasta
+            </span>
+
+            <input
+              type="time"
+              id="availabilityEnd"
+              required
+              style="
+                width:100%;
+                margin-top:5px;
+              "
+            >
+
+          </label>
+
+
+          <label>
+
+            <span class="small">
+              Modalidad
+            </span>
+
+            <select
+              id="availabilityModality"
+              required
+              style="
+                width:100%;
+                margin-top:5px;
+              "
+            >
+
+              <option value="virtual">
+                Virtual
+              </option>
+
+              <option value="presencial">
+                Presencial
+              </option>
+
+              <option value="ambas">
+                Ambas
+              </option>
+
+            </select>
+
+          </label>
+
+
+          <label>
+
+            <span class="small">
+              Zona
+            </span>
+
+            <input
+              type="text"
+              id="availabilityZone"
+              maxlength="100"
+              placeholder="Ej. Avellaneda"
+              style="
+                width:100%;
+                margin-top:5px;
+              "
+            >
+
+          </label>
+
+        </div>
+
+
+        <button
+          type="submit"
+          class="btn primary"
+          style="margin-top:18px;"
+        >
+
+          + Agregar horario
+
+        </button>
+
+
+        <div
+          id="availabilityFormMessage"
+          style="margin-top:12px;"
+        ></div>
+
+      </form>
+
+
+      <div>
+
+        <h3>
+
+          Horarios configurados
+
+        </h3>
+
+
+        ${
+          rows.length === 0
+
+            ? `
+
+              <div class="card">
+
+                <p style="margin:0;">
+
+                  Todavía no configuraste ningún horario.
+
+                </p>
+
+                <p
+                  class="small muted"
+                  style="margin-top:6px;"
+                >
+
+                  Agregá arriba los días y horarios
+                  en los que atendés.
+
+                </p>
+
+              </div>
+
+            `
+
+            : rows
+                .map(row => {
+
+                  const day =
+                    days[
+                      Number(
+                        row.day_of_week
+                      )
+                    ] ||
+                    'Día';
+
+
+                  const start =
+                    String(
+                      row.start_time || ''
+                    ).slice(
+                      0,
+                      5
+                    );
+
+
+                  const end =
+                    String(
+                      row.end_time || ''
+                    ).slice(
+                      0,
+                      5
+                    );
+
+
+                  const modalityLabel =
+                    row.modality ===
+                    'presencial'
+
+                      ? 'Presencial'
+
+                      : row.modality ===
+                        'ambas'
+
+                        ? 'Presencial y virtual'
+
+                        : 'Virtual';
+
+
+                  const zone =
+                    row.zone
+                      ? escapeHTML(
+                          row.zone
+                        )
+                      : '';
+
+
+                  return `
+
+                    <article
+                      class="card"
+                      style="
+                        padding:18px;
+                        margin-bottom:12px;
+                        display:flex;
+                        justify-content:
+                          space-between;
+                        align-items:center;
+                        gap:15px;
+                        flex-wrap:wrap;
+                        opacity:
+                          ${
+                            row.is_active
+                              ? '1'
+                              : '.55'
+                          };
+                      "
+                    >
+
+                      <div>
+
+                        <strong>
+
+                          ${day}
+
+                        </strong>
+
+                        <div
+                          style="
+                            margin-top:5px;
+                          "
+                        >
+
+                          ${start} – ${end}
+
+                        </div>
+
+                        <div
+                          class="small muted"
+                          style="
+                            margin-top:5px;
+                          "
+                        >
+
+                          ${escapeHTML(
+                            modalityLabel
+                          )}
+
+                          ${
+                            zone
+                              ? ` · ${zone}`
+                              : ''
+                          }
+
+                        </div>
+
+                      </div>
+
+
+                      <div
+                        style="
+                          display:flex;
+                          gap:8px;
+                          flex-wrap:wrap;
+                        "
+                      >
+
+                        <button
+                          type="button"
+                          class="
+                            btn
+                            secondary
+                            toggle-availability
+                          "
+                          data-id="${row.id}"
+                          data-active="${
+                            row.is_active
+                          }"
+                          style="
+                            font-size:12px;
+                          "
+                        >
+
+                          ${
+                            row.is_active
+                              ? 'Desactivar'
+                              : 'Activar'
+                          }
+
+                        </button>
+
+
+                        <button
+                          type="button"
+                          class="
+                            btn
+                            secondary
+                            delete-availability
+                          "
+                          data-id="${row.id}"
+                          style="
+                            font-size:12px;
+                            border-color:#b91c1c;
+                            color:#b91c1c;
+                          "
+                        >
+
+                          🗑 Eliminar
+
+                        </button>
+
+                      </div>
+
+                    </article>
+
+                  `;
+
+                })
+                .join('')
+
+        }
+
+      </div>
+
+    `;
+
+
+    // ===================================================
+    // AGREGAR HORARIO
+    // ===================================================
+
+    const form =
+      document.getElementById(
+        'availabilityForm'
+      );
+
+
+    if (form) {
+
+      form.addEventListener(
+        'submit',
+        async event => {
+
+          event.preventDefault();
+
+
+          const day =
+            document.getElementById(
+              'availabilityDay'
+            )?.value;
+
+
+          const start =
+            document.getElementById(
+              'availabilityStart'
+            )?.value;
+
+
+          const end =
+            document.getElementById(
+              'availabilityEnd'
+            )?.value;
+
+
+          const modality =
+            document.getElementById(
+              'availabilityModality'
+            )?.value;
+
+
+          const zone =
+            document.getElementById(
+              'availabilityZone'
+            )?.value.trim();
+
+
+          const message =
+            document.getElementById(
+              'availabilityFormMessage'
+            );
+
+
+          if (!day || !start || !end) {
+
+            if (message) {
+
+              message.innerHTML = `
+
+                <div class="message error">
+
+                  Completá el día y el horario.
+
+                </div>
+
+              `;
+
+            }
+
+            return;
+
+          }
+
+
+          if (end <= start) {
+
+            if (message) {
+
+              message.innerHTML = `
+
+                <div class="message error">
+
+                  La hora de finalización debe ser
+                  posterior a la hora de inicio.
+
+                </div>
+
+              `;
+
+            }
+
+            return;
+
+          }
+
+
+          const button =
+            form.querySelector(
+              'button[type="submit"]'
+            );
+
+
+          if (button) {
+
+            button.disabled =
+              true;
+
+            button.textContent =
+              'Guardando…';
+
+          }
+
+
+          const {
+            error
+          } = await sb
+            .from(
+              'professional_availability'
+            )
+            .insert({
+
+              professional_id:
+                user.id,
+
+              day_of_week:
+                Number(day),
+
+              start_time:
+                start,
+
+              end_time:
+                end,
+
+              modality:
+                modality,
+
+              zone:
+                zone || null,
+
+              is_active:
+                true
+
+            });
+
+
+          if (error) {
+
+            console.error(
+              'Error guardando disponibilidad:',
+              error
+            );
+
+
+            if (message) {
+
+              message.innerHTML = `
+
+                <div class="message error">
+
+                  No se pudo guardar el horario.
+
+                </div>
+
+              `;
+
+            }
+
+
+            if (button) {
+
+              button.disabled =
+                false;
+
+              button.textContent =
+                '+ Agregar horario';
+
+            }
+
+
+            return;
+
+          }
+
+
+          await loadAvailability();
+
+        }
+
+      );
+
+    }
+
+
+    // ===================================================
+    // ACTIVAR / DESACTIVAR
+    // ===================================================
+
+    availabilityContent
+      .querySelectorAll(
+        '.toggle-availability'
+      )
+      .forEach(button => {
+
+        button.addEventListener(
+          'click',
+          async () => {
+
+            const id =
+              button.dataset.id;
+
+
+            const active =
+              button.dataset.active ===
+              'true';
+
+
+            if (!id) {
+
+              return;
+
+            }
+
+
+            button.disabled =
+              true;
+
+
+            const {
+              error
+            } = await sb
+              .from(
+                'professional_availability'
+              )
+              .update({
+                is_active:
+                  !active,
+                updated_at:
+                  new Date().toISOString()
+              })
+              .eq(
+                'id',
+                id
+              )
+              .eq(
+                'professional_id',
+                user.id
+              );
+
+
+            if (error) {
+
+              console.error(
+                'Error actualizando disponibilidad:',
+                error
+              );
+
+
+              button.disabled =
+                false;
+
+              alert(
+                'No se pudo actualizar el horario.'
+              );
+
+
+              return;
+
+            }
+
+
+            await loadAvailability();
+
+          }
+
+        );
+
+      });
+
+
+    // ===================================================
+    // ELIMINAR HORARIO
+    // ===================================================
+
+    availabilityContent
+      .querySelectorAll(
+        '.delete-availability'
+      )
+      .forEach(button => {
+
+        button.addEventListener(
+          'click',
+          async () => {
+
+            const id =
+              button.dataset.id;
+
+
+            if (!id) {
+
+              return;
+
+            }
+
+
+            const confirmed =
+              confirm(
+                '¿Eliminar este horario?\n\n' +
+                'Esta acción no se puede deshacer.'
+              );
+
+
+            if (!confirmed) {
+
+              return;
+
+            }
+
+
+            button.disabled =
+              true;
+
+            button.textContent =
+              'Eliminando…';
+
+
+            const {
+              error
+            } = await sb
+              .from(
+                'professional_availability'
+              )
+              .delete()
+              .eq(
+                'id',
+                id
+              )
+              .eq(
+                'professional_id',
+                user.id
+              );
+
+
+            if (error) {
+
+              console.error(
+                'Error eliminando disponibilidad:',
+                error
+              );
+
+
+              button.disabled =
+                false;
+
+              button.textContent =
+                '🗑 Eliminar';
+
+
+              alert(
+                'No se pudo eliminar el horario.'
+              );
+
+
+              return;
+
+            }
+
+
+            await loadAvailability();
+
+          }
+
+        );
+
+      });
+
+  }
+
+
+  // =====================================================
   // CONSULTAS
   // =====================================================
 
@@ -996,10 +1869,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     }
 
-
-    // ---------------------------------------------------
-    // FREE
-    // ---------------------------------------------------
 
     if (!isPro) {
 
@@ -1032,10 +1901,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     }
 
-
-    // ---------------------------------------------------
-    // CONSULTAS PRO
-    // ---------------------------------------------------
 
     const {
       data,
@@ -1094,10 +1959,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
-    // ---------------------------------------------------
-    // SIN CONSULTAS
-    // ---------------------------------------------------
-
     if (
       !data ||
       data.length === 0
@@ -1123,10 +1984,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     }
 
-
-    // ---------------------------------------------------
-    // RENDER
-    // ---------------------------------------------------
 
     consultasContent.innerHTML =
       data
@@ -1277,7 +2134,8 @@ document.addEventListener('DOMContentLoaded', async () => {
               <div
                 style="
                   display:flex;
-                  justify-content:space-between;
+                  justify-content:
+                    space-between;
                   align-items:flex-start;
                   gap:12px;
                   flex-wrap:wrap;
@@ -1325,8 +2183,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
               </div>
 
-
-              <!-- DATOS DE CONTACTO -->
 
               ${
                 safeWhatsapp ||
@@ -1464,8 +2320,6 @@ document.addEventListener('DOMContentLoaded', async () => {
               }
 
 
-              <!-- DATOS DE LA CONSULTA -->
-
               ${
                 safeAge ||
                 safeModality ||
@@ -1582,8 +2436,6 @@ document.addEventListener('DOMContentLoaded', async () => {
               }
 
 
-              <!-- MOTIVO -->
-
               ${
                 safeReason
 
@@ -1620,8 +2472,6 @@ document.addEventListener('DOMContentLoaded', async () => {
               }
 
 
-              <!-- MENSAJE -->
-
               <div
                 style="
                   margin-top:18px;
@@ -1649,8 +2499,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
               </div>
 
-
-              <!-- ACCIONES -->
 
               <div
                 style="
@@ -1715,10 +2563,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         })
         .join('');
 
-
-    // ===================================================
-    // MARCAR COMO RESPONDIDA
-    // ===================================================
 
     consultasContent
       .querySelectorAll(
@@ -1803,10 +2647,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       });
 
-
-    // ===================================================
-    // ELIMINAR
-    // ===================================================
 
     consultasContent
       .querySelectorAll(
@@ -1939,6 +2779,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadSubscription();
 
     await loadProfessionalInquiries();
+
+    await loadAvailability();
 
 
     console.log(
