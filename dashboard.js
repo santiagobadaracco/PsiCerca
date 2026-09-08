@@ -38,6 +38,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
   let subscription = null;
+
+  let isPaidPro = false;
+
+  let isCourtesyPro = false;
+
   let isPro = false;
 
 
@@ -73,8 +78,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       );
 
       if (welcome) {
+
         welcome.textContent =
           'No se pudo cargar el perfil.';
+
       }
 
       return null;
@@ -88,14 +95,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     if (professionalName) {
+
       professionalName.textContent =
         name;
+
     }
 
 
     if (welcome) {
+
       welcome.textContent =
         `Hola, ${name}.`;
+
     }
 
 
@@ -104,10 +115,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         'profileName'
       );
 
+
     if (profileName) {
+
       profileName.textContent =
         data.display_name ||
         'Profesional';
+
     }
 
 
@@ -116,10 +130,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         'profileLicense'
       );
 
+
     if (profileLicense) {
+
       profileLicense.textContent =
         data.license ||
         'No especificada';
+
     }
 
 
@@ -128,10 +145,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         'profileModality'
       );
 
+
     if (profileModality) {
+
       profileModality.textContent =
         data.modality ||
         'No especificada';
+
     }
 
 
@@ -140,10 +160,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         'profileZone'
       );
 
+
     if (profileZone) {
+
       profileZone.textContent =
         data.zone ||
         'No especificada';
+
     }
 
 
@@ -153,10 +176,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
   // =====================================================
-  // SUSCRIPCIÓN
+  // SUSCRIPCIÓN PRO PAGA
   // =====================================================
 
-  async function loadSubscription() {
+  async function loadPaidSubscription() {
 
     const { data, error } = await sb
       .from('professional_subscriptions')
@@ -171,7 +194,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         cancelled_at,
         next_payment_at
       `)
-      .eq('profile_id', user.id)
+      .eq(
+        'profile_id',
+        user.id
+      )
       .order(
         'created_at',
         {
@@ -191,9 +217,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       subscription = null;
 
-      isPro = false;
-
-      updatePlanUI();
+      isPaidPro = false;
 
       return;
 
@@ -203,7 +227,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     subscription = data;
 
 
-    isPro =
+    isPaidPro =
       !!subscription &&
       subscription.plan === 'pro' &&
       subscription.status === 'active' &&
@@ -216,13 +240,128 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     console.log(
-      'Suscripción actual:',
+      'Suscripción paga:',
       subscription
     );
 
+
     console.log(
-      '¿Es PRO?:',
+      '¿PRO pago?:',
+      isPaidPro
+    );
+
+  }
+
+
+  // =====================================================
+  // PRO DE CORTESÍA
+  // =====================================================
+
+  async function loadCourtesyPro() {
+
+    try {
+
+      const {
+        data,
+        error
+      } = await sb.rpc(
+        'has_courtesy_pro',
+        {
+          target_profile_id:
+            user.id
+        }
+      );
+
+
+      if (error) {
+
+        console.error(
+          'Error comprobando PRO de cortesía:',
+          error
+        );
+
+        isCourtesyPro =
+          false;
+
+        return;
+
+      }
+
+
+      isCourtesyPro =
+        data === true;
+
+
+      console.log(
+        '¿PRO de cortesía?:',
+        isCourtesyPro
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        'Error verificando PRO de cortesía:',
+        error
+      );
+
+      isCourtesyPro =
+        false;
+
+    }
+
+  }
+
+
+  // =====================================================
+  // CARGAR ESTADO COMPLETO DE PRO
+  // =====================================================
+
+  async function loadSubscription() {
+
+    await loadPaidSubscription();
+
+    await loadCourtesyPro();
+
+
+    /*
+     * Una cuenta tiene PRO si:
+     *
+     * - tiene PRO pago activo
+     * O
+     * - tiene PRO de cortesía activo
+     */
+
+    isPro =
+      isPaidPro ||
+      isCourtesyPro;
+
+
+    console.log(
+      '================================='
+    );
+
+    console.log(
+      'ESTADO PRO'
+    );
+
+    console.log(
+      'PRO pago:',
+      isPaidPro
+    );
+
+    console.log(
+      'PRO cortesía:',
+      isCourtesyPro
+    );
+
+    console.log(
+      'PRO total:',
       isPro
+    );
+
+    console.log(
+      '================================='
     );
 
 
@@ -260,6 +399,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
+    // ---------------------------------------------------
+    // TÍTULO
+    // ---------------------------------------------------
+
     if (subscriptionTitle) {
 
       subscriptionTitle.textContent =
@@ -270,10 +413,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
+    // ---------------------------------------------------
+    // DESCRIPCIÓN
+    // ---------------------------------------------------
+
     if (subscriptionDescription) {
 
+
+      // PRO DE CORTESÍA
+
       if (
-        isPro &&
+        isCourtesyPro &&
+        !isPaidPro
+      ) {
+
+        subscriptionDescription.textContent =
+          'Tenés acceso a PsiCerca PRO de cortesía.';
+
+      }
+
+
+      // PRO PAGO CANCELADO
+
+      else if (
+        isPaidPro &&
         subscription?.cancel_at_period_end &&
         subscription?.expires_at
       ) {
@@ -290,20 +453,51 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
           );
 
+
         subscriptionDescription.textContent =
           `Tu plan PRO está activo hasta el ${endDate}. La suscripción fue cancelada y no se realizarán nuevos cobros.`;
 
-      } else {
+      }
+
+
+      // PRO PAGO NORMAL
+
+      else if (isPaidPro) {
 
         subscriptionDescription.textContent =
-          isPro
-            ? 'Tenés activo el plan PRO.'
-            : 'Estás utilizando el plan gratuito.';
+          'Tenés activo el plan PRO.';
+
+      }
+
+
+      // PRO PAGO + CORTESÍA
+
+      else if (
+        isPro &&
+        isCourtesyPro
+      ) {
+
+        subscriptionDescription.textContent =
+          'Tenés activo el plan PRO.';
+
+      }
+
+
+      // FREE
+
+      else {
+
+        subscriptionDescription.textContent =
+          'Estás utilizando el plan gratuito.';
 
       }
 
     }
 
+
+    // ---------------------------------------------------
+    // LABEL
+    // ---------------------------------------------------
 
     if (subscriptionLabel) {
 
@@ -314,6 +508,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     }
 
+
+    // ---------------------------------------------------
+    // BOTÓN
+    // ---------------------------------------------------
 
     if (subscriptionButton) {
 
@@ -328,6 +526,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
+    // ---------------------------------------------------
+    // CANCELACIÓN
+    // ---------------------------------------------------
+
     renderCancellationUI();
 
   }
@@ -340,8 +542,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function renderCancellationUI() {
 
     /*
-     * Primero eliminamos cualquier versión anterior
-     * del bloque de cancelación.
+     * Eliminamos cualquier bloque anterior.
      */
 
     const oldBox =
@@ -349,19 +550,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         'cancelSubscriptionBox'
       );
 
+
     if (oldBox) {
+
       oldBox.remove();
+
+    }
+
+
+    /*
+     * Si el usuario tiene PRO exclusivamente
+     * por cortesía, NO mostramos ningún botón
+     * de cancelación.
+     */
+
+    if (
+      isCourtesyPro &&
+      !isPaidPro
+    ) {
+
+      return;
+
     }
 
 
     /*
      * Buscamos dónde insertar el bloque.
-     *
-     * Prioridad:
-     * 1. #subscriptionContent
-     * 2. #subscriptionMessage
-     * 3. contenedor del botón de suscripción
-     * 4. sección #suscripcion
      */
 
     let container =
@@ -410,16 +624,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     /*
-     * Si NO es PRO, no mostramos nada.
+     * Si no tiene PRO pago activo,
+     * no mostramos cancelación.
      */
 
-    if (!isPro) {
+    if (!isPaidPro) {
+
       return;
+
     }
 
 
     // ===================================================
-    // PRO YA CANCELADO
+    // PRO PAGO YA CANCELADO
     // ===================================================
 
     if (
@@ -469,15 +686,19 @@ document.addEventListener('DOMContentLoaded', async () => {
           class="small"
           style="margin-top:8px;"
         >
+
           Tu plan PRO seguirá activo hasta
           el ${escapeHTML(endDate)}.
           No se realizarán nuevos cobros.
+
         </p>
 
       `;
 
 
-      container.appendChild(box);
+      container.appendChild(
+        box
+      );
 
 
       return;
@@ -486,7 +707,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     // ===================================================
-    // PRO ACTIVO — MOSTRAR CANCELAR
+    // PRO PAGO ACTIVO — MOSTRAR CANCELAR
     // ===================================================
 
     const box =
@@ -518,16 +739,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         class="small"
         style="margin-top:8px;"
       >
+
         Podés cancelar la renovación automática
         de tu suscripción.
+
       </p>
 
       <p
         class="small"
         style="margin-top:8px;"
       >
+
         Tu acceso PRO continuará durante el período
         que ya abonaste. No se realizará el próximo cobro.
+
       </p>
 
       <button
@@ -541,13 +766,17 @@ document.addEventListener('DOMContentLoaded', async () => {
           cursor:pointer;
         "
       >
+
         Cancelar suscripción
+
       </button>
 
     `;
 
 
-    container.appendChild(box);
+    container.appendChild(
+      box
+    );
 
 
     const cancelButton =
@@ -581,8 +810,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function cancelSubscription() {
 
-    if (!subscription || !isPro) {
+    /*
+     * Solo se puede cancelar una suscripción
+     * PRO paga.
+     */
+
+    if (
+      !subscription ||
+      !isPaidPro
+    ) {
+
       return;
+
     }
 
 
@@ -596,7 +835,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     if (!confirmed) {
+
       return;
+
     }
 
 
@@ -652,7 +893,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
 
-      if (!data || !data.success) {
+      if (
+        !data ||
+        !data.success
+      ) {
 
         throw new Error(
           data?.error ||
@@ -679,13 +923,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
 
-      /*
-       * Volvemos a consultar la base de datos
-       * para mostrar el estado real.
-       */
-
       await loadSubscription();
-
 
       await loadProfessionalInquiries();
 
@@ -731,7 +969,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function loadProfessionalInquiries() {
 
-    if (!consultasContent) return;
+    if (!consultasContent) {
+
+      return;
+
+    }
 
 
     // ---------------------------------------------------
@@ -778,7 +1020,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       data,
       error
     } = await sb
-      .from('professional_inquiries')
+      .from(
+        'professional_inquiries'
+      )
       .select(`
         id,
         patient_name,
@@ -813,6 +1057,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         error
       );
 
+
       consultasContent.innerHTML = `
 
         <div class="message error">
@@ -832,7 +1077,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // SIN CONSULTAS
     // ---------------------------------------------------
 
-    if (!data || data.length === 0) {
+    if (
+      !data ||
+      data.length === 0
+    ) {
 
       consultasContent.innerHTML = `
 
@@ -859,554 +1107,452 @@ document.addEventListener('DOMContentLoaded', async () => {
     // RENDER
     // ---------------------------------------------------
 
-    consultasContent.innerHTML = data
+    consultasContent.innerHTML =
+      data
+        .map(inquiry => {
 
-      .map(inquiry => {
-
-        const safeName =
-          escapeHTML(
-            inquiry.patient_name || ''
-          );
+          const safeName =
+            escapeHTML(
+              inquiry.patient_name || ''
+            );
 
 
-        const safeAge =
-          inquiry.patient_age !== null &&
-          inquiry.patient_age !== undefined
+          const safeAge =
+            inquiry.patient_age !== null &&
+            inquiry.patient_age !== undefined
 
-            ? escapeHTML(
-                String(
-                  inquiry.patient_age
+              ? escapeHTML(
+                  String(
+                    inquiry.patient_age
+                  )
                 )
-              )
 
-            : '';
-
-
-        const rawWhatsapp =
-          String(
-            inquiry.patient_whatsapp || ''
-          );
-
-        const whatsappDigits =
-          rawWhatsapp.replace(
-            /\D/g,
-            ''
-          );
-
-        const safeWhatsapp =
-          escapeHTML(
-            rawWhatsapp
-          );
+              : '';
 
 
-        const rawEmail =
-          String(
-            inquiry.patient_email || ''
-          );
-
-        const safeEmail =
-          escapeHTML(
-            rawEmail
-          );
+          const rawWhatsapp =
+            String(
+              inquiry.patient_whatsapp || ''
+            );
 
 
-        const safeModality =
-          escapeHTML(
-            inquiry.modality || ''
-          );
+          const whatsappDigits =
+            rawWhatsapp.replace(
+              /\D/g,
+              ''
+            );
 
 
-        const safeAvailability =
-          escapeHTML(
-            inquiry.availability || ''
-          );
+          const safeWhatsapp =
+            escapeHTML(
+              rawWhatsapp
+            );
 
 
-        const safeZone =
-          escapeHTML(
-            inquiry.zone || ''
-          );
+          const rawEmail =
+            String(
+              inquiry.patient_email || ''
+            );
 
 
-        const safeReason =
-          escapeHTML(
-            inquiry.reason || ''
-          );
+          const safeEmail =
+            escapeHTML(
+              rawEmail
+            );
 
 
-        const safeMessage =
-          escapeHTML(
-            inquiry.message || ''
-          );
+          const safeModality =
+            escapeHTML(
+              inquiry.modality || ''
+            );
 
 
-        const createdDate =
-          inquiry.created_at
-
-            ? new Date(
-                inquiry.created_at
-              ).toLocaleString(
-                'es-AR',
-                {
-                  dateStyle: 'short',
-                  timeStyle: 'short'
-                }
-              )
-
-            : '';
+          const safeAvailability =
+            escapeHTML(
+              inquiry.availability || ''
+            );
 
 
-        let statusLabel =
-          'Nueva';
-
-        let statusClass =
-          'warning';
-
-
-        if (
-          inquiry.status ===
-          'responded'
-        ) {
-
-          statusLabel =
-            'Respondida';
-
-          statusClass =
-            'success';
-
-        }
+          const safeZone =
+            escapeHTML(
+              inquiry.zone || ''
+            );
 
 
-        if (
-          inquiry.status ===
-          'archived'
-        ) {
-
-          statusLabel =
-            'Archivada';
-
-          statusClass =
-            '';
-
-        }
+          const safeReason =
+            escapeHTML(
+              inquiry.reason || ''
+            );
 
 
-        return `
+          const safeMessage =
+            escapeHTML(
+              inquiry.message || ''
+            );
 
-          <article
-            class="card"
-            style="
-              padding:20px;
-              margin-bottom:16px;
-            "
-          >
 
-            <div
+          const createdDate =
+            inquiry.created_at
+
+              ? new Date(
+                  inquiry.created_at
+                ).toLocaleString(
+                  'es-AR',
+                  {
+                    dateStyle: 'short',
+                    timeStyle: 'short'
+                  }
+                )
+
+              : '';
+
+
+          let statusLabel =
+            'Nueva';
+
+
+          let statusClass =
+            'warning';
+
+
+          if (
+            inquiry.status ===
+            'responded'
+          ) {
+
+            statusLabel =
+              'Respondida';
+
+            statusClass =
+              'success';
+
+          }
+
+
+          if (
+            inquiry.status ===
+            'archived'
+          ) {
+
+            statusLabel =
+              'Archivada';
+
+            statusClass =
+              '';
+
+          }
+
+
+          return `
+
+            <article
+              class="card"
               style="
-                display:flex;
-                justify-content:space-between;
-                align-items:flex-start;
-                gap:12px;
-                flex-wrap:wrap;
+                padding:20px;
+                margin-bottom:16px;
               "
             >
 
-              <div>
+              <div
+                style="
+                  display:flex;
+                  justify-content:space-between;
+                  align-items:flex-start;
+                  gap:12px;
+                  flex-wrap:wrap;
+                "
+              >
 
-                <h3 style="margin:0;">
+                <div>
 
-                  ${safeName}
+                  <h3 style="margin:0;">
 
-                </h3>
+                    ${safeName}
+
+                  </h3>
 
 
-                ${
-                  createdDate
-                    ? `
+                  ${
+                    createdDate
+                      ? `
+
+                        <div
+                          class="small muted"
+                          style="
+                            margin-top:4px;
+                          "
+                        >
+
+                          ${createdDate}
+
+                        </div>
+
+                      `
+                      : ''
+                  }
+
+                </div>
+
+
+                <span
+                  class="badge ${statusClass}"
+                >
+
+                  ${statusLabel}
+
+                </span>
+
+              </div>
+
+
+              <!-- DATOS DE CONTACTO -->
+
+              ${
+                safeWhatsapp ||
+                safeEmail
+
+                  ? `
+
+                    <div
+                      style="
+                        margin-top:20px;
+                        padding:16px;
+                        border-radius:14px;
+                        background:var(--soft);
+                      "
+                    >
 
                       <div
                         class="small muted"
                         style="
-                          margin-top:4px;
+                          margin-bottom:10px;
                         "
                       >
 
-                        ${createdDate}
+                        Datos de contacto
 
                       </div>
 
-                    `
-                    : ''
-                }
 
-              </div>
+                      ${
+                        safeWhatsapp
+                          ? `
 
-
-              <span
-                class="badge ${statusClass}"
-              >
-
-                ${statusLabel}
-
-              </span>
-
-            </div>
-
-
-            <!-- DATOS DE CONTACTO -->
-
-            ${
-              safeWhatsapp ||
-              safeEmail
-
-                ? `
-
-                  <div
-                    style="
-                      margin-top:20px;
-                      padding:16px;
-                      border-radius:14px;
-                      background:var(--soft);
-                    "
-                  >
-
-                    <div
-                      class="small muted"
-                      style="
-                        margin-bottom:10px;
-                      "
-                    >
-
-                      Datos de contacto
-
-                    </div>
-
-
-                    ${
-                      safeWhatsapp
-                        ? `
-
-                          <div
-                            style="
-                              display:flex;
-                              align-items:center;
-                              gap:10px;
-                              flex-wrap:wrap;
-                              margin-bottom:
-                                ${safeEmail ? '9px' : '0'};
-                            "
-                          >
-
-                            <strong>
-                              📱 WhatsApp
-                            </strong>
-
-                            <span>
-                              ${safeWhatsapp}
-                            </span>
-
-
-                            ${
-                              whatsappDigits
-                                ? `
-
-                                  <a
-                                    class="btn secondary"
-                                    href="https://wa.me/${whatsappDigits}"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    style="
-                                      font-size:12px;
-                                      padding:
-                                        7px 11px;
-                                    "
-                                  >
-
-                                    Abrir WhatsApp
-
-                                  </a>
-
-                                `
-                                : ''
-                            }
-
-                          </div>
-
-                        `
-                        : ''
-                    }
-
-
-                    ${
-                      safeEmail
-                        ? `
-
-                          <div
-                            style="
-                              display:flex;
-                              align-items:center;
-                              gap:10px;
-                              flex-wrap:wrap;
-                            "
-                          >
-
-                            <strong>
-                              ✉️ Email
-                            </strong>
-
-                            <a
-                              href="mailto:${safeEmail}"
+                            <div
+                              style="
+                                display:flex;
+                                align-items:center;
+                                gap:10px;
+                                flex-wrap:wrap;
+                                margin-bottom:
+                                  ${safeEmail ? '9px' : '0'};
+                              "
                             >
 
-                              ${safeEmail}
+                              <strong>
+                                📱 WhatsApp
+                              </strong>
 
-                            </a>
-
-                          </div>
-
-                        `
-                        : ''
-                    }
-
-                  </div>
-
-                `
-
-                : `
-
-                  <div
-                    class="message error"
-                    style="
-                      margin-top:20px;
-                    "
-                  >
-
-                    Esta consulta no tiene
-                    datos de contacto.
-
-                  </div>
-
-                `
-
-            }
+                              <span>
+                                ${safeWhatsapp}
+                              </span>
 
 
-            <!-- DATOS DE LA CONSULTA -->
+                              ${
+                                whatsappDigits
+                                  ? `
 
-            ${
-              safeAge ||
-              safeModality ||
-              safeZone ||
-              safeAvailability
+                                    <a
+                                      class="btn secondary"
+                                      href="https://wa.me/${whatsappDigits}"
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      style="
+                                        font-size:12px;
+                                        padding:
+                                          7px 11px;
+                                      "
+                                    >
 
-                ? `
+                                      Abrir WhatsApp
 
-                  <div
-                    style="
-                      display:grid;
-                      grid-template-columns:
-                        repeat(
-                          auto-fit,
-                          minmax(
-                            180px,
-                            1fr
-                          )
-                        );
-                      gap:12px;
-                      margin-top:18px;
-                    "
-                  >
+                                    </a>
 
-                    ${
-                      safeAge
-                        ? `
+                                  `
+                                  : ''
+                              }
 
-                          <div>
-
-                            <div class="small muted">
-                              Edad
                             </div>
 
-                            <strong>
-                              ${safeAge} años
-                            </strong>
-
-                          </div>
-
-                        `
-                        : ''
-                    }
+                          `
+                          : ''
+                      }
 
 
-                    ${
-                      safeModality
-                        ? `
+                      ${
+                        safeEmail
+                          ? `
 
-                          <div>
+                            <div
+                              style="
+                                display:flex;
+                                align-items:center;
+                                gap:10px;
+                                flex-wrap:wrap;
+                              "
+                            >
 
-                            <div class="small muted">
-                              Modalidad
+                              <strong>
+                                ✉️ Email
+                              </strong>
+
+                              <a
+                                href="mailto:${safeEmail}"
+                              >
+
+                                ${safeEmail}
+
+                              </a>
+
                             </div>
 
-                            <strong>
-                              ${safeModality}
-                            </strong>
-
-                          </div>
-
-                        `
-                        : ''
-                    }
-
-
-                    ${
-                      safeZone
-                        ? `
-
-                          <div>
-
-                            <div class="small muted">
-                              Zona
-                            </div>
-
-                            <strong>
-                              ${safeZone}
-                            </strong>
-
-                          </div>
-
-                        `
-                        : ''
-                    }
-
-
-                    ${
-                      safeAvailability
-                        ? `
-
-                          <div>
-
-                            <div class="small muted">
-                              Disponibilidad
-                            </div>
-
-                            <strong>
-                              ${safeAvailability}
-                            </strong>
-
-                          </div>
-
-                        `
-                        : ''
-                    }
-
-                  </div>
-
-                `
-
-                : ''
-
-            }
-
-
-            <!-- MOTIVO -->
-
-            ${
-              safeReason
-
-                ? `
-
-                  <div
-                    style="
-                      margin-top:18px;
-                    "
-                  >
-
-                    <div class="small muted">
-
-                      Motivo de consulta
+                          `
+                          : ''
+                      }
 
                     </div>
 
+                  `
+
+                  : `
+
                     <div
+                      class="message error"
                       style="
-                        margin-top:5px;
+                        margin-top:20px;
                       "
                     >
 
-                      ${safeReason}
+                      Esta consulta no tiene
+                      datos de contacto.
 
                     </div>
 
-                  </div>
+                  `
 
-                `
-
-                : ''
-
-            }
+              }
 
 
-            <!-- MENSAJE -->
-
-            <div
-              style="
-                margin-top:18px;
-              "
-            >
-
-              <div class="small muted">
-
-                Mensaje
-
-              </div>
-
-
-              <div
-                style="
-                  margin-top:5px;
-                  white-space:pre-wrap;
-                  line-height:1.5;
-                "
-              >
-
-                ${safeMessage}
-
-              </div>
-
-            </div>
-
-
-            <!-- ACCIONES -->
-
-            <div
-              style="
-                margin-top:20px;
-                display:flex;
-                gap:10px;
-                flex-wrap:wrap;
-              "
-            >
+              <!-- DATOS DE LA CONSULTA -->
 
               ${
-                inquiry.status ===
-                'new'
+                safeAge ||
+                safeModality ||
+                safeZone ||
+                safeAvailability
 
                   ? `
 
-                    <button
-                      type="button"
-                      class="
-                        btn
-                        secondary
-                        mark-inquiry-responded
+                    <div
+                      style="
+                        display:grid;
+                        grid-template-columns:
+                          repeat(
+                            auto-fit,
+                            minmax(
+                              180px,
+                              1fr
+                            )
+                          );
+                        gap:12px;
+                        margin-top:18px;
                       "
-                      data-id="${inquiry.id}"
                     >
 
-                      Marcar como respondida
+                      ${
+                        safeAge
+                          ? `
 
-                    </button>
+                            <div>
+
+                              <div class="small muted">
+                                Edad
+                              </div>
+
+                              <strong>
+                                ${safeAge} años
+                              </strong>
+
+                            </div>
+
+                          `
+                          : ''
+                      }
+
+
+                      ${
+                        safeModality
+                          ? `
+
+                            <div>
+
+                              <div class="small muted">
+                                Modalidad
+                              </div>
+
+                              <strong>
+                                ${safeModality}
+                              </strong>
+
+                            </div>
+
+                          `
+                          : ''
+                      }
+
+
+                      ${
+                        safeZone
+                          ? `
+
+                            <div>
+
+                              <div class="small muted">
+                                Zona
+                              </div>
+
+                              <strong>
+                                ${safeZone}
+                              </strong>
+
+                            </div>
+
+                          `
+                          : ''
+                      }
+
+
+                      ${
+                        safeAvailability
+                          ? `
+
+                            <div>
+
+                              <div class="small muted">
+                                Disponibilidad
+                              </div>
+
+                              <strong>
+                                ${safeAvailability}
+                              </strong>
+
+                            </div>
+
+                          `
+                          : ''
+                      }
+
+                    </div>
 
                   `
 
@@ -1415,33 +1561,138 @@ document.addEventListener('DOMContentLoaded', async () => {
               }
 
 
-              <button
-                type="button"
-                class="
-                  btn
-                  secondary
-                  delete-inquiry
-                "
-                data-id="${inquiry.id}"
+              <!-- MOTIVO -->
+
+              ${
+                safeReason
+
+                  ? `
+
+                    <div
+                      style="
+                        margin-top:18px;
+                      "
+                    >
+
+                      <div class="small muted">
+
+                        Motivo de consulta
+
+                      </div>
+
+                      <div
+                        style="
+                          margin-top:5px;
+                        "
+                      >
+
+                        ${safeReason}
+
+                      </div>
+
+                    </div>
+
+                  `
+
+                  : ''
+
+              }
+
+
+              <!-- MENSAJE -->
+
+              <div
                 style="
-                  border-color:#b91c1c;
-                  color:#b91c1c;
+                  margin-top:18px;
                 "
               >
 
-                🗑 Eliminar consulta
+                <div class="small muted">
 
-              </button>
+                  Mensaje
 
-            </div>
+                </div>
 
-          </article>
 
-        `;
+                <div
+                  style="
+                    margin-top:5px;
+                    white-space:pre-wrap;
+                    line-height:1.5;
+                  "
+                >
 
-      })
+                  ${safeMessage}
 
-      .join('');
+                </div>
+
+              </div>
+
+
+              <!-- ACCIONES -->
+
+              <div
+                style="
+                  margin-top:20px;
+                  display:flex;
+                  gap:10px;
+                  flex-wrap:wrap;
+                "
+              >
+
+                ${
+                  inquiry.status ===
+                  'new'
+
+                    ? `
+
+                      <button
+                        type="button"
+                        class="
+                          btn
+                          secondary
+                          mark-inquiry-responded
+                        "
+                        data-id="${inquiry.id}"
+                      >
+
+                        Marcar como respondida
+
+                      </button>
+
+                    `
+
+                    : ''
+
+                }
+
+
+                <button
+                  type="button"
+                  class="
+                    btn
+                    secondary
+                    delete-inquiry
+                  "
+                  data-id="${inquiry.id}"
+                  style="
+                    border-color:#b91c1c;
+                    color:#b91c1c;
+                  "
+                >
+
+                  🗑 Eliminar consulta
+
+                </button>
+
+              </div>
+
+            </article>
+
+          `;
+
+        })
+        .join('');
 
 
     // ===================================================
@@ -1462,7 +1713,11 @@ document.addEventListener('DOMContentLoaded', async () => {
               button.dataset.id;
 
 
-            if (!inquiryId) return;
+            if (!inquiryId) {
+
+              return;
+
+            }
 
 
             button.disabled =
@@ -1501,15 +1756,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 error
               );
 
+
               button.disabled =
                 false;
 
               button.textContent =
                 'Marcar como respondida';
 
+
               alert(
                 'No se pudo actualizar la consulta.'
               );
+
 
               return;
 
@@ -1543,7 +1801,11 @@ document.addEventListener('DOMContentLoaded', async () => {
               button.dataset.id;
 
 
-            if (!inquiryId) return;
+            if (!inquiryId) {
+
+              return;
+
+            }
 
 
             const confirmed =
@@ -1554,7 +1816,11 @@ document.addEventListener('DOMContentLoaded', async () => {
               );
 
 
-            if (!confirmed) return;
+            if (!confirmed) {
+
+              return;
+
+            }
 
 
             button.disabled =
@@ -1588,15 +1854,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 error
               );
 
+
               button.disabled =
                 false;
 
               button.textContent =
                 '🗑 Eliminar consulta';
 
+
               alert(
                 'No se pudo eliminar la consulta.'
               );
+
 
               return;
 
