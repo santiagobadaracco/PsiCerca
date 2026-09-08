@@ -1,4 +1,3 @@
-```html
 <!doctype html>
 <html lang="es">
 
@@ -133,7 +132,7 @@
 
     .agenda-slot {
       width:100%;
-      min-height:52px;
+      min-height:58px;
       border:1px solid var(--line);
       border-radius:14px;
       background:#fff;
@@ -141,11 +140,18 @@
       font:inherit;
       font-weight:700;
       transition:.15s ease;
+      padding:10px;
     }
 
     .agenda-slot:hover {
       transform:translateY(-1px);
       border-color:var(--accent);
+    }
+
+    .agenda-slot-time {
+      display:block;
+      font-size:16px;
+      font-weight:800;
     }
 
     .agenda-slot small {
@@ -524,6 +530,7 @@
       window.location.search
     ).get('id');
 
+
   if (!id) {
 
     box.innerHTML = `
@@ -535,6 +542,7 @@
     return;
 
   }
+
 
   try {
 
@@ -572,6 +580,7 @@
       throw error;
     }
 
+
     if (!p) {
       throw new Error('Perfil no encontrado');
     }
@@ -599,12 +608,14 @@
       p.photo_url
         ? `
           <div class="profile-avatar">
+
             <img
               src="${escapeHTML(p.photo_url)}"
               alt="Foto de ${escapeHTML(
                 p.display_name || 'profesional'
               )}"
             >
+
           </div>
         `
         : `
@@ -634,7 +645,7 @@
 
 
     /* =====================================================
-       RENDER DEL PERFIL
+       PERFIL
        ===================================================== */
 
     box.innerHTML = `
@@ -766,12 +777,8 @@
       </section>
 
 
-      <!-- AGENDA DIGITAL -->
-
       <div id="agendaArea"></div>
 
-
-      <!-- CONTACTO -->
 
       <div
         id="contactArea"
@@ -784,8 +791,6 @@
 
       </div>
 
-
-      <!-- CONSULTA -->
 
       <div id="inquiryArea"></div>
 
@@ -1171,8 +1176,7 @@
                 >
 
                 <span class="inquiry-hint">
-                  Opcional. Podés dejarlo como medio
-                  de contacto alternativo.
+                  Opcional.
                 </span>
 
               </label>
@@ -1319,8 +1323,7 @@
               <p class="privacy-text">
                 Por privacidad, evitá incluir diagnósticos,
                 antecedentes clínicos detallados, medicación
-                o historias clínicas. Este formulario está
-                pensado únicamente para un primer contacto.
+                o historias clínicas.
               </p>
 
             </div>
@@ -1332,8 +1335,7 @@
 
               Tu consulta será recibida por el profesional.
               Si considera que puede responder a tu búsqueda,
-              podrá contactarte directamente mediante el
-              WhatsApp o email que indiques.
+              podrá contactarte directamente.
 
             </div>
 
@@ -1583,14 +1585,7 @@
 
 
             if (insertError) {
-
-              console.error(
-                'Error creando consulta:',
-                insertError
-              );
-
               throw insertError;
-
             }
 
 
@@ -1840,7 +1835,9 @@ async function renderAgenda(
     document.getElementById('agendaDate');
 
   const modalityControl =
-    document.getElementById('agendaModalityControl');
+    document.getElementById(
+      'agendaModalityControl'
+    );
 
   const modalitySelect =
     document.getElementById('agendaModality');
@@ -1858,6 +1855,71 @@ async function renderAgenda(
 
 
   /* =======================================================
+     NORMALIZAR SLOT
+     ======================================================= */
+
+  function normalizeSlot(slot) {
+
+    if (!slot) {
+      return null;
+    }
+
+
+    const start =
+      slot.slot_start ??
+      slot.start_time ??
+      slot.start ??
+      slot.hora_inicio ??
+      null;
+
+
+    const end =
+      slot.slot_end ??
+      slot.end_time ??
+      slot.end ??
+      slot.hora_fin ??
+      null;
+
+
+    const modality =
+      slot.modality ??
+      slot.modalidad ??
+      'virtual';
+
+
+    const zone =
+      slot.zone ??
+      slot.zona ??
+      null;
+
+
+    if (!start || !end) {
+      return null;
+    }
+
+
+    return {
+
+      slot_start:
+        String(start),
+
+      slot_end:
+        String(end),
+
+      modality:
+        String(modality),
+
+      zone:
+        zone
+          ? String(zone)
+          : null
+
+    };
+
+  }
+
+
+  /* =======================================================
      CARGAR SLOTS
      ======================================================= */
 
@@ -1865,9 +1927,11 @@ async function renderAgenda(
 
     selectedSlot = null;
 
-    confirmArea.style.display = 'none';
+    confirmArea.style.display =
+      'none';
 
-    confirmArea.innerHTML = '';
+    confirmArea.innerHTML =
+      '';
 
 
     slotsArea.innerHTML = `
@@ -1894,111 +1958,145 @@ async function renderAgenda(
     }
 
 
-    const {
-      data,
-      error
-    } =
-      await sb.rpc(
-        'get_available_slots',
-        {
-          target_professional_id:
-            professionalId,
+    try {
 
-          target_date:
-            selectedDate
-        }
+      const {
+        data,
+        error
+      } =
+        await sb.rpc(
+          'get_available_slots',
+          {
+            target_professional_id:
+              professionalId,
+
+            target_date:
+              selectedDate
+          }
+        );
+
+
+      if (error) {
+
+        console.error(
+          'Error obteniendo turnos:',
+          error
+        );
+
+        slotsArea.innerHTML = `
+          <div class="agenda-message">
+
+            No pudimos cargar los horarios disponibles.
+
+          </div>
+        `;
+
+        return;
+
+      }
+
+
+      console.log(
+        'Slots recibidos de Supabase:',
+        data
       );
 
 
-    if (error) {
+      currentSlots =
+        (Array.isArray(data)
+          ? data
+          : []
+        )
+        .map(normalizeSlot)
+        .filter(Boolean);
+
+
+      console.log(
+        'Slots normalizados:',
+        currentSlots
+      );
+
+
+      const hasVirtual =
+        currentSlots.some(
+          slot =>
+            slot.modality === 'virtual' ||
+            slot.modality === 'ambas'
+        );
+
+
+      const hasPresencial =
+        currentSlots.some(
+          slot =>
+            slot.modality === 'presencial' ||
+            slot.modality === 'ambas'
+        );
+
+
+      if (
+        hasVirtual &&
+        hasPresencial
+      ) {
+
+        modalityControl.style.display =
+          'flex';
+
+      } else {
+
+        modalityControl.style.display =
+          'none';
+
+
+        if (hasPresencial) {
+
+          modalitySelect.value =
+            'presencial';
+
+        } else {
+
+          modalitySelect.value =
+            'virtual';
+
+        }
+
+      }
+
+
+      if (!currentSlots.length) {
+
+        slotsArea.innerHTML = `
+          <div class="agenda-message">
+
+            No hay turnos disponibles para esta fecha.
+
+            <br><br>
+
+            Probá seleccionando otro día.
+
+          </div>
+        `;
+
+        return;
+
+      }
+
+
+      renderSlots();
+
+    } catch (error) {
 
       console.error(
-        'Error obteniendo turnos:',
+        'Error cargando agenda:',
         error
       );
 
       slotsArea.innerHTML = `
         <div class="agenda-message">
-          No pudimos cargar los horarios disponibles.
+          No pudimos cargar la agenda.
         </div>
       `;
 
-      return;
-
     }
-
-
-    currentSlots =
-      Array.isArray(data)
-        ? data
-        : [];
-
-
-    const hasVirtual =
-      currentSlots.some(
-        slot =>
-          slot.modality === 'virtual' ||
-          slot.modality === 'ambas'
-      );
-
-
-    const hasPresencial =
-      currentSlots.some(
-        slot =>
-          slot.modality === 'presencial' ||
-          slot.modality === 'ambas'
-      );
-
-
-    if (
-      hasVirtual &&
-      hasPresencial
-    ) {
-
-      modalityControl.style.display =
-        'flex';
-
-    } else {
-
-      modalityControl.style.display =
-        'none';
-
-
-      if (hasPresencial) {
-
-        modalitySelect.value =
-          'presencial';
-
-      } else {
-
-        modalitySelect.value =
-          'virtual';
-
-      }
-
-    }
-
-
-    if (!currentSlots.length) {
-
-      slotsArea.innerHTML = `
-        <div class="agenda-message">
-
-          No hay turnos disponibles para esta fecha.
-
-          <br><br>
-
-          Probá seleccionando otro día.
-
-        </div>
-      `;
-
-      return;
-
-    }
-
-
-    renderSlots();
 
   }
 
@@ -2038,8 +2136,10 @@ async function renderAgenda(
 
       slotsArea.innerHTML = `
         <div class="agenda-message">
+
           No hay horarios disponibles para
           la modalidad seleccionada.
+
         </div>
       `;
 
@@ -2055,7 +2155,7 @@ async function renderAgenda(
         ${
           filteredSlots
             .map(
-              slot => {
+              (slot, index) => {
 
                 const start =
                   slot.slot_start;
@@ -2063,19 +2163,25 @@ async function renderAgenda(
                 const end =
                   slot.slot_end;
 
+
                 return `
 
                   <button
                     type="button"
                     class="agenda-slot"
-                    data-start="${escapeHTML(start)}"
-                    data-end="${escapeHTML(end)}"
+                    data-index="${index}"
                   >
 
-                    ${formatTime(start)}
+                    <span class="agenda-slot-time">
+                      ${escapeHTML(
+                        formatTime(start)
+                      )}
+                    </span>
 
                     <small>
-                      hasta ${formatTime(end)}
+                      hasta ${escapeHTML(
+                        formatTime(end)
+                      )}
                     </small>
 
                   </button>
@@ -2101,19 +2207,45 @@ async function renderAgenda(
             'click',
             function () {
 
-              const start =
-                this.dataset.start;
-
-              const end =
-                this.dataset.end;
+              const index =
+                Number(
+                  this.dataset.index
+                );
 
 
               const slot =
-                filteredSlots.find(
-                  item =>
-                    item.slot_start ===
-                    start
-                );
+                filteredSlots[index];
+
+
+              if (!slot) {
+                return;
+              }
+
+
+              let selectedModality =
+                modalitySelect.value;
+
+
+              if (
+                slot.modality ===
+                'presencial'
+              ) {
+
+                selectedModality =
+                  'presencial';
+
+              }
+
+
+              if (
+                slot.modality ===
+                'virtual'
+              ) {
+
+                selectedModality =
+                  'virtual';
+
+              }
 
 
               selectedSlot = {
@@ -2122,20 +2254,16 @@ async function renderAgenda(
                   dateInput.value,
 
                 startTime:
-                  start,
+                  slot.slot_start,
 
                 endTime:
-                  end,
+                  slot.slot_end,
 
                 modality:
-                  slot?.modality === 'presencial'
-                    ? 'presencial'
-                    : slot?.modality === 'virtual'
-                      ? 'virtual'
-                      : selectedModality,
+                  selectedModality,
 
                 zone:
-                  slot?.zone || null
+                  slot.zone || null
 
               };
 
@@ -2224,7 +2352,8 @@ async function renderAgenda(
                 class="small"
                 style="margin:-6px 0 14px;"
               >
-                Zona: ${escapeHTML(
+                Zona:
+                ${escapeHTML(
                   selectedSlot.zone
                 )}
               </p>
@@ -2464,6 +2593,10 @@ async function renderAgenda(
       }
 
 
+      confirmArea.style.display =
+        'block';
+
+
       confirmArea.innerHTML = `
 
         <div class="agenda-confirm">
@@ -2534,7 +2667,12 @@ async function renderAgenda(
       `;
 
 
-      await loadSlots();
+      /*
+       * Actualizamos los horarios disponibles
+       * sin borrar el mensaje de confirmación.
+       */
+
+      selectedSlot = null;
 
 
     } catch (error) {
@@ -2622,7 +2760,35 @@ function formatTime(time) {
     return '';
   }
 
-  return String(time).slice(0,5);
+
+  const value =
+    String(time);
+
+
+  /*
+   * PostgreSQL normalmente devuelve TIME
+   * como HH:MM:SS.
+   */
+
+  if (
+    /^\d{2}:\d{2}:\d{2}/.test(value)
+  ) {
+
+    return value.slice(0,5);
+
+  }
+
+
+  if (
+    /^\d{2}:\d{2}/.test(value)
+  ) {
+
+    return value.slice(0,5);
+
+  }
+
+
+  return value;
 
 }
 
@@ -2668,4 +2834,3 @@ function formatSpanishDate(dateString) {
 </body>
 
 </html>
-```
