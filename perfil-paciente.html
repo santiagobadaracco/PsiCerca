@@ -90,6 +90,10 @@
           Mi perfil
         </a>
 
+        <a href="#consultas">
+          Mis consultas
+        </a>
+
         <a href="profesionales.html">
           Directorio
         </a>
@@ -97,109 +101,145 @@
       </aside>
 
 
-      <section
-        class="panel"
-        id="perfil"
-      >
+      <div>
 
-        <h2>
-          Datos de mi cuenta
-        </h2>
+        <!-- ======================================================
+             MI PERFIL
+        ======================================================= -->
 
-        <p class="small">
-          Esta información corresponde a tu cuenta personal de PsiCerca.
-        </p>
-
-
-        <!-- NOMBRE -->
-
-        <div class="field">
-
-          <label>
-            Nombre
-          </label>
-
-          <input
-            id="full_name"
-            type="text"
-            disabled
-          >
-
-        </div>
-
-
-        <!-- EMAIL -->
-
-        <div class="field">
-
-          <label>
-            Email
-          </label>
-
-          <input
-            id="email"
-            type="email"
-            disabled
-          >
-
-        </div>
-
-
-        <!-- INFORMACIÓN -->
-
-        <div
-          class="field span-2"
-          style="margin-top:10px;"
+        <section
+          class="panel"
+          id="perfil"
         >
 
-          <p class="small">
-            Desde tu cuenta podés consultar el directorio y contactar a los profesionales disponibles.
-          </p>
-
-        </div>
-
-
-        <!-- ELIMINAR CUENTA -->
-
-        <div
-          class="span-2"
-          style="
-            margin-top:32px;
-            padding-top:24px;
-            border-top:1px solid var(--line);
-          "
-        >
-
-          <h3>
-            Eliminar mi cuenta
-          </h3>
+          <h2>
+            Datos de mi cuenta
+          </h2>
 
           <p class="small">
-            Esta acción eliminará permanentemente tu cuenta de PsiCerca y todos los datos asociados.
-            No se puede deshacer.
+            Esta información corresponde a tu cuenta personal de PsiCerca.
           </p>
 
-          <button
-            id="deleteAccount"
-            class="btn secondary"
-            type="button"
-            style="
-              margin-top:10px;
-              border-color:#b91c1c;
-              color:#b91c1c;
-            "
-          >
-            Eliminar mi cuenta
-          </button>
+
+          <!-- NOMBRE -->
+
+          <div class="field">
+
+            <label>
+              Nombre
+            </label>
+
+            <input
+              id="full_name"
+              type="text"
+              disabled
+            >
+
+          </div>
+
+
+          <!-- EMAIL -->
+
+          <div class="field">
+
+            <label>
+              Email
+            </label>
+
+            <input
+              id="email"
+              type="email"
+              disabled
+            >
+
+          </div>
+
+
+          <!-- INFORMACIÓN -->
 
           <div
-            id="deleteAccountMsg"
-            class="message"
-          ></div>
+            class="field span-2"
+            style="margin-top:10px;"
+          >
 
-        </div>
+            <p class="small">
+              Desde tu cuenta podés consultar el directorio y contactar a los profesionales disponibles.
+            </p>
 
-      </section>
+          </div>
+
+
+          <!-- ELIMINAR CUENTA -->
+
+          <div
+            class="span-2"
+            style="
+              margin-top:32px;
+              padding-top:24px;
+              border-top:1px solid var(--line);
+            "
+          >
+
+            <h3>
+              Eliminar mi cuenta
+            </h3>
+
+            <p class="small">
+              Esta acción eliminará permanentemente tu cuenta de PsiCerca y todos los datos asociados.
+              No se puede deshacer.
+            </p>
+
+            <button
+              id="deleteAccount"
+              class="btn secondary"
+              type="button"
+              style="
+                margin-top:10px;
+                border-color:#b91c1c;
+                color:#b91c1c;
+              "
+            >
+              Eliminar mi cuenta
+            </button>
+
+            <div
+              id="deleteAccountMsg"
+              class="message"
+            ></div>
+
+          </div>
+
+        </section>
+
+
+        <!-- ======================================================
+             MIS CONSULTAS
+        ======================================================= -->
+
+        <section
+          class="panel"
+          id="consultas"
+          style="margin-top:24px;"
+        >
+
+          <h2>
+            Mis consultas
+          </h2>
+
+          <p class="small">
+            Acá podés ver las consultas que enviaste y las respuestas de los profesionales.
+          </p>
+
+          <div
+            id="patientInquiriesContent"
+            style="margin-top:20px;"
+          >
+            Cargando consultas…
+          </div>
+
+        </section>
+
+      </div>
 
     </div>
 
