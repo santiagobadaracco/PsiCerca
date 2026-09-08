@@ -4487,228 +4487,10 @@ async function loadAppointments() {
 
     return;
   }
-
-  if (!data || data.length === 0) {
-    container.innerHTML = `
-      <p class="small">
-        Todavía no tenés solicitudes de turno.
-      </p>
-    `;
-
-    return;
-  }
-
-  container.innerHTML = data.map(appointment => {
-
-    const statusLabels = {
-      pending: 'Pendiente',
-      confirmed: 'Confirmado',
-      rejected: 'Rechazado'
-    };
-
-    const modalityLabels = {
-      virtual: 'Virtual',
-      presencial: 'Presencial'
-    };
-
-    return `
-      <div
-        style="
-          border:1px solid var(--line);
-          border-radius:14px;
-          padding:20px;
-          margin-bottom:16px;
-        "
-      >
-
-        <div
-          style="
-            display:flex;
-            justify-content:space-between;
-            gap:20px;
-            flex-wrap:wrap;
-          "
-        >
-
-          <div>
-
-            <strong>
-              ${escapeHTML(appointment.patient_name || 'Paciente')}
-            </strong>
-
-            <p class="small" style="margin-top:8px;">
-              ${escapeHTML(appointment.appointment_date || '')}
-              ·
-              ${escapeHTML((appointment.start_time || '').slice(0,5))}
-              –
-              ${escapeHTML((appointment.end_time || '').slice(0,5))}
-            </p>
-
-            <p class="small">
-              ${escapeHTML(
-                modalityLabels[appointment.modality]
-                || appointment.modality
-                || ''
-              )}
-              ${
-                appointment.zone
-                  ? ` · ${escapeHTML(appointment.zone)}`
-                  : ''
-              }
-            </p>
-
-          </div>
-
-          <div>
-
-            <span
-              style="
-                display:inline-block;
-                padding:6px 10px;
-                border-radius:999px;
-                background:#f2f2f2;
-                font-size:13px;
-              "
-            >
-              ${escapeHTML(
-                statusLabels[appointment.status]
-                || appointment.status
-                || ''
-              )}
-            </span>
-
-          </div>
-
-        </div>
-
-        ${
-          appointment.notes
-            ? `
-              <p class="small" style="margin-top:14px;">
-                <strong>Notas:</strong>
-                ${escapeHTML(appointment.notes)}
-              </p>
-            `
-            : ''
-        }
-
-        ${
-          appointment.status === 'pending'
-            ? `
-              <div
-                style="
-                  display:flex;
-                  gap:10px;
-                  margin-top:18px;
-                  flex-wrap:wrap;
-                "
-              >
-
-                <button
-                  type="button"
-                  class="button"
-                  data-appointment-action="confirm"
-                  data-appointment-id="${appointment.id}"
-                >
-                  Aceptar turno
-                </button>
-
-                <button
-                  type="button"
-                  class="button secondary"
-                  data-appointment-action="reject"
-                  data-appointment-id="${appointment.id}"
-                >
-                  Rechazar
-                </button>
-
-              </div>
-            `
-            : ''
-        }
-
-      </div>
-    `;
-
-  }).join('');
-
-    container.querySelectorAll('[data-appointment-action]').forEach(button => {
-
-    button.addEventListener('click', async () => {
-
-      const appointmentId =
-        button.dataset.appointmentId;
-
-      const action =
-        button.dataset.appointmentAction;
-
-      const newStatus =
-        action === 'confirm'
-          ? 'confirmed'
-          : 'rejected';
-
-      button.disabled = true;
-
-      const {
-        error
-      } = await sb
-        .from('professional_appointments')
-        .update({
-          status: newStatus,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', appointmentId)
-        .eq('professional_id', user.id);
-
-      if (error) {
-        console.error('Error actualizando turno:', error);
-
-        button.disabled = false;
-
-        alert('No se pudo actualizar el turno.');
-
-        return;
-      }
-
-      await loadAppointments();
-
-    });
-
-  });
-
-}
   async function loadProfessionalInquiries() {
 
     if (!consultasContent) {
       return;
-    }
-
-
-    if (!isPro) {
-
-      consultasContent.innerHTML = `
-
-        <strong>
-          🔒 Disponible con PsiCerca PRO
-        </strong>
-
-        <p class="small">
-          Recibí consultas de personas interesadas
-          y gestioná sus datos de contacto desde
-          tu panel profesional.
-        </p>
-
-        <a
-          class="btn primary"
-          href="#suscripcion"
-        >
-          Conocer PsiCerca PRO
-        </a>
-
-      `;
-
-      return;
-
     }
 
 
@@ -4728,6 +4510,7 @@ async function loadAppointments() {
         zone,
         reason,
         message,
+        professional_reply,
         status,
         created_at,
         updated_at
@@ -4870,6 +4653,12 @@ async function loadAppointments() {
           const safeMessage =
             escapeHTML(
               inquiry.message || ''
+            );
+
+
+          const safeReply =
+            escapeHTML(
+              inquiry.professional_reply || ''
             );
 
 
@@ -5087,17 +4876,8 @@ async function loadAppointments() {
 
                   `
 
-                  : `
+                  : ''
 
-                    <div
-                      class="message error"
-                      style="margin-top:20px;"
-                    >
-                      Esta consulta no tiene
-                      datos de contacto.
-                    </div>
-
-                  `
               }
 
 
@@ -5260,7 +5040,70 @@ async function loadAppointments() {
 
               <div
                 style="
-                  margin-top:20px;
+                  margin-top:22px;
+                  padding:18px;
+                  border:1px solid var(--line);
+                  border-radius:14px;
+                  background:var(--soft);
+                "
+              >
+
+                <div
+                  class="small muted"
+                  style="margin-bottom:8px;"
+                >
+                  Tu respuesta
+                </div>
+
+
+                <textarea
+                  class="inquiry-reply"
+                  data-id="${inquiry.id}"
+                  rows="4"
+                  placeholder="Escribí tu respuesta para esta persona..."
+                  style="
+                    width:100%;
+                    box-sizing:border-box;
+                    resize:vertical;
+                    padding:12px;
+                    border:1px solid var(--line);
+                    border-radius:10px;
+                    background:var(--bg);
+                    color:inherit;
+                    font:inherit;
+                  "
+                >${safeReply}</textarea>
+
+
+                <div
+                  style="
+                    margin-top:12px;
+                    display:flex;
+                    gap:10px;
+                    flex-wrap:wrap;
+                  "
+                >
+
+                  <button
+                    type="button"
+                    class="btn primary save-inquiry-reply"
+                    data-id="${inquiry.id}"
+                  >
+                    ${
+                      safeReply
+                        ? 'Guardar respuesta'
+                        : 'Responder'
+                    }
+                  </button>
+
+                </div>
+
+              </div>
+
+
+              <div
+                style="
+                  margin-top:18px;
                   display:flex;
                   gap:10px;
                   flex-wrap:wrap;
@@ -5313,6 +5156,126 @@ async function loadAppointments() {
         })
         .join('');
 
+
+    // =====================================================
+    // GUARDAR RESPUESTA
+    // =====================================================
+
+    consultasContent
+      .querySelectorAll(
+        '.save-inquiry-reply'
+      )
+      .forEach(button => {
+
+        button.addEventListener(
+          'click',
+          async () => {
+
+            const inquiryId =
+              button.dataset.id;
+
+
+            if (!inquiryId) {
+              return;
+            }
+
+
+            const textarea =
+              consultasContent.querySelector(
+                `.inquiry-reply[data-id="${inquiryId}"]`
+              );
+
+
+            if (!textarea) {
+              return;
+            }
+
+
+            const reply =
+              textarea.value.trim();
+
+
+            if (!reply) {
+
+              alert(
+                'Escribí una respuesta antes de guardarla.'
+              );
+
+              textarea.focus();
+
+              return;
+
+            }
+
+
+            button.disabled =
+              true;
+
+            button.textContent =
+              'Guardando…';
+
+
+            const {
+              error
+            } = await sb
+              .from('professional_inquiries')
+              .update({
+
+                professional_reply:
+                  reply,
+
+                status:
+                  'responded',
+
+                updated_at:
+                  new Date().toISOString()
+
+              })
+              .eq(
+                'id',
+                inquiryId
+              )
+              .eq(
+                'professional_id',
+                user.id
+              );
+
+
+            if (error) {
+
+              console.error(
+                'Error guardando respuesta:',
+                error
+              );
+
+
+              button.disabled =
+                false;
+
+              button.textContent =
+                'Guardar respuesta';
+
+
+              alert(
+                'No se pudo guardar la respuesta.'
+              );
+
+              return;
+
+            }
+
+
+            await loadProfessionalInquiries();
+
+          }
+        );
+
+      });
+
+
+    // =====================================================
+    // MARCAR COMO RESPONDIDA
+    // =====================================================
 
     consultasContent
       .querySelectorAll(
@@ -5394,6 +5357,10 @@ async function loadAppointments() {
 
       });
 
+
+    // =====================================================
+    // ELIMINAR CONSULTA
+    // =====================================================
 
     consultasContent
       .querySelectorAll(
