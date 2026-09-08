@@ -39,6 +39,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   const availabilityContent =
     document.getElementById('availabilityContent');
 
+  const profileForm =
+    document.getElementById('profileForm');
+
+  const profileMessage =
+    document.getElementById('msg');
+
 
   let subscription = null;
 
@@ -52,6 +58,383 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   let appointmentBreak = 10;
 
+  let currentProfile = null;
+
+
+  // =====================================================
+  // UTILIDADES DE PERFIL
+  // =====================================================
+
+  function setFieldValue(id, value) {
+
+    const element =
+      document.getElementById(id);
+
+    if (!element) return;
+
+    element.value =
+      value === null ||
+      value === undefined
+        ? ''
+        : value;
+
+  }
+
+
+  function setCheckbox(id, value) {
+
+    const element =
+      document.getElementById(id);
+
+    if (!element) return;
+
+    element.checked =
+      value === true;
+
+  }
+
+
+  function normalizeArray(value) {
+
+    if (Array.isArray(value)) {
+      return value;
+    }
+
+    if (!value) {
+      return [];
+    }
+
+    if (typeof value === 'string') {
+
+      try {
+
+        const parsed =
+          JSON.parse(value);
+
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+
+      } catch (error) {
+        // No era JSON.
+      }
+
+      return value
+        .split(',')
+        .map(item => item.trim())
+        .filter(Boolean);
+    }
+
+    return [];
+
+  }
+
+
+  function getPopulationValues() {
+
+    return Array.from(
+      document.querySelectorAll(
+        '.population-option:checked'
+      )
+    )
+      .map(input => input.value);
+
+  }
+
+
+  function setPopulationValues(value) {
+
+    const values =
+      normalizeArray(value);
+
+    document
+      .querySelectorAll(
+        '.population-option'
+      )
+      .forEach(input => {
+
+        input.checked =
+          values.includes(
+            input.value
+          );
+
+      });
+
+
+    const hidden =
+      document.getElementById(
+        'population'
+      );
+
+    if (hidden) {
+
+      hidden.value =
+        values.join(', ');
+
+    }
+
+  }
+
+
+  function getContainerValues(containerId) {
+
+    const container =
+      document.getElementById(
+        containerId
+      );
+
+    if (!container) {
+      return [];
+    }
+
+
+    return Array.from(
+      container.querySelectorAll(
+        'input'
+      )
+    )
+      .map(input =>
+        input.value.trim()
+      )
+      .filter(Boolean);
+
+  }
+
+
+  function addSimpleInput(
+    containerId,
+    value = ''
+  ) {
+
+    const container =
+      document.getElementById(
+        containerId
+      );
+
+    if (!container) return;
+
+
+    const wrapper =
+      document.createElement('div');
+
+    wrapper.style.cssText = `
+      display:flex;
+      gap:8px;
+      align-items:center;
+      margin-top:8px;
+    `;
+
+
+    const input =
+      document.createElement('input');
+
+    input.type =
+      'text';
+
+    input.value =
+      value || '';
+
+    input.style.width =
+      '100%';
+
+
+    const removeButton =
+      document.createElement('button');
+
+    removeButton.type =
+      'button';
+
+    removeButton.className =
+      'btn secondary';
+
+    removeButton.textContent =
+      'Eliminar';
+
+    removeButton.style.fontSize =
+      '12px';
+
+
+    removeButton.addEventListener(
+      'click',
+      () => {
+
+        wrapper.remove();
+
+      }
+    );
+
+
+    wrapper.appendChild(input);
+
+    wrapper.appendChild(
+      removeButton
+    );
+
+    container.appendChild(
+      wrapper
+    );
+
+  }
+
+
+  function clearContainer(id) {
+
+    const container =
+      document.getElementById(id);
+
+    if (container) {
+      container.innerHTML = '';
+    }
+
+  }
+
+
+  function loadDynamicProfileFields(data) {
+
+    // ---------------------------------------------------
+    // OTRAS MATRÍCULAS
+    // ---------------------------------------------------
+
+    clearContainer(
+      'licensesContainer'
+    );
+
+
+    const otherLicenses =
+      data.other_licenses ??
+      data.otherLicenses ??
+      data.licenses;
+
+
+    normalizeArray(
+      otherLicenses
+    )
+      .forEach(value => {
+
+        addSimpleInput(
+          'licensesContainer',
+          value
+        );
+
+      });
+
+
+    // ---------------------------------------------------
+    // ZONAS
+    // ---------------------------------------------------
+
+    clearContainer(
+      'locationsContainer'
+    );
+
+
+    const locations =
+      data.locations ??
+      data.attention_locations ??
+      data.attentionLocations;
+
+
+    normalizeArray(
+      locations
+    )
+      .forEach(value => {
+
+        addSimpleInput(
+          'locationsContainer',
+          value
+        );
+
+      });
+
+
+    // Si existe el campo zone pero no existe
+    // un arreglo de locations, usamos zone
+    // como zona inicial.
+
+    if (
+      normalizeArray(locations).length === 0 &&
+      data.zone
+    ) {
+
+      addSimpleInput(
+        'locationsContainer',
+        data.zone
+      );
+
+    }
+
+
+    // ---------------------------------------------------
+    // POBLACIÓN
+    // ---------------------------------------------------
+
+    setPopulationValues(
+      data.population
+    );
+
+  }
+
+
+  function updatePhotoPreview(photoUrl, name) {
+
+    const preview =
+      document.getElementById(
+        'photoPreview'
+      );
+
+    if (!preview) return;
+
+
+    if (photoUrl) {
+
+      preview.innerHTML = '';
+
+      const image =
+        document.createElement('img');
+
+      image.src =
+        photoUrl;
+
+      image.alt =
+        name ||
+        'Foto de perfil';
+
+      image.style.cssText = `
+        width:100%;
+        height:100%;
+        object-fit:cover;
+        display:block;
+      `;
+
+      preview.appendChild(
+        image
+      );
+
+      return;
+
+    }
+
+
+    const initials =
+      String(
+        name || 'PS'
+      )
+        .trim()
+        .split(/\s+/)
+        .slice(0,2)
+        .map(
+          word =>
+            word.charAt(0)
+              .toUpperCase()
+        )
+        .join('');
+
+
+    preview.textContent =
+      initials || 'PS';
+
+  }
+
 
   // =====================================================
   // PERFIL
@@ -59,23 +442,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function loadProfile() {
 
-    const { data, error } = await sb
+    const {
+      data,
+      error
+    } = await sb
       .from('profiles')
-      .select(`
-        display_name,
-        license,
-        jurisdiction,
-        zone,
-        modality,
-        orientation,
-        population,
-        bio,
-        photo_url,
-        user_role,
-        appointment_duration,
-        appointment_break
-      `)
-      .eq('id', user.id)
+      .select('*')
+      .eq(
+        'id',
+        user.id
+      )
       .single();
 
 
@@ -86,24 +462,45 @@ document.addEventListener('DOMContentLoaded', async () => {
         error
       );
 
+
       if (welcome) {
+
         welcome.textContent =
           'No se pudo cargar el perfil.';
+
       }
+
 
       return null;
 
     }
 
 
+    currentProfile =
+      data;
+
+
     appointmentDuration =
-      Number(data.appointment_duration) || 50;
+      Number(
+        data.appointment_duration
+      ) || 50;
+
 
     appointmentBreak =
-      Number(data.appointment_break);
+      Number(
+        data.appointment_break
+      );
 
-    if (!Number.isInteger(appointmentBreak)) {
-      appointmentBreak = 10;
+
+    if (
+      !Number.isInteger(
+        appointmentBreak
+      )
+    ) {
+
+      appointmentBreak =
+        10;
+
     }
 
 
@@ -113,57 +510,859 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     if (professionalName) {
-      professionalName.textContent = name;
+
+      professionalName.textContent =
+        name;
+
     }
 
 
     if (welcome) {
+
       welcome.textContent =
         `Hola, ${name}.`;
+
     }
 
 
     const profileName =
-      document.getElementById('profileName');
+      document.getElementById(
+        'profileName'
+      );
+
 
     if (profileName) {
+
       profileName.textContent =
         data.display_name ||
         'Profesional';
+
     }
 
 
     const profileLicense =
-      document.getElementById('profileLicense');
+      document.getElementById(
+        'profileLicense'
+      );
+
 
     if (profileLicense) {
+
       profileLicense.textContent =
         data.license ||
         'No especificada';
+
     }
 
 
     const profileModality =
-      document.getElementById('profileModality');
+      document.getElementById(
+        'profileModality'
+      );
+
 
     if (profileModality) {
+
       profileModality.textContent =
         data.modality ||
         'No especificada';
+
     }
 
 
     const profileZone =
-      document.getElementById('profileZone');
+      document.getElementById(
+        'profileZone'
+      );
+
 
     if (profileZone) {
+
       profileZone.textContent =
         data.zone ||
         'No especificada';
+
     }
 
 
+    // ===================================================
+    // VOLCAR DATOS EN EL FORMULARIO
+    // ===================================================
+
+    setFieldValue(
+      'display_name',
+      data.display_name
+    );
+
+
+    setFieldValue(
+      'jurisdiction',
+      data.jurisdiction
+    );
+
+
+    setFieldValue(
+      'license',
+      data.license
+    );
+
+
+    setFieldValue(
+      'modality',
+      data.modality
+    );
+
+
+    setFieldValue(
+      'orientation',
+      data.orientation
+    );
+
+
+    setFieldValue(
+      'whatsapp',
+      data.whatsapp ??
+      data.public_whatsapp ??
+      ''
+    );
+
+
+    setFieldValue(
+      'bio',
+      data.bio
+    );
+
+
+    setCheckbox(
+      'is_public',
+      data.is_public === true
+    );
+
+
+    loadDynamicProfileFields(
+      data
+    );
+
+
+    updatePhotoPreview(
+      data.photo_url,
+      data.display_name
+    );
+
+
     return data;
+
+  }
+
+
+  // =====================================================
+  // GUARDAR PERFIL
+  // =====================================================
+
+  async function saveProfile(
+    event
+  ) {
+
+    event.preventDefault();
+
+
+    if (!profileForm) {
+      return;
+    }
+
+
+    const saveButton =
+      profileForm.querySelector(
+        'button[type="submit"]'
+      );
+
+
+    const displayName =
+      document.getElementById(
+        'display_name'
+      )?.value.trim();
+
+
+    const jurisdiction =
+      document.getElementById(
+        'jurisdiction'
+      )?.value || '';
+
+
+    const license =
+      document.getElementById(
+        'license'
+      )?.value.trim();
+
+
+    const modality =
+      document.getElementById(
+        'modality'
+      )?.value || '';
+
+
+    const orientation =
+      document.getElementById(
+        'orientation'
+      )?.value.trim();
+
+
+    const whatsapp =
+      document.getElementById(
+        'whatsapp'
+      )?.value.trim();
+
+
+    const bio =
+      document.getElementById(
+        'bio'
+      )?.value.trim();
+
+
+    const isPublic =
+      document.getElementById(
+        'is_public'
+      )?.checked === true;
+
+
+    const population =
+      getPopulationValues();
+
+
+    const otherLicenses =
+      getContainerValues(
+        'licensesContainer'
+      );
+
+
+    const locations =
+      getContainerValues(
+        'locationsContainer'
+      );
+
+
+    if (!displayName) {
+
+      showMessage(
+        'msg',
+        'Ingresá tu nombre profesional.',
+        true
+      );
+
+      return;
+
+    }
+
+
+    if (!license) {
+
+      showMessage(
+        'msg',
+        'Ingresá tu matrícula principal.',
+        true
+      );
+
+      return;
+
+    }
+
+
+    if (saveButton) {
+
+      saveButton.disabled =
+        true;
+
+      saveButton.textContent =
+        'Guardando…';
+
+    }
+
+
+    if (profileMessage) {
+
+      profileMessage.textContent =
+        '';
+
+      profileMessage.className =
+        'message';
+
+    }
+
+
+    try {
+
+      // -------------------------------------------------
+      // DATOS PRINCIPALES
+      // -------------------------------------------------
+
+      const updateData = {
+
+        display_name:
+          displayName,
+
+        jurisdiction:
+          jurisdiction || null,
+
+        license:
+          license,
+
+        modality:
+          modality || null,
+
+        orientation:
+          orientation || null,
+
+        population:
+          population.length
+            ? population
+            : null,
+
+        bio:
+          bio || null,
+
+        is_public:
+          isPublic
+
+      };
+
+
+      // -------------------------------------------------
+      // CAMPOS OPCIONALES
+      // -------------------------------------------------
+      //
+      // Solamente los agregamos si la columna existe
+      // actualmente en el perfil cargado.
+      //
+      // Esto evita romper el guardado si alguna de estas
+      // columnas todavía no existe en la tabla.
+      // -------------------------------------------------
+
+      if (
+        currentProfile &&
+        Object.prototype.hasOwnProperty.call(
+          currentProfile,
+          'whatsapp'
+        )
+      ) {
+
+        updateData.whatsapp =
+          whatsapp || null;
+
+      }
+
+
+      if (
+        currentProfile &&
+        Object.prototype.hasOwnProperty.call(
+          currentProfile,
+          'public_whatsapp'
+        )
+      ) {
+
+        updateData.public_whatsapp =
+          whatsapp || null;
+
+      }
+
+
+      if (
+        currentProfile &&
+        Object.prototype.hasOwnProperty.call(
+          currentProfile,
+          'other_licenses'
+        )
+      ) {
+
+        updateData.other_licenses =
+          otherLicenses.length
+            ? otherLicenses
+            : null;
+
+      }
+
+
+      if (
+        currentProfile &&
+        Object.prototype.hasOwnProperty.call(
+          currentProfile,
+          'locations'
+        )
+      ) {
+
+        updateData.locations =
+          locations.length
+            ? locations
+            : null;
+
+      }
+
+
+      if (
+        currentProfile &&
+        Object.prototype.hasOwnProperty.call(
+          currentProfile,
+          'attention_locations'
+        )
+      ) {
+
+        updateData.attention_locations =
+          locations.length
+            ? locations
+            : null;
+
+      }
+
+
+      if (
+        currentProfile &&
+        Object.prototype.hasOwnProperty.call(
+          currentProfile,
+          'updated_at'
+        )
+      ) {
+
+        updateData.updated_at =
+          new Date().toISOString();
+
+      }
+
+
+      // -------------------------------------------------
+      // FOTO
+      // -------------------------------------------------
+
+      const photoInput =
+        document.getElementById(
+          'photo'
+        );
+
+
+      const selectedPhoto =
+        photoInput?.files?.[0];
+
+
+      if (selectedPhoto) {
+
+        if (
+          selectedPhoto.size >
+          2 * 1024 * 1024
+        ) {
+
+          throw new Error(
+            'La foto no puede superar los 2 MB.'
+          );
+
+        }
+
+
+        const allowedTypes = [
+          'image/jpeg',
+          'image/png',
+          'image/webp'
+        ];
+
+
+        if (
+          !allowedTypes.includes(
+            selectedPhoto.type
+          )
+        ) {
+
+          throw new Error(
+            'La foto debe ser JPG, PNG o WEBP.'
+          );
+
+        }
+
+
+        /*
+         * Intentamos subir la foto al bucket
+         * profile-photos.
+         *
+         * Si el bucket no existe, mostramos el error
+         * sin borrar ni modificar los demás datos.
+         */
+
+        const extension =
+          selectedPhoto.name
+            .split('.')
+            .pop()
+            .toLowerCase();
+
+
+        const filePath =
+          `${user.id}/profile.${extension}`;
+
+
+        const {
+          error: uploadError
+        } = await sb
+          .storage
+          .from('profile-photos')
+          .upload(
+            filePath,
+            selectedPhoto,
+            {
+              upsert: true,
+              contentType:
+                selectedPhoto.type
+            }
+          );
+
+
+        if (uploadError) {
+
+          console.error(
+            'Error subiendo foto:',
+            uploadError
+          );
+
+
+          throw new Error(
+            'No se pudo subir la foto. Los demás datos todavía no fueron guardados.'
+          );
+
+        }
+
+
+        const {
+          data: publicUrlData
+        } = sb
+          .storage
+          .from('profile-photos')
+          .getPublicUrl(
+            filePath
+          );
+
+
+        if (
+          publicUrlData?.publicUrl
+        ) {
+
+          updateData.photo_url =
+            publicUrlData.publicUrl;
+
+        }
+
+      }
+
+
+      // -------------------------------------------------
+      // GUARDAR EN PROFILES
+      // -------------------------------------------------
+
+      const {
+        data: savedProfile,
+        error
+      } = await sb
+        .from('profiles')
+        .update(
+          updateData
+        )
+        .eq(
+          'id',
+          user.id
+        )
+        .select('*')
+        .single();
+
+
+      if (error) {
+
+        console.error(
+          'Error guardando perfil:',
+          error
+        );
+
+
+        throw new Error(
+          'No se pudieron guardar los datos del perfil.'
+        );
+
+      }
+
+
+      currentProfile =
+        savedProfile;
+
+
+      // -------------------------------------------------
+      // ACTUALIZAR INTERFAZ
+      // -------------------------------------------------
+
+      const savedName =
+        savedProfile.display_name ||
+        'Profesional';
+
+
+      if (professionalName) {
+
+        professionalName.textContent =
+          savedName;
+
+      }
+
+
+      if (welcome) {
+
+        welcome.textContent =
+          `Hola, ${savedName}.`;
+
+      }
+
+
+      updatePhotoPreview(
+        savedProfile.photo_url,
+        savedName
+      );
+
+
+      showMessage(
+        'msg',
+        'Perfil guardado correctamente.'
+      );
+
+
+      // -------------------------------------------------
+      // RECARGAR LOS DATOS DEL FORMULARIO
+      // -------------------------------------------------
+
+      await loadProfile();
+
+
+    } catch (error) {
+
+      console.error(
+        'Error guardando perfil:',
+        error
+      );
+
+
+      showMessage(
+        'msg',
+        error.message ||
+        'No se pudo guardar el perfil.',
+        true
+      );
+
+    } finally {
+
+      if (saveButton) {
+
+        saveButton.disabled =
+          false;
+
+        saveButton.textContent =
+          'Guardar cambios';
+
+      }
+
+    }
+
+  }
+
+
+  // =====================================================
+  // AGREGAR MATRÍCULA
+  // =====================================================
+
+  const addLicense =
+    document.getElementById(
+      'addLicense'
+    );
+
+
+  if (addLicense) {
+
+    addLicense.addEventListener(
+      'click',
+      () => {
+
+        addSimpleInput(
+          'licensesContainer'
+        );
+
+      }
+    );
+
+  }
+
+
+  // =====================================================
+  // AGREGAR ZONA
+  // =====================================================
+
+  const addLocation =
+    document.getElementById(
+      'addLocation'
+    );
+
+
+  if (addLocation) {
+
+    addLocation.addEventListener(
+      'click',
+      () => {
+
+        addSimpleInput(
+          'locationsContainer'
+        );
+
+      }
+    );
+
+  }
+
+
+  // =====================================================
+  // POBLACIÓN
+  // =====================================================
+
+  document
+    .querySelectorAll(
+      '.population-option'
+    )
+    .forEach(input => {
+
+      input.addEventListener(
+        'change',
+        () => {
+
+          const hidden =
+            document.getElementById(
+              'population'
+            );
+
+
+          if (hidden) {
+
+            hidden.value =
+              getPopulationValues()
+                .join(', ');
+
+          }
+
+        }
+      );
+
+    });
+
+
+  // =====================================================
+  // FORMULARIO DE PERFIL
+  // =====================================================
+
+  if (profileForm) {
+
+    profileForm.addEventListener(
+      'submit',
+      saveProfile
+    );
+
+  }
+
+
+  // =====================================================
+  // PREVISUALIZACIÓN DE FOTO
+  // =====================================================
+
+  const photoInput =
+    document.getElementById(
+      'photo'
+    );
+
+
+  if (photoInput) {
+
+    photoInput.addEventListener(
+      'change',
+      () => {
+
+        const file =
+          photoInput.files?.[0];
+
+
+        if (!file) {
+          return;
+        }
+
+
+        if (
+          file.size >
+          2 * 1024 * 1024
+        ) {
+
+          showMessage(
+            'msg',
+            'La foto no puede superar los 2 MB.',
+            true
+          );
+
+
+          photoInput.value =
+            '';
+
+          return;
+
+        }
+
+
+        const reader =
+          new FileReader();
+
+
+        reader.onload =
+          event => {
+
+            const preview =
+              document.getElementById(
+                'photoPreview'
+              );
+
+
+            if (!preview) {
+              return;
+            }
+
+
+            preview.innerHTML = '';
+
+
+            const image =
+              document.createElement(
+                'img'
+              );
+
+
+            image.src =
+              event.target.result;
+
+
+            image.alt =
+              'Vista previa';
+
+
+            image.style.cssText = `
+              width:100%;
+              height:100%;
+              object-fit:cover;
+              display:block;
+            `;
+
+
+            preview.appendChild(
+              image
+            );
+
+          };
+
+
+        reader.readAsDataURL(
+          file
+        );
+
+      }
+    );
 
   }
 
@@ -174,7 +1373,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function loadPaidSubscription() {
 
-    const { data, error } = await sb
+    const {
+      data,
+      error
+    } = await sb
       .from('professional_subscriptions')
       .select(`
         id,
@@ -208,15 +1410,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         error
       );
 
-      subscription = null;
-      isPaidPro = false;
+
+      subscription =
+        null;
+
+      isPaidPro =
+        false;
 
       return;
 
     }
 
 
-    subscription = data;
+    subscription =
+      data;
 
 
     isPaidPro =
@@ -235,6 +1442,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       'Suscripción paga:',
       subscription
     );
+
 
     console.log(
       '¿PRO pago?:',
@@ -271,7 +1479,9 @@ document.addEventListener('DOMContentLoaded', async () => {
           error
         );
 
-        isCourtesyPro = false;
+
+        isCourtesyPro =
+          false;
 
         return;
 
@@ -295,7 +1505,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         error
       );
 
-      isCourtesyPro = false;
+
+      isCourtesyPro =
+        false;
 
     }
 
@@ -497,24 +1709,30 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     if (!container) {
+
       container =
         document.getElementById(
           'subscriptionMessage'
         );
+
     }
 
 
     if (!container && subscriptionButton) {
+
       container =
         subscriptionButton.parentElement;
+
     }
 
 
     if (!container) {
+
       container =
         document.getElementById(
           'suscripcion'
         );
+
     }
 
 
@@ -547,7 +1765,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
       const box =
-        document.createElement('div');
+        document.createElement(
+          'div'
+        );
+
 
       box.id =
         'cancelSubscriptionBox';
@@ -580,7 +1801,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       `;
 
 
-      container.appendChild(box);
+      container.appendChild(
+        box
+      );
 
       return;
 
@@ -588,7 +1811,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     const box =
-      document.createElement('div');
+      document.createElement(
+        'div'
+      );
 
 
     box.id =
@@ -643,7 +1868,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     `;
 
 
-    container.appendChild(box);
+    container.appendChild(
+      box
+    );
 
 
     const cancelButton =
@@ -700,8 +1927,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (button) {
 
-      button.disabled = true;
-      button.textContent = 'Cancelando…';
+      button.disabled =
+        true;
+
+      button.textContent =
+        'Cancelando…';
 
     }
 
@@ -728,9 +1958,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
       if (error) {
+
         throw new Error(
           'No se pudo cancelar la suscripción.'
         );
+
       }
 
 
@@ -738,10 +1970,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         !data ||
         !data.success
       ) {
+
         throw new Error(
           data?.error ||
           'No se pudo cancelar la suscripción.'
         );
+
       }
 
 
@@ -761,6 +1995,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       await loadProfessionalInquiries();
 
       await loadAvailability();
+
 
     } catch (error) {
 
@@ -784,7 +2019,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (button) {
 
-        button.disabled = false;
+        button.disabled =
+          false;
+
         button.textContent =
           'Cancelar suscripción';
 
@@ -805,10 +2042,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-
-    // ---------------------------------------------------
-    // FREE
-    // ---------------------------------------------------
 
     if (!isPro) {
 
@@ -839,10 +2072,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     }
 
-
-    // ---------------------------------------------------
-    // CARGAR HORARIOS
-    // ---------------------------------------------------
 
     const {
       data,
@@ -896,10 +2125,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     }
 
-
-    // ---------------------------------------------------
-    // CARGAR BLOQUES SIN ATENCIÓN
-    // ---------------------------------------------------
 
     const {
       data: unavailableData,
@@ -977,10 +2202,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       unavailableData || [];
 
 
-    // ---------------------------------------------------
-    // INTERFAZ
-    // ---------------------------------------------------
-
     availabilityContent.innerHTML = `
 
       <div
@@ -1004,21 +2225,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             class="small muted"
             style="margin-top:6px;"
           >
-
             Configurá tus horarios habituales,
             la duración de las consultas y el tiempo
             de descanso entre pacientes.
-
           </p>
 
         </div>
 
       </div>
 
-
-      <!-- ========================================= -->
-      <!-- CONFIGURACIÓN DE TURNOS -->
-      <!-- ========================================= -->
 
       <div
         class="card"
@@ -1036,11 +2251,9 @@ document.addEventListener('DOMContentLoaded', async () => {
           class="small muted"
           style="margin-top:6px;"
         >
-
           Estas opciones se utilizarán para construir
           automáticamente los horarios disponibles
           para tus pacientes.
-
         </p>
 
 
@@ -1225,9 +2438,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         >
 
           <div class="small">
-
             Ejemplo
-
           </div>
 
           <strong
@@ -1237,20 +2448,14 @@ document.addEventListener('DOMContentLoaded', async () => {
               margin-top:4px;
             "
           >
-
             50 minutos de consulta + 10 minutos
             de descanso = turnos cada 60 minutos.
-
           </strong>
 
         </div>
 
       </div>
 
-
-      <!-- ========================================= -->
-      <!-- AGREGAR HORARIO HABITUAL -->
-      <!-- ========================================= -->
 
       <form
         id="availabilityForm"
@@ -1269,11 +2474,9 @@ document.addEventListener('DOMContentLoaded', async () => {
           class="small muted"
           style="margin-top:6px;"
         >
-
           Indicá cuándo atendés normalmente.
           Después podés agregar bloques en los que
           no querés recibir turnos.
-
         </p>
 
 
@@ -1451,10 +2654,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       </form>
 
 
-      <!-- ========================================= -->
-      <!-- HORARIOS CONFIGURADOS -->
-      <!-- ========================================= -->
-
       <div
         style="
           margin-bottom:28px;
@@ -1521,19 +2720,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                   const modalityLabel =
                     row.modality === 'presencial'
-
                       ? 'Presencial'
-
                       : row.modality === 'ambas'
-
                         ? 'Presencial y virtual'
-
                         : 'Virtual';
 
 
                   const zone =
                     row.zone
-                      ? escapeHTML(row.zone)
+                      ? escapeHTML(
+                          row.zone
+                        )
                       : '';
 
 
@@ -1545,17 +2742,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                         padding:18px;
                         margin-bottom:12px;
                         display:flex;
-                        justify-content:
-                          space-between;
+                        justify-content:space-between;
                         align-items:center;
                         gap:15px;
                         flex-wrap:wrap;
-                        opacity:
-                          ${
-                            row.is_active
-                              ? '1'
-                              : '.55'
-                          };
+                        opacity:${
+                          row.is_active
+                            ? '1'
+                            : '.55'
+                        };
                       "
                     >
 
@@ -1565,29 +2760,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                           ${escapeHTML(day)}
                         </strong>
 
-                        <div
-                          style="
-                            margin-top:5px;
-                          "
-                        >
+                        <div style="margin-top:5px;">
                           ${start} – ${end}
                         </div>
 
                         <div
                           class="small muted"
-                          style="
-                            margin-top:5px;
-                          "
+                          style="margin-top:5px;"
                         >
-
                           ${escapeHTML(modalityLabel)}
-
                           ${
                             zone
                               ? ` · ${zone}`
                               : ''
                           }
-
                         </div>
 
                       </div>
@@ -1612,13 +2798,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                           data-active="${row.is_active}"
                           style="font-size:12px;"
                         >
-
                           ${
                             row.is_active
                               ? 'Desactivar'
                               : 'Activar'
                           }
-
                         </button>
 
 
@@ -1636,9 +2820,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             color:#b91c1c;
                           "
                         >
-
                           🗑 Eliminar
-
                         </button>
 
                       </div>
@@ -1654,10 +2836,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       </div>
 
-
-      <!-- ========================================= -->
-      <!-- BLOQUES SIN ATENCIÓN -->
-      <!-- ========================================= -->
 
       <div
         class="card"
@@ -1675,11 +2853,9 @@ document.addEventListener('DOMContentLoaded', async () => {
           class="small muted"
           style="margin-top:6px;"
         >
-
           Podés bloquear períodos dentro de tus horarios
           habituales. Por ejemplo, si atendés de 08:00 a
           20:00, podés bloquear de 12:00 a 13:00 para almorzar.
-
         </p>
 
 
@@ -1817,9 +2993,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             class="btn secondary"
             style="margin-top:18px;"
           >
-
             + Agregar período sin atención
-
           </button>
 
 
@@ -1898,17 +3072,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                           padding:16px;
                           margin-bottom:10px;
                           display:flex;
-                          justify-content:
-                            space-between;
+                          justify-content:space-between;
                           align-items:center;
                           gap:12px;
                           flex-wrap:wrap;
-                          opacity:
-                            ${
-                              row.is_active
-                                ? '1'
-                                : '.55'
-                            };
+                          opacity:${
+                            row.is_active
+                              ? '1'
+                              : '.55'
+                          };
                         "
                       >
 
@@ -1923,9 +3095,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                               margin-top:4px;
                             "
                           >
-
                             ${start} – ${end}
-
                           </div>
 
                           <div
@@ -1934,9 +3104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                               margin-top:4px;
                             "
                           >
-
                             ${reason}
-
                           </div>
 
                         </div>
@@ -1961,13 +3129,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                             data-active="${row.is_active}"
                             style="font-size:12px;"
                           >
-
                             ${
                               row.is_active
                                 ? 'Desactivar'
                                 : 'Activar'
                             }
-
                           </button>
 
 
@@ -1985,9 +3151,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                               color:#b91c1c;
                             "
                           >
-
                             🗑 Eliminar
-
                           </button>
 
                         </div>
@@ -2027,10 +3191,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         'customAppointmentDuration'
       );
 
-
-    // ===================================================
-    // CONFIGURACIÓN DE DESCANSO
-    // ===================================================
 
     const breakSelect =
       document.getElementById(
@@ -2116,15 +3276,19 @@ document.addEventListener('DOMContentLoaded', async () => {
           ) {
 
             if (customDurationContainer) {
+
               customDurationContainer.style.display =
                 'block';
+
             }
 
           } else {
 
             if (customDurationContainer) {
+
               customDurationContainer.style.display =
                 'none';
+
             }
 
           }
@@ -2182,15 +3346,19 @@ document.addEventListener('DOMContentLoaded', async () => {
           ) {
 
             if (customBreakContainer) {
+
               customBreakContainer.style.display =
                 'block';
+
             }
 
           } else {
 
             if (customBreakContainer) {
+
               customBreakContainer.style.display =
                 'none';
+
             }
 
           }
@@ -2257,9 +3425,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         duration < 1 ||
         duration > 240
       ) {
-
         return;
-
       }
 
 
@@ -2268,9 +3434,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         breakMinutes < 0 ||
         breakMinutes > 120
       ) {
-
         return;
-
       }
 
 
@@ -2320,10 +3484,8 @@ document.addEventListener('DOMContentLoaded', async () => {
               settingsMessage.innerHTML = `
 
                 <div class="message error">
-
                   La duración debe ser un número entero
                   entre 1 y 240 minutos.
-
                 </div>
 
               `;
@@ -2346,10 +3508,8 @@ document.addEventListener('DOMContentLoaded', async () => {
               settingsMessage.innerHTML = `
 
                 <div class="message error">
-
                   El tiempo de descanso debe ser un número
                   entero entre 0 y 120 minutos.
-
                 </div>
 
               `;
@@ -2405,9 +3565,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               settingsMessage.innerHTML = `
 
                 <div class="message error">
-
                   No se pudo guardar la configuración.
-
                 </div>
 
               `;
@@ -2438,9 +3596,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             settingsMessage.innerHTML = `
 
               <div class="message success">
-
                 Configuración guardada correctamente.
-
               </div>
 
             `;
@@ -2518,16 +3674,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             );
 
 
-          if (!day || !start || !end) {
+          if (
+            !day ||
+            !start ||
+            !end
+          ) {
 
             if (message) {
 
               message.innerHTML = `
 
                 <div class="message error">
-
                   Completá el día y el horario.
-
                 </div>
 
               `;
@@ -2546,10 +3704,8 @@ document.addEventListener('DOMContentLoaded', async () => {
               message.innerHTML = `
 
                 <div class="message error">
-
                   La hora de finalización debe ser
                   posterior a la hora de inicio.
-
                 </div>
 
               `;
@@ -2569,8 +3725,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
           if (button) {
 
-            button.disabled = true;
-            button.textContent = 'Guardando…';
+            button.disabled =
+              true;
+
+            button.textContent =
+              'Guardando…';
 
           }
 
@@ -2618,9 +3777,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               message.innerHTML = `
 
                 <div class="message error">
-
                   No se pudo guardar el horario.
-
                 </div>
 
               `;
@@ -2630,7 +3787,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (button) {
 
-              button.disabled = false;
+              button.disabled =
+                false;
+
               button.textContent =
                 '+ Agregar horario';
 
@@ -2644,7 +3803,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           await loadAvailability();
 
         }
-
       );
 
     }
@@ -2699,16 +3857,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             );
 
 
-          if (!day || !start || !end) {
+          if (
+            !day ||
+            !start ||
+            !end
+          ) {
 
             if (message) {
 
               message.innerHTML = `
 
                 <div class="message error">
-
                   Completá el día y el horario.
-
                 </div>
 
               `;
@@ -2727,10 +3887,8 @@ document.addEventListener('DOMContentLoaded', async () => {
               message.innerHTML = `
 
                 <div class="message error">
-
                   La hora de finalización debe ser
                   posterior a la hora de inicio.
-
                 </div>
 
               `;
@@ -2750,7 +3908,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
           if (button) {
 
-            button.disabled = true;
+            button.disabled =
+              true;
+
             button.textContent =
               'Guardando…';
 
@@ -2800,10 +3960,8 @@ document.addEventListener('DOMContentLoaded', async () => {
               message.innerHTML = `
 
                 <div class="message error">
-
                   No se pudo guardar el período
                   de no atención.
-
                 </div>
 
               `;
@@ -2813,7 +3971,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (button) {
 
-              button.disabled = false;
+              button.disabled =
+                false;
 
               button.textContent =
                 '+ Agregar período sin atención';
@@ -2828,7 +3987,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           await loadAvailability();
 
         }
-
       );
 
     }
@@ -2862,7 +4020,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
 
-            button.disabled = true;
+            button.disabled =
+              true;
 
 
             const {
@@ -2896,7 +4055,9 @@ document.addEventListener('DOMContentLoaded', async () => {
               );
 
 
-              button.disabled = false;
+              button.disabled =
+                false;
+
 
               alert(
                 'No se pudo actualizar el horario.'
@@ -2910,7 +4071,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             await loadAvailability();
 
           }
-
         );
 
       });
@@ -2951,7 +4111,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
 
-            button.disabled = true;
+            button.disabled =
+              true;
+
             button.textContent =
               'Eliminando…';
 
@@ -2979,7 +4141,8 @@ document.addEventListener('DOMContentLoaded', async () => {
               );
 
 
-              button.disabled = false;
+              button.disabled =
+                false;
 
               button.textContent =
                 '🗑 Eliminar';
@@ -2997,14 +4160,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             await loadAvailability();
 
           }
-
         );
 
       });
 
 
     // ===================================================
-    // ACTIVAR / DESACTIVAR BLOQUES SIN ATENCIÓN
+    // ACTIVAR / DESACTIVAR BLOQUES
     // ===================================================
 
     availabilityContent
@@ -3031,7 +4193,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
 
-            button.disabled = true;
+            button.disabled =
+              true;
 
 
             const {
@@ -3065,7 +4228,9 @@ document.addEventListener('DOMContentLoaded', async () => {
               );
 
 
-              button.disabled = false;
+              button.disabled =
+                false;
+
 
               alert(
                 'No se pudo actualizar el bloque.'
@@ -3079,14 +4244,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             await loadAvailability();
 
           }
-
         );
 
       });
 
 
     // ===================================================
-    // ELIMINAR BLOQUE SIN ATENCIÓN
+    // ELIMINAR BLOQUE
     // ===================================================
 
     availabilityContent
@@ -3120,7 +4284,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
 
-            button.disabled = true;
+            button.disabled =
+              true;
 
             button.textContent =
               'Eliminando…';
@@ -3149,7 +4314,8 @@ document.addEventListener('DOMContentLoaded', async () => {
               );
 
 
-              button.disabled = false;
+              button.disabled =
+                false;
 
               button.textContent =
                 '🗑 Eliminar';
@@ -3167,7 +4333,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             await loadAvailability();
 
           }
-
         );
 
       });
@@ -3195,11 +4360,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         </strong>
 
         <p class="small">
-
           Recibí consultas de personas interesadas
           y gestioná sus datos de contacto desde
           tu panel profesional.
-
         </p>
 
         <a
@@ -3259,9 +4422,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       consultasContent.innerHTML = `
 
         <div class="message error">
-
           No se pudieron cargar las consultas.
-
         </div>
 
       `;
@@ -3283,11 +4444,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         </strong>
 
         <p class="small">
-
           Todavía no recibiste ninguna consulta.
           Cuando una persona interesada te contacte,
           aparecerá aquí.
-
         </p>
 
       `;
@@ -3446,8 +4605,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               <div
                 style="
                   display:flex;
-                  justify-content:
-                    space-between;
+                  justify-content:space-between;
                   align-items:flex-start;
                   gap:12px;
                   flex-wrap:wrap;
@@ -3467,9 +4625,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                         <div
                           class="small muted"
-                          style="
-                            margin-top:4px;
-                          "
+                          style="margin-top:4px;"
                         >
                           ${createdDate}
                         </div>
@@ -3507,9 +4663,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                       <div
                         class="small muted"
-                        style="
-                          margin-bottom:10px;
-                        "
+                        style="margin-bottom:10px;"
                       >
                         Datos de contacto
                       </div>
@@ -3550,8 +4704,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                       rel="noopener noreferrer"
                                       style="
                                         font-size:12px;
-                                        padding:
-                                          7px 11px;
+                                        padding:7px 11px;
                                       "
                                     >
                                       Abrir WhatsApp
@@ -3605,9 +4758,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     <div
                       class="message error"
-                      style="
-                        margin-top:20px;
-                      "
+                      style="margin-top:20px;"
                     >
                       Esta consulta no tiene
                       datos de contacto.
@@ -3631,10 +4782,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         grid-template-columns:
                           repeat(
                             auto-fit,
-                            minmax(
-                              180px,
-                              1fr
-                            )
+                            minmax(180px,1fr)
                           );
                         gap:12px;
                         margin-top:18px;
@@ -3727,20 +4875,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
 
                   `
-
                   : ''
               }
 
 
               ${
                 safeReason
-
                   ? `
 
                     <div
-                      style="
-                        margin-top:18px;
-                      "
+                      style="margin-top:18px;"
                     >
 
                       <div class="small muted">
@@ -3758,21 +4902,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
 
                   `
-
                   : ''
               }
 
 
-              <div
-                style="
-                  margin-top:18px;
-                "
-              >
+              <div style="margin-top:18px;">
 
                 <div class="small muted">
                   Mensaje
                 </div>
-
 
                 <div
                   style="
@@ -3798,7 +4936,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 ${
                   inquiry.status === 'new'
-
                     ? `
 
                       <button
@@ -3844,10 +4981,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         .join('');
 
 
-    // ===================================================
-    // MARCAR CONSULTA COMO RESPONDIDA
-    // ===================================================
-
     consultasContent
       .querySelectorAll(
         '.mark-inquiry-responded'
@@ -3867,7 +5000,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
 
-            button.disabled = true;
+            button.disabled =
+              true;
+
             button.textContent =
               'Guardando…';
 
@@ -3903,7 +5038,8 @@ document.addEventListener('DOMContentLoaded', async () => {
               );
 
 
-              button.disabled = false;
+              button.disabled =
+                false;
 
               button.textContent =
                 'Marcar como respondida';
@@ -3921,15 +5057,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             await loadProfessionalInquiries();
 
           }
-
         );
 
       });
 
-
-    // ===================================================
-    // ELIMINAR CONSULTA
-    // ===================================================
 
     consultasContent
       .querySelectorAll(
@@ -3963,7 +5094,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
 
-            button.disabled = true;
+            button.disabled =
+              true;
+
             button.textContent =
               'Eliminando…';
 
@@ -3991,7 +5124,8 @@ document.addEventListener('DOMContentLoaded', async () => {
               );
 
 
-              button.disabled = false;
+              button.disabled =
+                false;
 
               button.textContent =
                 '🗑 Eliminar consulta';
@@ -4009,7 +5143,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             await loadProfessionalInquiries();
 
           }
-
         );
 
       });
