@@ -4632,6 +4632,50 @@ async function loadAppointments() {
 
   }).join('');
 
+    container.querySelectorAll('[data-appointment-action]').forEach(button => {
+
+    button.addEventListener('click', async () => {
+
+      const appointmentId =
+        button.dataset.appointmentId;
+
+      const action =
+        button.dataset.appointmentAction;
+
+      const newStatus =
+        action === 'confirm'
+          ? 'confirmed'
+          : 'rejected';
+
+      button.disabled = true;
+
+      const {
+        error
+      } = await sb
+        .from('professional_appointments')
+        .update({
+          status: newStatus,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', appointmentId)
+        .eq('professional_id', user.id);
+
+      if (error) {
+        console.error('Error actualizando turno:', error);
+
+        button.disabled = false;
+
+        alert('No se pudo actualizar el turno.');
+
+        return;
+      }
+
+      await loadAppointments();
+
+    });
+
+  });
+
 }
   async function loadProfessionalInquiries() {
 
