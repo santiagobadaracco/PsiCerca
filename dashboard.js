@@ -376,12 +376,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function updatePlanUI() {
 
+    // ---------------------------------------------------
+    // BADGE
+    // ---------------------------------------------------
+
     if (planBadge) {
 
       if (isPro) {
 
-        planBadge.textContent =
-          'PRO';
+        if (
+          isCourtesyPro &&
+          !isPaidPro
+        ) {
+
+          planBadge.textContent =
+            'PRO DE CORTESÍA';
+
+        } else {
+
+          planBadge.textContent =
+            'PRO';
+
+        }
 
         planBadge.className =
           'badge success';
@@ -420,7 +436,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (subscriptionDescription) {
 
 
-      // PRO DE CORTESÍA
+      // -----------------------------------------------
+      // PRO DE CORTESÍA EXCLUSIVO
+      // -----------------------------------------------
 
       if (
         isCourtesyPro &&
@@ -428,12 +446,29 @@ document.addEventListener('DOMContentLoaded', async () => {
       ) {
 
         subscriptionDescription.textContent =
-          'Tenés acceso a PsiCerca PRO de cortesía.';
+          'Tenés acceso a PsiCerca PRO de cortesía, sin costo.';
 
       }
 
 
+      // -----------------------------------------------
+      // PRO PAGO + CORTESÍA
+      // -----------------------------------------------
+
+      else if (
+        isPaidPro &&
+        isCourtesyPro
+      ) {
+
+        subscriptionDescription.textContent =
+          'Tenés activo el plan PRO y además contás con un beneficio PRO de cortesía.';
+
+      }
+
+
+      // -----------------------------------------------
       // PRO PAGO CANCELADO
+      // -----------------------------------------------
 
       else if (
         isPaidPro &&
@@ -460,7 +495,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
 
+      // -----------------------------------------------
       // PRO PAGO NORMAL
+      // -----------------------------------------------
 
       else if (isPaidPro) {
 
@@ -470,20 +507,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
 
-      // PRO PAGO + CORTESÍA
-
-      else if (
-        isPro &&
-        isCourtesyPro
-      ) {
-
-        subscriptionDescription.textContent =
-          'Tenés activo el plan PRO.';
-
-      }
-
-
+      // -----------------------------------------------
       // FREE
+      // -----------------------------------------------
 
       else {
 
@@ -541,10 +567,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function renderCancellationUI() {
 
-    /*
-     * Eliminamos cualquier bloque anterior.
-     */
-
     const oldBox =
       document.getElementById(
         'cancelSubscriptionBox'
@@ -559,9 +581,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     /*
-     * Si el usuario tiene PRO exclusivamente
-     * por cortesía, NO mostramos ningún botón
-     * de cancelación.
+     * PRO exclusivamente de cortesía:
+     * no puede cancelar una suscripción
+     * porque no existe una suscripción paga.
      */
 
     if (
@@ -574,9 +596,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
-    /*
-     * Buscamos dónde insertar el bloque.
-     */
+    // ---------------------------------------------------
+    // BUSCAR CONTENEDOR
+    // ---------------------------------------------------
 
     let container =
       document.getElementById(
@@ -623,10 +645,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
-    /*
-     * Si no tiene PRO pago activo,
-     * no mostramos cancelación.
-     */
+    // ---------------------------------------------------
+    // SIN PRO PAGO
+    // ---------------------------------------------------
 
     if (!isPaidPro) {
 
