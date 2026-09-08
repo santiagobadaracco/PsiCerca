@@ -1,156 +1,100 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
+
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+  <title>Panel profesional — PsiCerca</title>
 
-  <title>Dashboard profesional | PsiCerca</title>
+  <link rel="stylesheet" href="styles.css">
 
-  <link rel="stylesheet" href="css/styles.css">
-
-  <style>
-    .dashboard-layout {
-      display: grid;
-      grid-template-columns: 240px 1fr;
-      gap: 24px;
-      max-width: 1200px;
-      margin: 40px auto;
-      padding: 0 20px;
-    }
-
-    .dashboard-sidebar {
-      background: #ffffff;
-      border-radius: 16px;
-      padding: 20px;
-      height: fit-content;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.06);
-    }
-
-    .dashboard-sidebar nav {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .dashboard-sidebar a {
-      display: block;
-      padding: 11px 13px;
-      border-radius: 10px;
-      text-decoration: none;
-      color: #333;
-      transition: 0.2s;
-    }
-
-    .dashboard-sidebar a:hover {
-      background: #f2f4f7;
-    }
-
-    .dashboard-main {
-      min-width: 0;
-    }
-
-    .dashboard-section {
-      margin-bottom: 30px;
-      scroll-margin-top: 30px;
-    }
-
-    .dashboard-section .card {
-      background: #ffffff;
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.06);
-    }
-
-    .dashboard-section h2 {
-      margin-top: 0;
-    }
-
-    .small {
-      font-size: 0.9rem;
-    }
-
-    .muted {
-      color: #6b7280;
-    }
-
-    .message {
-      margin-top: 12px;
-      padding: 10px 12px;
-      border-radius: 8px;
-    }
-
-    .message.success {
-      background: #ecfdf5;
-      color: #065f46;
-    }
-
-    .message.error {
-      background: #fef2f2;
-      color: #991b1b;
-    }
-
-    @media (max-width: 800px) {
-      .dashboard-layout {
-        grid-template-columns: 1fr;
-      }
-
-      .dashboard-sidebar nav {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
 </head>
 
 <body>
 
-  <!-- HEADER -->
-  <header class="site-header">
-    <div class="container header-inner">
+<header>
+  <div class="container nav">
 
-      <a href="index.html" class="logo">
-        PsiCerca
+    <a class="logo" href="index.html">
+      Psi<span>Cerca</span>
+    </a>
+
+    <nav class="navlinks">
+
+      <a href="profesionales.html">
+        Ver Profesionales
       </a>
 
-      <div class="header-actions">
+      <button
+        class="btn secondary"
+        type="button"
+        onclick="logout()"
+      >
+        Cerrar sesión
+      </button>
 
-        <span id="welcome">
-          Bienvenido
+    </nav>
+
+  </div>
+</header>
+
+
+<main class="dashboard">
+
+  <div class="container">
+
+    <!-- ========================================================
+         CABECERA
+    ========================================================= -->
+
+    <div class="dash-head">
+
+      <div>
+
+        <span class="eyebrow">
+          Área profesional
         </span>
 
-        <a
-          href="profesionales.html"
-          class="btn btn-secondary"
-        >
-          Ver profesionales
-        </a>
+        <h1>
+          Mi panel
+        </h1>
 
-        <button
-          id="logoutButton"
-          class="btn btn-secondary"
-          type="button"
+        <p
+          id="welcome"
+          class="small"
         >
-          Cerrar sesión
-        </button>
+          Cargando…
+        </p>
 
       </div>
+
+      <a
+        class="btn primary"
+        href="profesionales.html"
+      >
+        Ver Profesionales
+      </a>
+
     </div>
-  </header>
 
 
-  <!-- DASHBOARD -->
-  <div class="dashboard-layout">
+    <div class="dash-grid">
 
-    <!-- SIDEBAR -->
-    <aside class="dashboard-sidebar">
+      <!-- ======================================================
+           NAVEGACIÓN LATERAL
+      ======================================================= -->
 
-      <nav>
+      <aside class="side">
 
-        <a href="#inicio">
+        <a
+          class="active"
+          href="#inicio"
+        >
           Inicio
         </a>
 
@@ -160,10 +104,6 @@
 
         <a href="#consultas">
           Consultas
-        </a>
-
-        <a href="#turnos">
-          Mis turnos
         </a>
 
         <a href="#disponibilidad">
@@ -178,146 +118,278 @@
           Suscripción
         </a>
 
-      </nav>
-
-    </aside>
+      </aside>
 
 
-    <!-- MAIN -->
-    <main class="dashboard-main">
+      <!-- ======================================================
+           CONTENIDO PRINCIPAL
+      ======================================================= -->
+
+      <section class="panel">
 
 
-      <!-- ========================= -->
-      <!-- INICIO -->
-      <!-- ========================= -->
+        <!-- ====================================================
+             INICIO
+        ===================================================== -->
 
-      <section
-        id="inicio"
-        class="dashboard-section"
-      >
+        <div
+          id="inicio"
+          style="margin-bottom:40px;"
+        >
 
-        <div class="card">
+          <h2>
+            Inicio
+          </h2>
 
-          <h1>
-            Hola, <span id="professionalName">profesional</span>
-          </h1>
-
-          <p>
-            Este es tu panel profesional de PsiCerca.
+          <p class="small">
+            Acá vas a encontrar un resumen de tu actividad en PsiCerca.
           </p>
 
+
+          <!-- ESTADO DE SUSCRIPCIÓN -->
+
           <div
-            id="planBadge"
-            class="plan-badge"
-          ></div>
+            id="subscriptionCard"
+            style="
+              margin-top:24px;
+              padding:22px;
+              border:1px solid var(--line);
+              border-radius:16px;
+              background:var(--surface);
+            "
+          >
+
+            <div
+              style="
+                display:flex;
+                justify-content:space-between;
+                align-items:flex-start;
+                gap:20px;
+                flex-wrap:wrap;
+              "
+            >
+
+              <div>
+
+                <span
+                  id="subscriptionLabel"
+                  class="eyebrow"
+                >
+                  Suscripción
+                </span>
+
+                <h3
+                  id="subscriptionTitle"
+                  style="margin:6px 0;"
+                >
+                  Cargando…
+                </h3>
+
+                <p
+                  id="subscriptionDescription"
+                  class="small"
+                  style="margin:0;"
+                >
+                  Consultando el estado de tu cuenta.
+                </p>
+
+              </div>
+
+              <a
+                id="subscriptionButton"
+                class="btn secondary"
+                href="#suscripcion"
+              >
+                Ver suscripción
+              </a>
+
+            </div>
+
+          </div>
+
+
+          <!-- RESUMEN -->
+
+          <div
+            style="
+              display:grid;
+              grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+              gap:14px;
+              margin-top:20px;
+            "
+          >
+
+            <div
+              style="
+                padding:20px;
+                border:1px solid var(--line);
+                border-radius:14px;
+              "
+            >
+
+              <div class="small">
+                Visitas al perfil
+              </div>
+
+              <strong
+                id="dashboardViews"
+                style="font-size:28px;"
+              >
+                —
+              </strong>
+
+            </div>
+
+
+            <div
+              style="
+                padding:20px;
+                border:1px solid var(--line);
+                border-radius:14px;
+              "
+            >
+
+              <div class="small">
+                Apariciones en búsquedas
+              </div>
+
+              <strong
+                id="dashboardSearches"
+                style="font-size:28px;"
+              >
+                —
+              </strong>
+
+            </div>
+
+
+            <div
+              style="
+                padding:20px;
+                border:1px solid var(--line);
+                border-radius:14px;
+              "
+            >
+
+              <div class="small">
+                Consultas recibidas
+              </div>
+
+              <strong
+                id="dashboardInquiries"
+                style="font-size:28px;"
+              >
+                —
+              </strong>
+
+            </div>
+
+          </div>
 
         </div>
 
-      </section>
 
+        <!-- ====================================================
+             MI PERFIL
+        ===================================================== -->
 
-      <!-- ========================= -->
-      <!-- PERFIL -->
-      <!-- ========================= -->
-
-      <section
-        id="perfil"
-        class="dashboard-section"
-      >
-
-        <div class="card">
+        <div
+          id="perfil"
+          style="
+            padding-top:20px;
+            margin-bottom:40px;
+          "
+        >
 
           <h2>
-            Mi perfil
+            Mi perfil profesional
           </h2>
 
-          <form id="profileForm">
+          <p class="small">
+            Completá tu información. Solo se mostrará públicamente cuando actives “Publicar perfil”.
+          </p>
 
-            <div class="form-group">
 
-              <label for="displayName">
+          <form
+            id="profileForm"
+            class="profile-form"
+          >
+
+
+            <!-- FOTO -->
+
+            <div class="field span-2">
+
+              <label for="photo">
+                Foto de perfil
+              </label>
+
+              <div class="photo-upload">
+
+                <div
+                  id="photoPreview"
+                  class="avatar"
+                  style="overflow:hidden;"
+                >
+                  PS
+                </div>
+
+                <div>
+
+                  <input
+                    id="photo"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                  >
+
+                  <p class="small">
+                    JPG, PNG o WEBP · Máximo 2 MB
+                  </p>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <!-- NOMBRE -->
+
+            <div class="field">
+
+              <label for="display_name">
                 Nombre profesional
               </label>
 
               <input
+                id="display_name"
                 type="text"
-                id="displayName"
-                name="displayName"
+                required
               >
 
             </div>
 
 
-            <div class="form-group">
+            <!-- JURISDICCIÓN PRINCIPAL -->
 
-              <label for="license">
-                Matrícula
-              </label>
-
-              <input
-                type="text"
-                id="license"
-                name="license"
-              >
-
-            </div>
-
-
-            <div class="form-group">
+            <div class="field">
 
               <label for="jurisdiction">
-                Jurisdicción
+                Jurisdicción principal
               </label>
 
-              <input
-                type="text"
-                id="jurisdiction"
-                name="jurisdiction"
-              >
+              <select id="jurisdiction">
 
-            </div>
-
-
-            <div class="form-group">
-
-              <label for="zone">
-                Zona
-              </label>
-
-              <input
-                type="text"
-                id="zone"
-                name="zone"
-              >
-
-            </div>
-
-
-            <div class="form-group">
-
-              <label for="modality">
-                Modalidad
-              </label>
-
-              <select
-                id="modality"
-                name="modality"
-              >
-
-                <option value="">
-                  Seleccionar
+                <option value="Ciudad de Buenos Aires">
+                  Ciudad de Buenos Aires
                 </option>
 
-                <option value="virtual">
-                  Virtual
+                <option value="Provincia de Buenos Aires">
+                  Provincia de Buenos Aires
                 </option>
 
-                <option value="presencial">
-                  Presencial
-                </option>
-
-                <option value="virtual_presencial">
-                  Virtual y presencial
+                <option value="Otra">
+                  Otra
                 </option>
 
               </select>
@@ -325,292 +397,1047 @@
             </div>
 
 
-            <div class="form-group">
+            <!-- MATRÍCULA PRINCIPAL -->
+
+            <div class="field">
+
+              <label for="license">
+                Matrícula principal
+              </label>
+
+              <input
+                id="license"
+                type="text"
+                required
+              >
+
+            </div>
+
+
+            <!-- MATRÍCULAS -->
+
+            <div class="field span-2">
+
+              <label>
+                Otras matrículas
+              </label>
+
+              <p class="small">
+                Si tenés matrícula en otra jurisdicción, podés agregarla.
+              </p>
+
+              <div id="licensesContainer"></div>
+
+              <button
+                id="addLicense"
+                class="btn secondary"
+                type="button"
+              >
+                + Agregar matrícula
+              </button>
+
+            </div>
+
+
+            <!-- MODALIDAD -->
+
+            <div class="field">
+
+              <label for="modality">
+                Modalidad
+              </label>
+
+              <select id="modality">
+
+                <option value="">
+                  Seleccionar
+                </option>
+
+                <option value="Presencial y online">
+                  Presencial y online
+                </option>
+
+                <option value="Solo online">
+                  Solo online
+                </option>
+
+                <option value="Solo presencial">
+                  Solo presencial
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <!-- ZONAS -->
+
+            <div class="field span-2">
+
+              <label>
+                Zonas de atención presencial
+              </label>
+
+              <p class="small">
+                Seleccioná dónde atendés presencialmente. Podés agregar más de una zona.
+              </p>
+
+              <div id="locationsContainer"></div>
+
+              <button
+                id="addLocation"
+                class="btn secondary"
+                type="button"
+              >
+                + Agregar zona de atención
+              </button>
+
+            </div>
+
+
+            <!-- POBLACIÓN -->
+
+            <div class="field span-2">
+
+              <label>
+                Población
+              </label>
+
+              <input
+                id="population"
+                type="hidden"
+              >
+
+              <div class="population-options">
+
+                <label class="check">
+                  <input
+                    type="checkbox"
+                    class="population-option"
+                    value="Niños"
+                  >
+                  <span>Niños</span>
+                </label>
+
+                <label class="check">
+                  <input
+                    type="checkbox"
+                    class="population-option"
+                    value="Adolescentes"
+                  >
+                  <span>Adolescentes</span>
+                </label>
+
+                <label class="check">
+                  <input
+                    type="checkbox"
+                    class="population-option"
+                    value="Adultos"
+                  >
+                  <span>Adultos</span>
+                </label>
+
+                <label class="check">
+                  <input
+                    type="checkbox"
+                    class="population-option"
+                    value="Adultos mayores"
+                  >
+                  <span>Adultos mayores</span>
+                </label>
+
+                <label class="check">
+                  <input
+                    type="checkbox"
+                    class="population-option"
+                    value="Parejas"
+                  >
+                  <span>Parejas</span>
+                </label>
+
+                <label class="check">
+                  <input
+                    type="checkbox"
+                    class="population-option"
+                    value="Familias"
+                  >
+                  <span>Familias</span>
+                </label>
+
+              </div>
+
+              <p class="small">
+                Podés seleccionar más de una opción.
+              </p>
+
+            </div>
+
+
+            <!-- ORIENTACIÓN -->
+
+            <div class="field">
 
               <label for="orientation">
                 Orientación
               </label>
 
               <input
-                type="text"
                 id="orientation"
-                name="orientation"
+                type="text"
+                placeholder="Ej. Psicoanálisis"
               >
 
             </div>
 
 
-            <div class="form-group">
+            <!-- WHATSAPP -->
 
-              <label>
-                Población
-              </label>
-
-              <div id="populationContainer"></div>
-
-            </div>
-
-
-            <div class="form-group">
+            <div class="field">
 
               <label for="whatsapp">
-                WhatsApp
+                WhatsApp público (opcional)
               </label>
 
               <input
-                type="text"
                 id="whatsapp"
-                name="whatsapp"
+                type="tel"
+                placeholder="Ej. 5491123456789"
               >
 
             </div>
 
 
-            <div class="form-group">
+            <!-- BIO -->
+
+            <div class="field span-2">
 
               <label for="bio">
-                Descripción profesional
+                Presentación
               </label>
 
               <textarea
                 id="bio"
-                name="bio"
-                rows="6"
+                maxlength="1000"
+                placeholder="Contá brevemente sobre tu práctica profesional."
               ></textarea>
 
             </div>
 
 
-            <div class="form-group">
+            <!-- PUBLICAR -->
 
-              <label>
-                Foto de perfil
+            <div class="field span-2">
+
+              <label class="check">
+
+                <input
+                  id="is_public"
+                  type="checkbox"
+                >
+
+                <span>
+                  <strong>Publicar perfil</strong>
+                  <br>
+                  Al activarlo, tu perfil podrá aparecer en el directorio público.
+                </span>
+
               </label>
 
-              <input
-                type="file"
-                id="photo"
-                accept="image/*"
+            </div>
+
+
+            <!-- GUARDAR -->
+
+            <div class="span-2">
+
+              <button
+                class="btn primary"
+                type="submit"
               >
+                Guardar cambios
+              </button>
 
               <div
-                id="photoPreview"
-                style="margin-top: 12px;"
+                id="msg"
+                class="message"
               ></div>
 
             </div>
 
 
-            <div class="form-group">
+            <!-- ELIMINAR CUENTA -->
 
-              <label>
-                <input
-                  type="checkbox"
-                  id="isPublic"
-                  name="isPublic"
-                >
+            <div
+              class="span-2"
+              style="
+                margin-top:32px;
+                padding-top:24px;
+                border-top:1px solid var(--line);
+              "
+            >
 
-                Mostrar mi perfil públicamente
+              <h3>
+                Eliminar perfil y cuenta
+              </h3>
 
-              </label>
+              <p class="small">
+                Esta acción eliminará permanentemente tu cuenta y todos los datos asociados a tu perfil profesional.
+                No se puede deshacer.
+              </p>
+
+              <button
+                id="deleteAccount"
+                class="btn secondary"
+                type="button"
+                style="
+                  margin-top:10px;
+                  border-color:#b91c1c;
+                  color:#b91c1c;
+                "
+              >
+                Eliminar mi cuenta
+              </button>
+
+              <div
+                id="deleteAccountMsg"
+                class="message"
+              ></div>
 
             </div>
 
-
-            <button
-              type="submit"
-              class="btn btn-primary"
-            >
-              Guardar perfil
-            </button>
-
-
-            <div id="msg"></div>
 
           </form>
 
         </div>
 
-      </section>
 
+        <!-- ====================================================
+             CONSULTAS
+        ===================================================== -->
 
-      <!-- ========================= -->
-      <!-- CONSULTAS -->
-      <!-- ========================= -->
-
-      <section
-        id="consultas"
-        class="dashboard-section"
-      >
-
-        <div class="card">
+        <div
+          id="consultas"
+          style="
+            padding-top:20px;
+            margin-bottom:40px;
+          "
+        >
 
           <h2>
             Consultas
           </h2>
 
-          <p class="small muted">
-            Acá vas a encontrar las consultas realizadas por
-            personas interesadas en tus servicios.
+          <p class="small">
+            Gestioná las consultas que recibas de personas interesadas en comenzar un proceso.
           </p>
 
-          <div id="consultasContent">
-            Cargando consultas…
+          <div
+            id="consultasContent"
+            style="
+              margin-top:20px;
+              padding:24px;
+              border:1px solid var(--line);
+              border-radius:14px;
+            "
+          >
+
+            <strong>
+              🔒 Disponible con PsiCerca PRO
+            </strong>
+
+            <p class="small">
+              Recibí consultas directamente dentro de PsiCerca y organizalas desde tu panel profesional.
+            </p>
+
+            <a
+              class="btn primary"
+              href="#suscripcion"
+            >
+              Conocer PsiCerca PRO
+            </a>
+
           </div>
 
         </div>
 
-      </section>
 
+        <!-- ====================================================
+             DISPONIBILIDAD
+        ===================================================== -->
 
-      <!-- ========================= -->
-      <!-- MIS TURNOS -->
-      <!-- ========================= -->
-
-      <section
-        id="turnos"
-        class="dashboard-section"
-      >
-
-        <div class="card">
-
-          <h2>
-            📅 Mis turnos
-          </h2>
-
-          <p class="small muted">
-            Acá vas a encontrar las solicitudes de turno
-            realizadas por tus pacientes.
-          </p>
-
-          <div id="appointmentsContent">
-            Cargando turnos…
-          </div>
-
-        </div>
-
-      </section>
-
-
-      <!-- ========================= -->
-      <!-- DISPONIBILIDAD -->
-      <!-- ========================= -->
-
-      <section
-        id="disponibilidad"
-        class="dashboard-section"
-      >
-
-        <div class="card">
+        <div
+          id="disponibilidad"
+          style="
+            padding-top:20px;
+            margin-bottom:40px;
+          "
+        >
 
           <h2>
             Disponibilidad
           </h2>
 
-          <div id="availabilityContent">
-            Cargando disponibilidad…
+          <p class="small">
+            Indicá si actualmente estás tomando pacientes y qué modalidad de atención ofrecés.
+          </p>
+
+          <div
+            id="availabilityContent"
+            style="
+              margin-top:20px;
+              padding:24px;
+              border:1px solid var(--line);
+              border-radius:14px;
+            "
+          >
+
+            <strong>
+              🔒 Disponible con PsiCerca PRO
+            </strong>
+
+            <p class="small">
+              Mostrá tu disponibilidad para que las personas puedan saber cuándo tiene sentido contactarte.
+            </p>
+
+            <a
+              class="btn primary"
+              href="#suscripcion"
+            >
+              Conocer PsiCerca PRO
+            </a>
+
           </div>
 
         </div>
 
-      </section>
 
+        <!-- ====================================================
+             ESTADÍSTICAS
+        ===================================================== -->
 
-      <!-- ========================= -->
-      <!-- ESTADÍSTICAS -->
-      <!-- ========================= -->
-
-      <section
-        id="estadisticas"
-        class="dashboard-section"
-      >
-
-        <div class="card">
+        <div
+          id="estadisticas"
+          style="
+            padding-top:20px;
+            margin-bottom:40px;
+          "
+        >
 
           <h2>
             Estadísticas
           </h2>
 
-          <div id="statisticsContent">
+          <p class="small">
+            Conocé cómo está funcionando tu perfil dentro de PsiCerca.
+          </p>
 
-            <p class="muted">
-              Próximamente vas a poder consultar estadísticas
-              sobre tu actividad en PsiCerca.
+          <div
+            id="statisticsContent"
+            style="
+              margin-top:20px;
+              padding:24px;
+              border:1px solid var(--line);
+              border-radius:14px;
+            "
+          >
+
+            <strong>
+              🔒 Disponible con PsiCerca PRO
+            </strong>
+
+            <p class="small">
+              Accedé a visitas, apariciones en búsquedas, consultas y otras métricas de tu perfil.
             </p>
+
+            <a
+              class="btn primary"
+              href="#suscripcion"
+            >
+              Conocer PsiCerca PRO
+            </a>
 
           </div>
 
         </div>
 
-      </section>
 
+        <!-- ====================================================
+             SUSCRIPCIÓN
+        ===================================================== -->
 
-      <!-- ========================= -->
-      <!-- SUSCRIPCIÓN -->
-      <!-- ========================= -->
-
-      <section
-        id="suscripcion"
-        class="dashboard-section"
-      >
-
-        <div class="card">
+        <div
+          id="suscripcion"
+          style="
+            padding-top:20px;
+            margin-bottom:40px;
+          "
+        >
 
           <h2>
             Suscripción
           </h2>
 
-          <h3 id="subscriptionTitle">
-            Cargando…
-          </h3>
-
-          <p id="subscriptionDescription">
-            Cargando información de tu suscripción…
+          <p class="small">
+            Elegí el plan que mejor se adapte a tu presencia profesional en PsiCerca.
           </p>
 
+
+          <!-- ==================================================
+               PLANES
+          =================================================== -->
+
           <div
-            id="subscriptionLabel"
-            class="plan-badge"
-          ></div>
+            style="
+              display:grid;
+              grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+              gap:20px;
+              margin-top:24px;
+            "
+          >
+
+
+            <!-- FREE -->
+
+            <div
+              style="
+                padding:26px;
+                border:1px solid var(--line);
+                border-radius:18px;
+                background:var(--surface);
+              "
+            >
+
+              <span class="eyebrow">
+                PLAN ACTUAL
+              </span>
+
+              <h3
+                style="
+                  margin:8px 0 4px;
+                  font-size:24px;
+                "
+              >
+                PsiCerca FREE
+              </h3>
+
+              <p
+                class="small"
+                style="margin-bottom:20px;"
+              >
+                Tu perfil profesional básico dentro de PsiCerca.
+              </p>
+
+              <div
+                style="
+                  font-size:28px;
+                  font-weight:700;
+                  margin-bottom:22px;
+                "
+              >
+                Gratis
+              </div>
+
+              <div style="margin-bottom:20px;">
+
+                <p style="margin:10px 0;">
+                  ✓ Perfil profesional
+                </p>
+
+                <p style="margin:10px 0;">
+                  ✓ Matrícula y jurisdicción
+                </p>
+
+                <p style="margin:10px 0;">
+                  ✓ Orientación y población
+                </p>
+
+                <p style="margin:10px 0;">
+                  ✓ Modalidad de atención
+                </p>
+
+                <p style="margin:10px 0;">
+                  ✓ Ubicación
+                </p>
+
+                <p style="margin:10px 0;">
+                  ✓ Foto y presentación
+                </p>
+
+                <p style="margin:10px 0;">
+                  ✓ Contacto privado mediante PsiCerca
+                </p>
+
+                <p style="margin:10px 0;">
+                  ✓ Aparición en el directorio
+                </p>
+
+              </div>
+
+              <div
+                style="
+                  padding:12px;
+                  border-radius:10px;
+                  background:var(--background);
+                "
+              >
+
+                <span class="small">
+                  Este es tu plan actual.
+                </span>
+
+              </div>
+
+            </div>
+
+
+            <!-- PRO -->
+
+            <div
+              style="
+                position:relative;
+                padding:28px;
+                border:2px solid var(--line);
+                border-radius:18px;
+                background:var(--surface);
+                box-shadow:0 8px 30px rgba(0,0,0,.06);
+              "
+            >
+
+              <div
+                style="
+                  position:absolute;
+                  top:-13px;
+                  left:24px;
+                  padding:5px 12px;
+                  border-radius:999px;
+                  background:var(--text);
+                  color:var(--surface);
+                  font-size:12px;
+                  font-weight:700;
+                  letter-spacing:.04em;
+                "
+              >
+                ⭐ RECOMENDADO
+              </div>
+
+
+              <span class="eyebrow">
+                PSI CERCA PRO
+              </span>
+
+              <h3
+                style="
+                  margin:8px 0 4px;
+                  font-size:26px;
+                "
+              >
+                PsiCerca PRO
+              </h3>
+
+              <p
+                class="small"
+                style="margin-bottom:20px;"
+              >
+                Más herramientas para gestionar y mejorar tu presencia en PsiCerca.
+              </p>
+
+
+              <div
+                style="
+                  display:flex;
+                  align-items:baseline;
+                  gap:5px;
+                  margin-bottom:22px;
+                "
+              >
+
+                <span
+                  style="
+                    font-size:34px;
+                    font-weight:800;
+                  "
+                >
+                  $15.000
+                </span>
+
+                <span class="small">
+                  / mes
+                </span>
+
+              </div>
+
+
+              <div style="margin-bottom:24px;">
+
+                <p style="margin:11px 0;">
+                  ⭐ Mayor visibilidad dentro de PsiCerca
+                </p>
+
+                <p style="margin:11px 0;">
+                  📊 Estadísticas de tu perfil
+                </p>
+
+                <p style="margin:11px 0;">
+                  📩 Consultas dentro de PsiCerca
+                </p>
+
+                <p style="margin:11px 0;">
+                  🗓️ Gestión de disponibilidad
+                </p>
+
+                <p style="margin:11px 0;">
+                  👤 Perfil profesional enriquecido
+                </p>
+
+                <p style="margin:11px 0;">
+                  🧠 Mayor presencia en recomendaciones
+                </p>
+
+                <p style="margin:11px 0;">
+                  ⭐ Distintivo PRO en tu perfil
+                </p>
+
+              </div>
+
+
+              <button
+                id="upgradeProButton"
+                class="btn primary"
+                type="button"
+                style="
+                  width:100%;
+                  padding:13px 18px;
+                  font-size:16px;
+                "
+              >
+                Contratar PsiCerca PRO
+              </button>
+
+
+              <p
+                class="small"
+                style="
+                  margin-top:14px;
+                  text-align:center;
+                "
+              >
+                Contratación online próximamente disponible.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <!-- ==================================================
+               COMPARACIÓN
+          =================================================== -->
+
+          <div
+            style="
+              margin-top:28px;
+              padding:24px;
+              border:1px solid var(--line);
+              border-radius:18px;
+            "
+          >
+
+            <h3>
+              ¿Qué incluye PsiCerca PRO?
+            </h3>
+
+            <p class="small">
+              PRO agrega herramientas de visibilidad, gestión y estadísticas sobre la presencia de tu perfil.
+            </p>
+
+
+            <div
+              style="
+                display:grid;
+                grid-template-columns:1fr auto auto;
+                gap:0;
+                margin-top:20px;
+                border-top:1px solid var(--line);
+              "
+            >
+
+              <div
+                style="
+                  padding:13px 8px;
+                  font-weight:600;
+                  border-bottom:1px solid var(--line);
+                "
+              >
+                Función
+              </div>
+
+              <div
+                style="
+                  padding:13px 8px;
+                  font-weight:600;
+                  text-align:center;
+                  border-bottom:1px solid var(--line);
+                "
+              >
+                FREE
+              </div>
+
+              <div
+                style="
+                  padding:13px 8px;
+                  font-weight:600;
+                  text-align:center;
+                  border-bottom:1px solid var(--line);
+                "
+              >
+                PRO
+              </div>
+
+
+              <div
+                style="
+                  padding:13px 8px;
+                  border-bottom:1px solid var(--line);
+                "
+              >
+                Perfil profesional
+              </div>
+
+              <div
+                style="
+                  padding:13px 8px;
+                  text-align:center;
+                  border-bottom:1px solid var(--line);
+                "
+              >
+                ✓
+              </div>
+
+              <div
+                style="
+                  padding:13px 8px;
+                  text-align:center;
+                  border-bottom:1px solid var(--line);
+                "
+              >
+                ✓
+              </div>
+
+
+              <div
+                style="
+                  padding:13px 8px;
+                  border-bottom:1px solid var(--line);
+                "
+              >
+                Aparición en búsquedas
+              </div>
+
+              <div
+                style="
+                  padding:13px 8px;
+                  text-align:center;
+                  border-bottom:1px solid var(--line);
+                "
+              >
+                ✓
+              </div>
+
+              <div
+                style="
+                  padding:13px 8px;
+                  text-align:center;
+                  border-bottom:1px solid var(--line);
+                "
+              >
+                ✓
+              </div>
+
+
+              <div
+                style="
+                  padding:13px 8px;
+                  border-bottom:1px solid var(--line);
+                "
+              >
+                Mayor visibilidad
+              </div>
+
+              <div
+                style="
+                  padding:13px 8px;
+                  text-align:center;
+                  border-bottom:1px solid var(--line);
+                "
+              >
+                —
+              </div>
+
+              <div
+                style="
+                  padding:13px 8px;
+                  text-align:center;
+                  border-bottom:1px solid var(--line);
+                "
+              >
+                ✓
+              </div>
+
+
+              <div
+                style="
+                  padding:13px 8px;
+                  border-bottom:1px solid var(--line);
+                "
+              >
+                Estadísticas
+              </div>
+
+              <div
+                style="
+                  padding:13px 8px;
+                  text-align:center;
+                  border-bottom:1px solid var(--line);
+                "
+              >
+                —
+              </div>
+
+              <div
+                style="
+                  padding:13px 8px;
+                  text-align:center;
+                  border-bottom:1px solid var(--line);
+                "
+              >
+                ✓
+              </div>
+
+
+              <div
+                style="
+                  padding:13px 8px;
+                  border-bottom:1px solid var(--line);
+                "
+              >
+                Consultas internas
+              </div>
+
+              <div
+                style="
+                  padding:13px 8px;
+                  text-align:center;
+                  border-bottom:1px solid var(--line);
+                "
+              >
+                —
+              </div>
+
+              <div
+                style="
+                  padding:13px 8px;
+                  text-align:center;
+                  border-bottom:1px solid var(--line);
+                "
+              >
+                ✓
+              </div>
+
+
+              <div
+                style="
+                  padding:13px 8px;
+                "
+              >
+                Disponibilidad
+              </div>
+
+              <div
+                style="
+                  padding:13px 8px;
+                  text-align:center;
+                "
+              >
+                —
+              </div>
+
+              <div
+                style="
+                  padding:13px 8px;
+                  text-align:center;
+                "
+              >
+                ✓
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- ==================================================
+               ACLARACIÓN
+          =================================================== -->
+
+          <div
+            style="
+              margin-top:20px;
+              padding:18px;
+              border:1px solid var(--line);
+              border-radius:14px;
+            "
+          >
+
+            <strong>
+              Importante
+            </strong>
+
+            <p
+              class="small"
+              style="margin-bottom:0;"
+            >
+              PsiCerca PRO es un servicio de la plataforma orientado a
+              herramientas de visibilidad y gestión. La contratación de PRO
+              no implica certificación, validación de competencias profesionales
+              ni superioridad clínica respecto de otros profesionales.
+            </p>
+
+          </div>
+
+
+          <!-- ==================================================
+               GESTIÓN DE SUSCRIPCIÓN
+          =================================================== -->
 
           <div
             id="subscriptionContent"
-            style="margin-top: 20px;"
-          >
-            Cargando suscripción…
-          </div>
+            style="
+              margin-top:20px;
+            "
+          ></div>
 
-          <button
-            id="subscriptionButton"
-            type="button"
-            class="btn btn-primary"
-            style="margin-top: 20px;"
-          >
-            Cargando…
-          </button>
+
+          <!-- MENSAJE DE CONTRATACIÓN -->
 
           <div
             id="subscriptionMessage"
-            style="margin-top: 12px;"
+            class="message"
+            style="margin-top:16px;"
           ></div>
 
         </div>
 
+
       </section>
 
-
-    </main>
+    </div>
 
   </div>
 
+</main>
 
-  <!-- SUPABASE -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <script src="js/config.js"></script>
-  <script src="js/supabase.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/dashboard.js"></script>
+<script src="dashboard.js"></script>
 
 </body>
 </html>
