@@ -659,375 +659,397 @@ document.addEventListener('DOMContentLoaded', async () => {
   // GUARDAR PERFIL
   // =====================================================
 
-  async function saveProfile(
-    event
-  ) {
+ async function saveProfile(event) {
 
-    event.preventDefault();
+  event.preventDefault();
+
+  if (!profileForm) {
+    return;
+  }
+
+  const button =
+    profileForm.querySelector(
+      'button[type="submit"]'
+    );
+
+  const displayName =
+    document
+      .getElementById('display_name')
+      ?.value
+      .trim() || '';
+
+  const jurisdiction =
+    document
+      .getElementById('jurisdiction')
+      ?.value
+      .trim() || '';
+
+  const license =
+    document
+      .getElementById('license')
+      ?.value
+      .trim() || '';
+
+  const modality =
+    document
+      .getElementById('modality')
+      ?.value
+      .trim() || '';
+
+  const orientation =
+    document
+      .getElementById('orientation')
+      ?.value
+      .trim() || '';
+
+  const whatsapp =
+    document
+      .getElementById('whatsapp')
+      ?.value
+      .trim() || '';
+
+  const bio =
+    document
+      .getElementById('bio')
+      ?.value
+      .trim() || '';
+
+  const isPublic =
+    document
+      .getElementById('is_public')
+      ?.checked === true;
+
+  const population =
+    getPopulationValues();
+
+  const otherLicenses =
+    getContainerValues(
+      'licensesContainer'
+    );
+
+  const locations =
+    getContainerValues(
+      'locationsContainer'
+    );
 
 
-    if (!profileForm) {
-      return;
+  // ===================================================
+  // VALIDACIONES
+  // ===================================================
+
+  if (!displayName) {
+
+    showMessage(
+      'msg',
+      'Ingresá tu nombre profesional.',
+      true
+    );
+
+    return;
+
+  }
+
+
+  if (!license) {
+
+    showMessage(
+      'msg',
+      'Ingresá tu matrícula.',
+      true
+    );
+
+    return;
+
+  }
+
+
+  // ===================================================
+  // ESTADO DEL BOTÓN
+  // ===================================================
+
+  if (button) {
+
+    button.disabled = true;
+
+    button.textContent =
+      'Guardando…';
+
+  }
+
+
+  showMessage(
+    'msg',
+    'Guardando…'
+  );
+
+
+  try {
+
+    // =================================================
+    // POBLACIÓN
+    // =================================================
+
+    let populationValue = null;
+
+    if (population.length > 0) {
+
+      if (
+        Array.isArray(
+          currentProfile?.population
+        )
+      ) {
+
+        populationValue =
+          population;
+
+      } else {
+
+        populationValue =
+          population.join(', ');
+
+      }
+
     }
 
 
-    const saveButton =
-      profileForm.querySelector(
-        'button[type="submit"]'
-      );
+    // =================================================
+    // DATOS PRINCIPALES
+    // =================================================
+
+    const updateData = {
+
+      display_name:
+        displayName,
+
+      jurisdiction:
+        jurisdiction || null,
+
+      license:
+        license,
+
+      modality:
+        modality || null,
+
+      orientation:
+        orientation || null,
+
+      population:
+        populationValue,
+
+      bio:
+        bio || null,
+
+      is_public:
+        isPublic
+
+    };
 
 
-    const displayName =
-      document.getElementById(
-        'display_name'
-      )?.value.trim();
+    // =================================================
+    // CAMPOS OPCIONALES
+    // =================================================
 
-
-    const jurisdiction =
-      document.getElementById(
-        'jurisdiction'
-      )?.value || '';
-
-
-    const license =
-      document.getElementById(
-        'license'
-      )?.value.trim();
-
-
-    const modality =
-      document.getElementById(
-        'modality'
-      )?.value || '';
-
-
-    const orientation =
-      document.getElementById(
-        'orientation'
-      )?.value.trim();
-
-
-    const whatsapp =
-      document.getElementById(
+    if (
+      currentProfile &&
+      Object.prototype.hasOwnProperty.call(
+        currentProfile,
         'whatsapp'
-      )?.value.trim();
+      )
+    ) {
+
+      updateData.whatsapp =
+        whatsapp || null;
+
+    }
 
 
-    const bio =
+    if (
+      currentProfile &&
+      Object.prototype.hasOwnProperty.call(
+        currentProfile,
+        'public_whatsapp'
+      )
+    ) {
+
+      updateData.public_whatsapp =
+        whatsapp || null;
+
+    }
+
+
+    if (
+      currentProfile &&
+      Object.prototype.hasOwnProperty.call(
+        currentProfile,
+        'other_licenses'
+      )
+    ) {
+
+      updateData.other_licenses =
+        otherLicenses.length
+          ? otherLicenses
+          : null;
+
+    }
+
+
+    if (
+      currentProfile &&
+      Object.prototype.hasOwnProperty.call(
+        currentProfile,
+        'locations'
+      )
+    ) {
+
+      updateData.locations =
+        locations.length
+          ? locations
+          : null;
+
+    }
+
+
+    if (
+      currentProfile &&
+      Object.prototype.hasOwnProperty.call(
+        currentProfile,
+        'attention_locations'
+      )
+    ) {
+
+      updateData.attention_locations =
+        locations.length
+          ? locations
+          : null;
+
+    }
+
+
+    if (
+      currentProfile &&
+      Object.prototype.hasOwnProperty.call(
+        currentProfile,
+        'updated_at'
+      )
+    ) {
+
+      updateData.updated_at =
+        new Date().toISOString();
+
+    }
+
+
+    // =================================================
+    // FOTO
+    // =================================================
+
+    const photoInput =
       document.getElementById(
-        'bio'
-      )?.value.trim();
-
-
-    const isPublic =
-      document.getElementById(
-        'is_public'
-      )?.checked === true;
-
-
-    const population =
-      getPopulationValues();
-
-
-    const otherLicenses =
-      getContainerValues(
-        'licensesContainer'
+        'photo'
       );
 
-
-    const locations =
-      getContainerValues(
-        'locationsContainer'
-      );
+    const photoFile =
+      photoInput?.files?.[0];
 
 
-    if (!displayName) {
-
-      showMessage(
-        'msg',
-        'Ingresá tu nombre profesional.',
-        true
-      );
-
-      return;
-
-    }
-
-
-    if (!license) {
-
-      showMessage(
-        'msg',
-        'Ingresá tu matrícula principal.',
-        true
-      );
-
-      return;
-
-    }
-
-
-    if (saveButton) {
-
-      saveButton.disabled =
-        true;
-
-      saveButton.textContent =
-        'Guardando…';
-
-    }
-
-
-    if (profileMessage) {
-
-      profileMessage.textContent =
-        '';
-
-      profileMessage.className =
-        'message';
-
-    }
-
-
-    try {
-
-      // -------------------------------------------------
-      // DATOS PRINCIPALES
-      // -------------------------------------------------
-
-      const updateData = {
-
-        display_name:
-          displayName,
-
-        jurisdiction:
-          jurisdiction || null,
-
-        license:
-          license,
-
-        modality:
-          modality || null,
-
-        orientation:
-          orientation || null,
-
-        population:
-          population.length
-            ? population
-            : null,
-
-        bio:
-          bio || null,
-
-        is_public:
-          isPublic
-
-      };
-
-
-      // -------------------------------------------------
-      // CAMPOS OPCIONALES
-      // -------------------------------------------------
-      //
-      // Solamente los agregamos si la columna existe
-      // actualmente en el perfil cargado.
-      //
-      // Esto evita romper el guardado si alguna de estas
-      // columnas todavía no existe en la tabla.
-      // -------------------------------------------------
+    if (photoFile) {
 
       if (
-        currentProfile &&
-        Object.prototype.hasOwnProperty.call(
-          currentProfile,
-          'whatsapp'
+        photoFile.size >
+        2 * 1024 * 1024
+      ) {
+
+        throw new Error(
+          'La foto no puede superar los 2 MB.'
+        );
+
+      }
+
+
+      const allowedTypes = [
+        'image/jpeg',
+        'image/png',
+        'image/webp'
+      ];
+
+
+      if (
+        !allowedTypes.includes(
+          photoFile.type
         )
       ) {
 
-        updateData.whatsapp =
-          whatsapp || null;
+        throw new Error(
+          'La foto debe estar en formato JPG, PNG o WebP.'
+        );
+
+      }
+
+
+      let extension =
+        'jpg';
+
+
+      if (
+        photoFile.type ===
+        'image/png'
+      ) {
+
+        extension =
+          'png';
 
       }
 
 
       if (
-        currentProfile &&
-        Object.prototype.hasOwnProperty.call(
-          currentProfile,
-          'public_whatsapp'
-        )
+        photoFile.type ===
+        'image/webp'
       ) {
 
-        updateData.public_whatsapp =
-          whatsapp || null;
+        extension =
+          'webp';
 
       }
 
 
-      if (
-        currentProfile &&
-        Object.prototype.hasOwnProperty.call(
-          currentProfile,
-          'other_licenses'
-        )
-      ) {
-
-        updateData.other_licenses =
-          otherLicenses.length
-            ? otherLicenses
-            : null;
-
-      }
+      const filePath =
+        `${user.id}/profile.${extension}`;
 
 
-      if (
-        currentProfile &&
-        Object.prototype.hasOwnProperty.call(
-          currentProfile,
-          'locations'
-        )
-      ) {
-
-        updateData.locations =
-          locations.length
-            ? locations
-            : null;
-
-      }
-
-
-      if (
-        currentProfile &&
-        Object.prototype.hasOwnProperty.call(
-          currentProfile,
-          'attention_locations'
-        )
-      ) {
-
-        updateData.attention_locations =
-          locations.length
-            ? locations
-            : null;
-
-      }
-
-
-      if (
-        currentProfile &&
-        Object.prototype.hasOwnProperty.call(
-          currentProfile,
-          'updated_at'
-        )
-      ) {
-
-        updateData.updated_at =
-          new Date().toISOString();
-
-      }
-
-
-      // -------------------------------------------------
-      // FOTO
-      // -------------------------------------------------
-
-      const photoInput =
-        document.getElementById(
-          'photo'
+      const {
+        error: uploadError
+      } = await sb
+        .storage
+        .from('profile-photos')
+        .upload(
+          filePath,
+          photoFile,
+          {
+            upsert: true,
+            contentType:
+              photoFile.type
+          }
         );
 
 
-      const selectedPhoto =
-        photoInput?.files?.[0];
+      if (uploadError) {
+
+        console.error(
+          'Error subiendo foto:',
+          uploadError
+        );
+
+        throw new Error(
+          'No se pudo subir la foto de perfil.'
+        );
+
+      }
 
 
-      if (selectedPhoto) {
-
-        if (
-          selectedPhoto.size >
-          2 * 1024 * 1024
-        ) {
-
-          throw new Error(
-            'La foto no puede superar los 2 MB.'
-          );
-
-        }
-
-
-        const allowedTypes = [
-          'image/jpeg',
-          'image/png',
-          'image/webp'
-        ];
-
-
-        if (
-          !allowedTypes.includes(
-            selectedPhoto.type
-          )
-        ) {
-
-          throw new Error(
-            'La foto debe ser JPG, PNG o WEBP.'
-          );
-
-        }
-
-
-        /*
-         * Intentamos subir la foto al bucket
-         * profile-photos.
-         *
-         * Si el bucket no existe, mostramos el error
-         * sin borrar ni modificar los demás datos.
-         */
-
-        const extension =
-          selectedPhoto.name
-            .split('.')
-            .pop()
-            .toLowerCase();
-
-
-        const filePath =
-          `${user.id}/profile.${extension}`;
-
-
-        const {
-          error: uploadError
-        } = await sb
-          .storage
-          .from('profile-photos')
-          .upload(
-            filePath,
-            selectedPhoto,
-            {
-              upsert: true,
-              contentType:
-                selectedPhoto.type
-            }
-          );
-
-
-        if (uploadError) {
-
-          console.error(
-            'Error subiendo foto:',
-            uploadError
-          );
-
-
-          throw new Error(
-            'No se pudo subir la foto. Los demás datos todavía no fueron guardados.'
-          );
-
-        }
-
-
-        const {
-          data: publicUrlData
-        } = sb
+      const {
+        data: publicUrlData
+      } =
+        sb
           .storage
           .from('profile-photos')
           .getPublicUrl(
@@ -1035,131 +1057,197 @@ document.addEventListener('DOMContentLoaded', async () => {
           );
 
 
-        if (
-          publicUrlData?.publicUrl
-        ) {
-
-          updateData.photo_url =
-            publicUrlData.publicUrl;
-
-        }
-
-      }
+      const photoUrl =
+        publicUrlData?.publicUrl;
 
 
-      // -------------------------------------------------
-      // GUARDAR EN PROFILES
-      // -------------------------------------------------
+      if (photoUrl) {
 
-      const {
-        data: savedProfile,
-        error
-      } = await sb
-        .from('profiles')
-        .update(
-          updateData
-        )
-        .eq(
-          'id',
-          user.id
-        )
-        .select('*')
-        .single();
-
-
-      if (error) {
-
-        console.error(
-          'Error guardando perfil:',
-          error
-        );
-
-
-        throw new Error(
-          'No se pudieron guardar los datos del perfil.'
-        );
-
-      }
-
-
-      currentProfile =
-        savedProfile;
-
-
-      // -------------------------------------------------
-      // ACTUALIZAR INTERFAZ
-      // -------------------------------------------------
-
-      const savedName =
-        savedProfile.display_name ||
-        'Profesional';
-
-
-      if (professionalName) {
-
-        professionalName.textContent =
-          savedName;
-
-      }
-
-
-      if (welcome) {
-
-        welcome.textContent =
-          `Hola, ${savedName}.`;
-
-      }
-
-
-      updatePhotoPreview(
-        savedProfile.photo_url,
-        savedName
-      );
-
-
-      showMessage(
-        'msg',
-        'Perfil guardado correctamente.'
-      );
-
-
-      // -------------------------------------------------
-      // RECARGAR LOS DATOS DEL FORMULARIO
-      // -------------------------------------------------
-
-      await loadProfile();
-
-
-    } catch (error) {
-
-      console.error(
-        'Error guardando perfil:',
-        error
-      );
-
-
-      showMessage(
-        'msg',
-        error.message ||
-        'No se pudo guardar el perfil.',
-        true
-      );
-
-    } finally {
-
-      if (saveButton) {
-
-        saveButton.disabled =
-          false;
-
-        saveButton.textContent =
-          'Guardar cambios';
+        updateData.photo_url =
+          photoUrl;
 
       }
 
     }
 
+
+    // =================================================
+    // GUARDAR PERFIL EN SUPABASE
+    // =================================================
+
+    const {
+      error
+    } = await sb
+      .from('profiles')
+      .update(
+        updateData
+      )
+      .eq(
+        'id',
+        user.id
+      );
+
+
+    if (error) {
+
+      console.error(
+        'ERROR REAL AL GUARDAR PERFIL:',
+        error
+      );
+
+      console.error(
+        'DATOS ENVIADOS:',
+        updateData
+      );
+
+      throw new Error(
+        error.message ||
+        'No se pudieron guardar los datos del perfil.'
+      );
+
+    }
+
+
+    // =================================================
+    // ACTUALIZAR ESTADO LOCAL
+    // =================================================
+
+    currentProfile = {
+      ...(currentProfile || {}),
+      ...updateData
+    };
+
+
+    // =================================================
+    // ACTUALIZAR INTERFAZ
+    // =================================================
+
+    if (professionalName) {
+
+      professionalName.textContent =
+        displayName;
+
+    }
+
+
+    if (welcome) {
+
+      welcome.textContent =
+        `Hola, ${displayName}.`;
+
+    }
+
+
+    const profileName =
+      document.getElementById(
+        'profileName'
+      );
+
+    if (profileName) {
+
+      profileName.textContent =
+        displayName;
+
+    }
+
+
+    const profileLicense =
+      document.getElementById(
+        'profileLicense'
+      );
+
+    if (profileLicense) {
+
+      profileLicense.textContent =
+        license ||
+        'No especificada';
+
+    }
+
+
+    const profileModality =
+      document.getElementById(
+        'profileModality'
+      );
+
+    if (profileModality) {
+
+      profileModality.textContent =
+        modality ||
+        'No especificada';
+
+    }
+
+
+    const profileZone =
+      document.getElementById(
+        'profileZone'
+      );
+
+    if (profileZone) {
+
+      profileZone.textContent =
+        locations[0] ||
+        currentProfile?.zone ||
+        'No especificada';
+
+    }
+
+
+    if (updateData.photo_url) {
+
+      updatePhotoPreview(
+        updateData.photo_url,
+        displayName
+      );
+
+    }
+
+
+    // =================================================
+    // CONFIRMACIÓN
+    // =================================================
+
+    showMessage(
+      'msg',
+      'Perfil guardado correctamente.'
+    );
+
+
+    await loadProfile();
+
+
+  } catch (error) {
+
+    console.error(
+      'Error guardando perfil:',
+      error
+    );
+
+
+    showMessage(
+      'msg',
+      error.message ||
+      'No se pudieron guardar los datos del perfil.',
+      true
+    );
+
+
+  } finally {
+
+    if (button) {
+
+      button.disabled =
+        false;
+
+      button.textContent =
+        'Guardar cambios';
+
+    }
+
   }
+
+}
 
 
   // =====================================================
