@@ -308,6 +308,474 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
   // ============================================================
+  // CARGAR MIS CONSULTAS
+  // ============================================================
+
+  async function loadPatientInquiries() {
+
+    const container =
+      document.getElementById(
+        'patientInquiriesContent'
+      );
+
+    if (!container) {
+      return;
+    }
+
+
+    container.innerHTML =
+      '<p class="small">Cargando consultas…</p>';
+
+
+    const {
+      data,
+      error
+    } = await sb
+      .from('professional_inquiries')
+      .select(`
+        id,
+        professional_id,
+        modality,
+        availability,
+        zone,
+        reason,
+        message,
+        professional_reply,
+        status,
+        created_at
+      `)
+      .eq('patient_id', user.id)
+      .order('created_at', {
+        ascending: false
+      });
+
+
+    if (error) {
+
+      console.error(
+        'Error cargando consultas:',
+        error
+      );
+
+      container.innerHTML = `
+        <p
+          class="small"
+          style="color:#b42318;"
+        >
+          No se pudieron cargar tus consultas.
+        </p>
+      `;
+
+      return;
+
+    }
+
+
+    if (!data || data.length === 0) {
+
+      container.innerHTML = `
+        <div
+          style="
+            padding:20px;
+            border:1px solid var(--line);
+            border-radius:14px;
+          "
+        >
+          <p class="small">
+            Todavía no enviaste ninguna consulta.
+          </p>
+
+          <a
+            class="btn primary"
+            href="profesionales.html"
+            style="margin-top:14px;"
+          >
+            Buscar profesionales
+          </a>
+        </div>
+      `;
+
+      return;
+
+    }
+
+
+    // ==========================================================
+    // OBTENER PROFESIONALES
+    // ==========================================================
+
+    const professionalIds =
+      [
+        ...new Set(
+          data.map(
+            inquiry =>
+              inquiry.professional_id
+          )
+        )
+      ];
+
+
+    let professionals = [];
+
+
+    if (professionalIds.length > 0) {
+
+      const {
+        data: professionalData,
+        error: professionalsError
+      } = await sb
+        .from('profiles')
+        .select(`
+          id,
+          display_name,
+          license,
+          jurisdiction
+        `)
+        .in(
+          'id',
+          professionalIds
+        );
+
+
+      if (professionalsError) {
+
+        console.error(
+          'Error cargando profesionales:',
+          professionalsError
+        );
+
+      } else {
+
+        professionals =
+          professionalData || [];
+
+      }
+
+    }
+
+
+    const professionalMap =
+      new Map(
+        professionals.map(
+          professional => [
+            professional.id,
+            professional
+          ]
+        )
+      );
+
+
+    // ==========================================================
+    // RENDERIZAR CONSULTAS
+    // ==========================================================
+
+    container.innerHTML =
+      data.map(
+        inquiry => {
+
+          const professional =
+            professionalMap.get(
+              inquiry.professional_id
+            );
+
+
+          const professionalName =
+            professional?.display_name ||
+            'Profesional';
+
+
+          const date =
+            new Date(
+              inquiry.created_at
+            ).toLocaleDateString(
+              'es-AR',
+              {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+              }
+            );
+
+
+          let statusLabel =
+            'Pendiente de respuesta';
+
+
+          if (
+            inquiry.status ===
+            'responded'
+          ) {
+
+            statusLabel =
+              'Respondida';
+
+          }
+
+
+          if (
+            inquiry.status ===
+            'closed'
+          ) {
+
+            statusLabel =
+              'Finalizada';
+
+          }
+
+
+          const replyHTML =
+            inquiry.professional_reply
+              ? `
+                <div
+                  style="
+                    margin-top:20px;
+                    padding:18px;
+                    border-radius:12px;
+                    background:#f5f7fa;
+                    border:1px solid var(--line);
+                  "
+                >
+
+                  <strong>
+                    Respuesta del profesional
+                  </strong>
+
+                  <p
+                    style="
+                      margin-top:10px;
+                      margin-bottom:0;
+                      white-space:pre-wrap;
+                    "
+                  >
+                    ${escapeHTML(
+                      inquiry.professional_reply
+                    )}
+                  </p>
+
+                </div>
+              `
+              : `
+                <div
+                  style="
+                    margin-top:18px;
+                    padding:14px 16px;
+                    border-radius:10px;
+                    background:#fafafa;
+                    border:1px solid var(--line);
+                  "
+                >
+
+                  <p
+                    class="small"
+                    style="margin:0;"
+                  >
+                    El profesional todavía no respondió.
+                  </p>
+
+                </div>
+              `;
+
+
+          return `
+            <article
+              style="
+                padding:20px;
+                margin-bottom:18px;
+                border:1px solid var(--line);
+                border-radius:14px;
+              "
+            >
+
+              <!-- PROFESIONAL Y ESTADO -->
+
+              <div
+                style="
+                  display:flex;
+                  justify-content:space-between;
+                  align-items:flex-start;
+                  gap:16px;
+                  flex-wrap:wrap;
+                "
+              >
+
+                <div>
+
+                  <strong>
+                    ${escapeHTML(
+                      professionalName
+                    )}
+                  </strong>
+
+                  ${
+                    professional?.license
+                      ? `
+                        <p
+                          class="small"
+                          style="margin-top:4px;"
+                        >
+                          Matrícula:
+                          ${escapeHTML(
+                            professional.license
+                          )}
+                        </p>
+                      `
+                      : ''
+                  }
+
+                  <p
+                    class="small"
+                    style="margin-top:4px;"
+                  >
+                    Consulta enviada el ${date}
+                  </p>
+
+                </div>
+
+
+                <span
+                  class="small"
+                  style="
+                    padding:6px 10px;
+                    border:1px solid var(--line);
+                    border-radius:999px;
+                    white-space:nowrap;
+                  "
+                >
+                  ${statusLabel}
+                </span>
+
+              </div>
+
+
+              <!-- CONSULTA -->
+
+              <div
+                style="
+                  margin-top:18px;
+                  padding-top:18px;
+                  border-top:1px solid var(--line);
+                "
+              >
+
+                <strong>
+                  Tu consulta
+                </strong>
+
+                <p
+                  style="
+                    margin-top:8px;
+                    margin-bottom:0;
+                    white-space:pre-wrap;
+                  "
+                >
+                  ${escapeHTML(
+                    inquiry.message
+                  )}
+                </p>
+
+              </div>
+
+
+              <!-- DATOS DE LA CONSULTA -->
+
+              ${
+                inquiry.modality ||
+                inquiry.availability ||
+                inquiry.zone ||
+                inquiry.reason
+                  ? `
+                    <div
+                      style="
+                        margin-top:16px;
+                        padding-top:16px;
+                        border-top:1px solid var(--line);
+                      "
+                    >
+
+                      ${
+                        inquiry.modality
+                          ? `
+                            <p
+                              class="small"
+                              style="margin:4px 0;"
+                            >
+                              <strong>Modalidad:</strong>
+                              ${escapeHTML(
+                                inquiry.modality
+                              )}
+                            </p>
+                          `
+                          : ''
+                      }
+
+                      ${
+                        inquiry.availability
+                          ? `
+                            <p
+                              class="small"
+                              style="margin:4px 0;"
+                            >
+                              <strong>Disponibilidad:</strong>
+                              ${escapeHTML(
+                                inquiry.availability
+                              )}
+                            </p>
+                          `
+                          : ''
+                      }
+
+                      ${
+                        inquiry.zone
+                          ? `
+                            <p
+                              class="small"
+                              style="margin:4px 0;"
+                            >
+                              <strong>Zona:</strong>
+                              ${escapeHTML(
+                                inquiry.zone
+                              )}
+                            </p>
+                          `
+                          : ''
+                      }
+
+                      ${
+                        inquiry.reason
+                          ? `
+                            <p
+                              class="small"
+                              style="margin:4px 0;"
+                            >
+                              <strong>Motivo:</strong>
+                              ${escapeHTML(
+                                inquiry.reason
+                              )}
+                            </p>
+                          `
+                          : ''
+                      }
+
+                    </div>
+                  `
+                  : ''
+              }
+
+
+              <!-- RESPUESTA -->
+
+              ${replyHTML}
+
+            </article>
+          `;
+
+        }
+      ).join('');
+
+  }
+
+
+  // ============================================================
   // ELIMINAR CUENTA
   // ============================================================
 
@@ -425,6 +893,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     }
   );
+
+
+  // ============================================================
+  // INICIAR CARGA
+  // ============================================================
+
+  await loadPatientInquiries();
 
 });
 
