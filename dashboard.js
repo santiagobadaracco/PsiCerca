@@ -4487,6 +4487,10 @@ async function loadAppointments() {
 
     return;
   }
+
+    // Acá termina loadAppointments()
+}
+  
   async function loadProfessionalInquiries() {
 
     if (!consultasContent) {
