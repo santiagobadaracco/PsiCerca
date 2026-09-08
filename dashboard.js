@@ -48,6 +48,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   let isPro = false;
 
+  let appointmentDuration = 50;
+
 
   // =====================================================
   // PERFIL
@@ -67,7 +69,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         population,
         bio,
         photo_url,
-        user_role
+        user_role,
+        appointment_duration
       `)
       .eq('id', user.id)
       .single();
@@ -90,6 +93,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       return null;
 
     }
+
+
+    appointmentDuration =
+      Number(
+        data.appointment_duration
+      ) || 50;
 
 
     const name =
@@ -954,7 +963,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     // ---------------------------------------------------
-    // PRO
+    // CARGAR HORARIOS
     // ---------------------------------------------------
 
     const {
@@ -1029,6 +1038,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       data || [];
 
 
+    // ---------------------------------------------------
+    // INTERFAZ
+    // ---------------------------------------------------
+
     availabilityContent.innerHTML = `
 
       <div
@@ -1064,6 +1077,152 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       </div>
 
+
+      <!-- ========================================= -->
+      <!-- DURACIÓN DE TURNOS -->
+      <!-- ========================================= -->
+
+      <div
+        class="card"
+        style="
+          padding:20px;
+          margin-bottom:20px;
+        "
+      >
+
+        <h3 style="margin-top:0;">
+
+          ⏱️ Duración de los turnos
+
+        </h3>
+
+        <p
+          class="small muted"
+          style="margin-top:6px;"
+        >
+
+          Definí cuánto dura cada consulta.
+          Esta duración se utilizará posteriormente
+          para generar automáticamente los turnos disponibles.
+
+        </p>
+
+
+        <div
+          style="
+            display:grid;
+            grid-template-columns:
+              repeat(
+                auto-fit,
+                minmax(
+                  220px,
+                  1fr
+                )
+              );
+            gap:14px;
+            align-items:end;
+            margin-top:16px;
+          "
+        >
+
+          <label>
+
+            <span class="small">
+
+              Duración
+
+            </span>
+
+            <select
+              id="appointmentDuration"
+              style="
+                width:100%;
+                margin-top:5px;
+              "
+            >
+
+              <option value="30">
+                30 minutos
+              </option>
+
+              <option value="45">
+                45 minutos
+              </option>
+
+              <option value="50">
+                50 minutos
+              </option>
+
+              <option value="60">
+                60 minutos
+              </option>
+
+              <option value="custom">
+                Personalizada
+              </option>
+
+            </select>
+
+          </label>
+
+
+          <label
+            id="customDurationContainer"
+            style="
+              display:none;
+            "
+          >
+
+            <span class="small">
+
+              Duración personalizada
+
+            </span>
+
+            <input
+              type="number"
+              id="customAppointmentDuration"
+              min="1"
+              max="240"
+              step="1"
+              placeholder="Ej. 75"
+              style="
+                width:100%;
+                margin-top:5px;
+              "
+            >
+
+          </label>
+
+
+          <div>
+
+            <button
+              type="button"
+              id="saveAppointmentDuration"
+              class="btn primary"
+            >
+
+              Guardar duración
+
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <div
+          id="appointmentDurationMessage"
+          style="margin-top:12px;"
+        ></div>
+
+      </div>
+
+
+      <!-- ========================================= -->
+      <!-- AGREGAR HORARIO -->
+      <!-- ========================================= -->
 
       <form
         id="availabilityForm"
@@ -1258,6 +1417,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       </form>
 
+
+      <!-- ========================================= -->
+      <!-- HORARIOS CONFIGURADOS -->
+      <!-- ========================================= -->
 
       <div>
 
@@ -1475,6 +1638,261 @@ document.addEventListener('DOMContentLoaded', async () => {
       </div>
 
     `;
+
+
+    // ===================================================
+    // DURACIÓN DE TURNOS
+    // ===================================================
+
+    const durationSelect =
+      document.getElementById(
+        'appointmentDuration'
+      );
+
+    const customDurationContainer =
+      document.getElementById(
+        'customDurationContainer'
+      );
+
+    const customDurationInput =
+      document.getElementById(
+        'customAppointmentDuration'
+      );
+
+    const durationMessage =
+      document.getElementById(
+        'appointmentDurationMessage'
+      );
+
+    const saveDurationButton =
+      document.getElementById(
+        'saveAppointmentDuration'
+      );
+
+
+    const standardDurations =
+      [30, 45, 50, 60];
+
+
+    if (durationSelect) {
+
+      if (
+        standardDurations.includes(
+          appointmentDuration
+        )
+      ) {
+
+        durationSelect.value =
+          String(
+            appointmentDuration
+          );
+
+      } else {
+
+        durationSelect.value =
+          'custom';
+
+        if (customDurationContainer) {
+
+          customDurationContainer.style.display =
+            'block';
+
+        }
+
+        if (customDurationInput) {
+
+          customDurationInput.value =
+            appointmentDuration;
+
+        }
+
+      }
+
+
+      durationSelect.addEventListener(
+        'change',
+        () => {
+
+          if (
+            durationSelect.value ===
+            'custom'
+          ) {
+
+            if (customDurationContainer) {
+
+              customDurationContainer.style.display =
+                'block';
+
+            }
+
+          } else {
+
+            if (customDurationContainer) {
+
+              customDurationContainer.style.display =
+                'none';
+
+            }
+
+          }
+
+        }
+      );
+
+    }
+
+
+    if (saveDurationButton) {
+
+      saveDurationButton.addEventListener(
+        'click',
+        async () => {
+
+          let newDuration;
+
+
+          if (
+            durationSelect?.value ===
+            'custom'
+          ) {
+
+            newDuration =
+              Number(
+                customDurationInput?.value
+              );
+
+          } else {
+
+            newDuration =
+              Number(
+                durationSelect?.value
+              );
+
+          }
+
+
+          if (
+            !Number.isInteger(
+              newDuration
+            ) ||
+            newDuration < 1 ||
+            newDuration > 240
+          ) {
+
+            if (durationMessage) {
+
+              durationMessage.innerHTML = `
+
+                <div class="message error">
+
+                  La duración debe ser un número entero
+                  entre 1 y 240 minutos.
+
+                </div>
+
+              `;
+
+            }
+
+            return;
+
+          }
+
+
+          saveDurationButton.disabled =
+            true;
+
+          saveDurationButton.textContent =
+            'Guardando…';
+
+
+          if (durationMessage) {
+
+            durationMessage.innerHTML = '';
+
+          }
+
+
+          const {
+            error
+          } = await sb
+            .from('profiles')
+            .update({
+              appointment_duration:
+                newDuration
+            })
+            .eq(
+              'id',
+              user.id
+            );
+
+
+          if (error) {
+
+            console.error(
+              'Error guardando duración:',
+              error
+            );
+
+
+            if (durationMessage) {
+
+              durationMessage.innerHTML = `
+
+                <div class="message error">
+
+                  No se pudo guardar la duración.
+
+                </div>
+
+              `;
+
+            }
+
+
+            saveDurationButton.disabled =
+              false;
+
+            saveDurationButton.textContent =
+              'Guardar duración';
+
+            return;
+
+          }
+
+
+          appointmentDuration =
+            newDuration;
+
+
+          if (durationMessage) {
+
+            durationMessage.innerHTML = `
+
+              <div class="message success">
+
+                Duración guardada: 
+                <strong>
+                  ${newDuration} minutos
+                </strong>.
+
+              </div>
+
+            `;
+
+          }
+
+
+          saveDurationButton.disabled =
+            false;
+
+          saveDurationButton.textContent =
+            'Guardar duración';
+
+        }
+      );
+
+    }
 
 
     // ===================================================
