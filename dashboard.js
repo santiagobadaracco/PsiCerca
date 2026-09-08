@@ -1107,6 +1107,93 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     }
 
+        // =================================================
+    // GUARDAR WHATSAPP
+    // =================================================
+
+    const {
+      data: existingContact,
+      error: contactReadError
+    } = await sb
+      .from('professional_contacts')
+      .select('profile_id')
+      .eq('profile_id', user.id)
+      .maybeSingle();
+
+    if (contactReadError) {
+
+      console.error(
+        'Error buscando contacto profesional:',
+        contactReadError
+      );
+
+      throw new Error(
+        'No se pudo guardar el WhatsApp.'
+      );
+
+    }
+
+    if (existingContact) {
+
+      const {
+        error: contactUpdateError
+      } = await sb
+        .from('professional_contacts')
+        .update({
+          whatsapp:
+            whatsapp || null,
+          updated_at:
+            new Date().toISOString()
+        })
+        .eq(
+          'profile_id',
+          user.id
+        );
+
+      if (contactUpdateError) {
+
+        console.error(
+          'Error actualizando WhatsApp:',
+          contactUpdateError
+        );
+
+        throw new Error(
+          'No se pudo guardar el WhatsApp.'
+        );
+
+      }
+
+    } else {
+
+      const {
+        error: contactInsertError
+      } = await sb
+        .from('professional_contacts')
+        .insert({
+          profile_id:
+            user.id,
+          whatsapp:
+            whatsapp || null,
+          created_at:
+            new Date().toISOString(),
+          updated_at:
+            new Date().toISOString()
+        });
+
+      if (contactInsertError) {
+
+        console.error(
+          'Error creando contacto profesional:',
+          contactInsertError
+        );
+
+        throw new Error(
+          'No se pudo guardar el WhatsApp.'
+        );
+
+      }
+
+    }
 
     // =================================================
     // ACTUALIZAR ESTADO LOCAL
