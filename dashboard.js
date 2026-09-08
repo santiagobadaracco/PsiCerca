@@ -50,6 +50,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   let appointmentDuration = 50;
 
+  let appointmentBreak = 10;
+
 
   // =====================================================
   // PERFIL
@@ -70,7 +72,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         bio,
         photo_url,
         user_role,
-        appointment_duration
+        appointment_duration,
+        appointment_break
       `)
       .eq('id', user.id)
       .single();
@@ -84,10 +87,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       );
 
       if (welcome) {
-
         welcome.textContent =
           'No se pudo cargar el perfil.';
-
       }
 
       return null;
@@ -96,9 +97,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     appointmentDuration =
-      Number(
-        data.appointment_duration
-      ) || 50;
+      Number(data.appointment_duration) || 50;
+
+    appointmentBreak =
+      Number(data.appointment_break);
+
+    if (!Number.isInteger(appointmentBreak)) {
+      appointmentBreak = 10;
+    }
 
 
     const name =
@@ -107,78 +113,53 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     if (professionalName) {
-
-      professionalName.textContent =
-        name;
-
+      professionalName.textContent = name;
     }
 
 
     if (welcome) {
-
       welcome.textContent =
         `Hola, ${name}.`;
-
     }
 
 
     const profileName =
-      document.getElementById(
-        'profileName'
-      );
-
+      document.getElementById('profileName');
 
     if (profileName) {
-
       profileName.textContent =
         data.display_name ||
         'Profesional';
-
     }
 
 
     const profileLicense =
-      document.getElementById(
-        'profileLicense'
-      );
-
+      document.getElementById('profileLicense');
 
     if (profileLicense) {
-
       profileLicense.textContent =
         data.license ||
         'No especificada';
-
     }
 
 
     const profileModality =
-      document.getElementById(
-        'profileModality'
-      );
-
+      document.getElementById('profileModality');
 
     if (profileModality) {
-
       profileModality.textContent =
         data.modality ||
         'No especificada';
-
     }
 
 
     const profileZone =
-      document.getElementById(
-        'profileZone'
-      );
-
+      document.getElementById('profileZone');
 
     if (profileZone) {
-
       profileZone.textContent =
         data.zone ||
         'No especificada';
-
     }
 
 
@@ -228,7 +209,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       );
 
       subscription = null;
-
       isPaidPro = false;
 
       return;
@@ -255,7 +235,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       'Suscripción paga:',
       subscription
     );
-
 
     console.log(
       '¿PRO pago?:',
@@ -292,8 +271,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           error
         );
 
-        isCourtesyPro =
-          false;
+        isCourtesyPro = false;
 
         return;
 
@@ -317,8 +295,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         error
       );
 
-      isCourtesyPro =
-        false;
+      isCourtesyPro = false;
 
     }
 
@@ -339,34 +316,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     isPro =
       isPaidPro ||
       isCourtesyPro;
-
-
-    console.log(
-      '================================='
-    );
-
-    console.log(
-      'ESTADO PRO'
-    );
-
-    console.log(
-      'PRO pago:',
-      isPaidPro
-    );
-
-    console.log(
-      'PRO cortesía:',
-      isCourtesyPro
-    );
-
-    console.log(
-      'PRO total:',
-      isPro
-    );
-
-    console.log(
-      '================================='
-    );
 
 
     updatePlanUI();
@@ -529,9 +478,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     if (oldBox) {
-
       oldBox.remove();
-
     }
 
 
@@ -539,9 +486,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       isCourtesyPro &&
       !isPaidPro
     ) {
-
       return;
-
     }
 
 
@@ -552,48 +497,34 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     if (!container) {
-
       container =
         document.getElementById(
           'subscriptionMessage'
         );
-
     }
 
 
     if (!container && subscriptionButton) {
-
       container =
         subscriptionButton.parentElement;
-
     }
 
 
     if (!container) {
-
       container =
         document.getElementById(
           'suscripcion'
         );
-
     }
 
 
     if (!container) {
-
-      console.error(
-        'No se encontró ningún contenedor para mostrar la cancelación.'
-      );
-
       return;
-
     }
 
 
     if (!isPaidPro) {
-
       return;
-
     }
 
 
@@ -616,10 +547,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
       const box =
-        document.createElement(
-          'div'
-        );
-
+        document.createElement('div');
 
       box.id =
         'cancelSubscriptionBox';
@@ -644,20 +572,15 @@ document.addEventListener('DOMContentLoaded', async () => {
           class="small"
           style="margin-top:8px;"
         >
-
           Tu plan PRO seguirá activo hasta
           el ${escapeHTML(endDate)}.
           No se realizarán nuevos cobros.
-
         </p>
 
       `;
 
 
-      container.appendChild(
-        box
-      );
-
+      container.appendChild(box);
 
       return;
 
@@ -665,9 +588,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     const box =
-      document.createElement(
-        'div'
-      );
+      document.createElement('div');
 
 
     box.id =
@@ -693,20 +614,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         class="small"
         style="margin-top:8px;"
       >
-
         Podés cancelar la renovación automática
         de tu suscripción.
-
       </p>
 
       <p
         class="small"
         style="margin-top:8px;"
       >
-
         Tu acceso PRO continuará durante el período
         que ya abonaste. No se realizará el próximo cobro.
-
       </p>
 
       <button
@@ -720,17 +637,13 @@ document.addEventListener('DOMContentLoaded', async () => {
           cursor:pointer;
         "
       >
-
         Cancelar suscripción
-
       </button>
 
     `;
 
 
-    container.appendChild(
-      box
-    );
+    container.appendChild(box);
 
 
     const cancelButton =
@@ -739,21 +652,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       );
 
 
-    if (!cancelButton) {
+    if (cancelButton) {
 
-      console.error(
-        'No se pudo crear el botón de cancelación.'
+      cancelButton.addEventListener(
+        'click',
+        cancelSubscription
       );
 
-      return;
-
     }
-
-
-    cancelButton.addEventListener(
-      'click',
-      cancelSubscription
-    );
 
   }
 
@@ -768,9 +674,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       !subscription ||
       !isPaidPro
     ) {
-
       return;
-
     }
 
 
@@ -784,9 +688,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     if (!confirmed) {
-
       return;
-
     }
 
 
@@ -798,11 +700,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (button) {
 
-      button.disabled =
-        true;
-
-      button.textContent =
-        'Cancelando…';
+      button.disabled = true;
+      button.textContent = 'Cancelando…';
 
     }
 
@@ -810,7 +709,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (subscriptionMessage) {
 
       subscriptionMessage.textContent =
-        'Procesando la cancelación…';
+        'Procesando la cancelación.';
 
       subscriptionMessage.className =
         'message';
@@ -829,16 +728,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
       if (error) {
-
-        console.error(
-          'Error cancelando suscripción:',
-          error
-        );
-
         throw new Error(
           'No se pudo cancelar la suscripción.'
         );
-
       }
 
 
@@ -846,19 +738,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         !data ||
         !data.success
       ) {
-
         throw new Error(
           data?.error ||
           'No se pudo cancelar la suscripción.'
         );
-
       }
-
-
-      console.log(
-        'Cancelación realizada:',
-        data
-      );
 
 
       if (subscriptionMessage) {
@@ -900,9 +784,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (button) {
 
-        button.disabled =
-          false;
-
+        button.disabled = false;
         button.textContent =
           'Cancelar suscripción';
 
@@ -914,15 +796,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
   // =====================================================
-  // DISPONIBILIDAD
+  // DISPONIBILIDAD / AGENDA
   // =====================================================
 
   async function loadAvailability() {
 
     if (!availabilityContent) {
-
       return;
-
     }
 
 
@@ -941,8 +821,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         <p class="small">
 
           Configurá tus horarios de atención,
-          organizá tu agenda y permití que tus pacientes
-          puedan reservar turnos online.
+          agregá tiempos de descanso y permití
+          que tus pacientes puedan reservar turnos online.
 
         </p>
 
@@ -950,9 +830,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           class="btn primary"
           href="#suscripcion"
         >
-
           Conocer PsiCerca PRO
-
         </a>
 
       `;
@@ -970,9 +848,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       data,
       error
     } = await sb
-      .from(
-        'professional_availability'
-      )
+      .from('professional_availability')
       .select(`
         id,
         day_of_week,
@@ -1011,8 +887,67 @@ document.addEventListener('DOMContentLoaded', async () => {
       availabilityContent.innerHTML = `
 
         <div class="message error">
-
           No se pudo cargar tu disponibilidad.
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+
+    // ---------------------------------------------------
+    // CARGAR BLOQUES SIN ATENCIÓN
+    // ---------------------------------------------------
+
+    const {
+      data: unavailableData,
+      error: unavailableError
+    } = await sb
+      .from('professional_unavailability')
+      .select(`
+        id,
+        day_of_week,
+        specific_date,
+        start_time,
+        end_time,
+        reason,
+        is_active
+      `)
+      .eq(
+        'professional_id',
+        user.id
+      )
+      .order(
+        'day_of_week',
+        {
+          ascending: true,
+          nullsFirst: false
+        }
+      )
+      .order(
+        'start_time',
+        {
+          ascending: true
+        }
+      );
+
+
+    if (unavailableError) {
+
+      console.error(
+        'Error cargando bloques sin atención:',
+        unavailableError
+      );
+
+
+      availabilityContent.innerHTML = `
+
+        <div class="message error">
+
+          No se pudieron cargar los bloques
+          de no atención.
 
         </div>
 
@@ -1038,6 +973,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       data || [];
 
 
+    const unavailableRows =
+      unavailableData || [];
+
+
     // ---------------------------------------------------
     // INTERFAZ
     // ---------------------------------------------------
@@ -1058,9 +997,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         <div>
 
           <h3 style="margin:0;">
-
             🗓️ Mi agenda
-
           </h3>
 
           <p
@@ -1068,8 +1005,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             style="margin-top:6px;"
           >
 
-            Configurá los días y horarios en los que
-            atendés habitualmente.
+            Configurá tus horarios habituales,
+            la duración de las consultas y el tiempo
+            de descanso entre pacientes.
 
           </p>
 
@@ -1079,7 +1017,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
       <!-- ========================================= -->
-      <!-- DURACIÓN DE TURNOS -->
+      <!-- CONFIGURACIÓN DE TURNOS -->
       <!-- ========================================= -->
 
       <div
@@ -1091,9 +1029,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       >
 
         <h3 style="margin-top:0;">
-
-          ⏱️ Duración de los turnos
-
+          ⚙️ Configuración de turnos
         </h3>
 
         <p
@@ -1101,9 +1037,9 @@ document.addEventListener('DOMContentLoaded', async () => {
           style="margin-top:6px;"
         >
 
-          Definí cuánto dura cada consulta.
-          Esta duración se utilizará posteriormente
-          para generar automáticamente los turnos disponibles.
+          Estas opciones se utilizarán para construir
+          automáticamente los horarios disponibles
+          para tus pacientes.
 
         </p>
 
@@ -1114,23 +1050,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             grid-template-columns:
               repeat(
                 auto-fit,
-                minmax(
-                  220px,
-                  1fr
-                )
+                minmax(220px,1fr)
               );
             gap:14px;
             align-items:end;
-            margin-top:16px;
+            margin-top:18px;
           "
         >
 
           <label>
 
             <span class="small">
-
-              Duración
-
+              Duración de la consulta
             </span>
 
             <select
@@ -1168,15 +1099,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
           <label
             id="customDurationContainer"
-            style="
-              display:none;
-            "
+            style="display:none;"
           >
 
             <span class="small">
-
               Duración personalizada
-
             </span>
 
             <input
@@ -1195,16 +1122,86 @@ document.addEventListener('DOMContentLoaded', async () => {
           </label>
 
 
+          <label>
+
+            <span class="small">
+              Tiempo de descanso
+            </span>
+
+            <select
+              id="appointmentBreak"
+              style="
+                width:100%;
+                margin-top:5px;
+              "
+            >
+
+              <option value="0">
+                Sin descanso
+              </option>
+
+              <option value="5">
+                5 minutos
+              </option>
+
+              <option value="10">
+                10 minutos
+              </option>
+
+              <option value="15">
+                15 minutos
+              </option>
+
+              <option value="20">
+                20 minutos
+              </option>
+
+              <option value="30">
+                30 minutos
+              </option>
+
+              <option value="custom">
+                Personalizado
+              </option>
+
+            </select>
+
+          </label>
+
+
+          <label
+            id="customBreakContainer"
+            style="display:none;"
+          >
+
+            <span class="small">
+              Descanso personalizado
+            </span>
+
+            <input
+              type="number"
+              id="customAppointmentBreak"
+              min="0"
+              max="120"
+              step="1"
+              placeholder="Ej. 25"
+              style="
+                width:100%;
+                margin-top:5px;
+              "
+            >
+
+          </label>
+
+
           <div>
 
             <button
               type="button"
-              id="saveAppointmentDuration"
+              id="saveAppointmentSettings"
               class="btn primary"
             >
-
-              Guardar duración
-
+              Guardar configuración
             </button>
 
           </div>
@@ -1213,15 +1210,46 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
         <div
-          id="appointmentDurationMessage"
+          id="appointmentSettingsMessage"
           style="margin-top:12px;"
         ></div>
+
+
+        <div
+          style="
+            margin-top:18px;
+            padding:14px;
+            border-radius:12px;
+            background:var(--background);
+          "
+        >
+
+          <div class="small">
+
+            Ejemplo
+
+          </div>
+
+          <strong
+            id="appointmentSettingsExample"
+            style="
+              display:block;
+              margin-top:4px;
+            "
+          >
+
+            50 minutos de consulta + 10 minutos
+            de descanso = turnos cada 60 minutos.
+
+          </strong>
+
+        </div>
 
       </div>
 
 
       <!-- ========================================= -->
-      <!-- AGREGAR HORARIO -->
+      <!-- AGREGAR HORARIO HABITUAL -->
       <!-- ========================================= -->
 
       <form
@@ -1234,10 +1262,19 @@ document.addEventListener('DOMContentLoaded', async () => {
       >
 
         <h3 style="margin-top:0;">
-
-          Agregar horario
-
+          ➕ Agregar horario habitual
         </h3>
+
+        <p
+          class="small muted"
+          style="margin-top:6px;"
+        >
+
+          Indicá cuándo atendés normalmente.
+          Después podés agregar bloques en los que
+          no querés recibir turnos.
+
+        </p>
 
 
         <div
@@ -1246,12 +1283,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             grid-template-columns:
               repeat(
                 auto-fit,
-                minmax(
-                  180px,
-                  1fr
-                )
+                minmax(180px,1fr)
               );
             gap:14px;
+            margin-top:16px;
           "
         >
 
@@ -1404,9 +1439,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           class="btn primary"
           style="margin-top:18px;"
         >
-
           + Agregar horario
-
         </button>
 
 
@@ -1422,12 +1455,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       <!-- HORARIOS CONFIGURADOS -->
       <!-- ========================================= -->
 
-      <div>
+      <div
+        style="
+          margin-bottom:28px;
+        "
+      >
 
         <h3>
-
           Horarios configurados
-
         </h3>
 
 
@@ -1439,19 +1474,15 @@ document.addEventListener('DOMContentLoaded', async () => {
               <div class="card">
 
                 <p style="margin:0;">
-
                   Todavía no configuraste ningún horario.
-
                 </p>
 
                 <p
                   class="small muted"
                   style="margin-top:6px;"
                 >
-
                   Agregá arriba los días y horarios
                   en los que atendés.
-
                 </p>
 
               </div>
@@ -1489,13 +1520,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
                   const modalityLabel =
-                    row.modality ===
-                    'presencial'
+                    row.modality === 'presencial'
 
                       ? 'Presencial'
 
-                      : row.modality ===
-                        'ambas'
+                      : row.modality === 'ambas'
 
                         ? 'Presencial y virtual'
 
@@ -1504,9 +1533,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                   const zone =
                     row.zone
-                      ? escapeHTML(
-                          row.zone
-                        )
+                      ? escapeHTML(row.zone)
                       : '';
 
 
@@ -1535,9 +1562,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                       <div>
 
                         <strong>
-
-                          ${day}
-
+                          ${escapeHTML(day)}
                         </strong>
 
                         <div
@@ -1545,9 +1570,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             margin-top:5px;
                           "
                         >
-
                           ${start} – ${end}
-
                         </div>
 
                         <div
@@ -1557,9 +1580,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                           "
                         >
 
-                          ${escapeHTML(
-                            modalityLabel
-                          )}
+                          ${escapeHTML(modalityLabel)}
 
                           ${
                             zone
@@ -1588,12 +1609,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                             toggle-availability
                           "
                           data-id="${row.id}"
-                          data-active="${
-                            row.is_active
-                          }"
-                          style="
-                            font-size:12px;
-                          "
+                          data-active="${row.is_active}"
+                          style="font-size:12px;"
                         >
 
                           ${
@@ -1637,11 +1654,362 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       </div>
 
+
+      <!-- ========================================= -->
+      <!-- BLOQUES SIN ATENCIÓN -->
+      <!-- ========================================= -->
+
+      <div
+        class="card"
+        style="
+          padding:20px;
+          margin-bottom:20px;
+        "
+      >
+
+        <h3 style="margin-top:0;">
+          🚫 Horarios en los que no atendés
+        </h3>
+
+        <p
+          class="small muted"
+          style="margin-top:6px;"
+        >
+
+          Podés bloquear períodos dentro de tus horarios
+          habituales. Por ejemplo, si atendés de 08:00 a
+          20:00, podés bloquear de 12:00 a 13:00 para almorzar.
+
+        </p>
+
+
+        <form
+          id="unavailabilityForm"
+          style="margin-top:18px;"
+        >
+
+          <div
+            style="
+              display:grid;
+              grid-template-columns:
+                repeat(
+                  auto-fit,
+                  minmax(180px,1fr)
+                );
+              gap:14px;
+            "
+          >
+
+            <label>
+
+              <span class="small">
+                Día
+              </span>
+
+              <select
+                id="unavailabilityDay"
+                required
+                style="
+                  width:100%;
+                  margin-top:5px;
+                "
+              >
+
+                <option value="">
+                  Seleccionar día
+                </option>
+
+                <option value="1">
+                  Lunes
+                </option>
+
+                <option value="2">
+                  Martes
+                </option>
+
+                <option value="3">
+                  Miércoles
+                </option>
+
+                <option value="4">
+                  Jueves
+                </option>
+
+                <option value="5">
+                  Viernes
+                </option>
+
+                <option value="6">
+                  Sábado
+                </option>
+
+                <option value="0">
+                  Domingo
+                </option>
+
+              </select>
+
+            </label>
+
+
+            <label>
+
+              <span class="small">
+                Desde
+              </span>
+
+              <input
+                type="time"
+                id="unavailabilityStart"
+                required
+                style="
+                  width:100%;
+                  margin-top:5px;
+                "
+              >
+
+            </label>
+
+
+            <label>
+
+              <span class="small">
+                Hasta
+              </span>
+
+              <input
+                type="time"
+                id="unavailabilityEnd"
+                required
+                style="
+                  width:100%;
+                  margin-top:5px;
+                "
+              >
+
+            </label>
+
+
+            <label>
+
+              <span class="small">
+                Motivo (opcional)
+              </span>
+
+              <input
+                type="text"
+                id="unavailabilityReason"
+                maxlength="150"
+                placeholder="Ej. Almuerzo"
+                style="
+                  width:100%;
+                  margin-top:5px;
+                "
+              >
+
+            </label>
+
+          </div>
+
+
+          <button
+            type="submit"
+            class="btn secondary"
+            style="margin-top:18px;"
+          >
+
+            + Agregar período sin atención
+
+          </button>
+
+
+          <div
+            id="unavailabilityFormMessage"
+            style="margin-top:12px;"
+          ></div>
+
+        </form>
+
+
+        <div
+          style="
+            margin-top:24px;
+          "
+        >
+
+          <h4>
+            Bloques configurados
+          </h4>
+
+
+          ${
+            unavailableRows.length === 0
+
+              ? `
+
+                <p class="small muted">
+                  Todavía no configuraste bloques
+                  de no atención.
+                </p>
+
+              `
+
+              : unavailableRows
+                  .map(row => {
+
+                    const day =
+                      row.day_of_week !== null &&
+                      row.day_of_week !== undefined
+
+                        ? days[
+                            Number(
+                              row.day_of_week
+                            )
+                          ]
+
+                        : 'Fecha específica';
+
+
+                    const start =
+                      String(
+                        row.start_time || ''
+                      ).slice(0,5);
+
+
+                    const end =
+                      String(
+                        row.end_time || ''
+                      ).slice(0,5);
+
+
+                    const reason =
+                      row.reason
+                        ? escapeHTML(
+                            row.reason
+                          )
+                        : 'Sin motivo indicado';
+
+
+                    return `
+
+                      <article
+                        class="card"
+                        style="
+                          padding:16px;
+                          margin-bottom:10px;
+                          display:flex;
+                          justify-content:
+                            space-between;
+                          align-items:center;
+                          gap:12px;
+                          flex-wrap:wrap;
+                          opacity:
+                            ${
+                              row.is_active
+                                ? '1'
+                                : '.55'
+                            };
+                        "
+                      >
+
+                        <div>
+
+                          <strong>
+                            ${escapeHTML(day)}
+                          </strong>
+
+                          <div
+                            style="
+                              margin-top:4px;
+                            "
+                          >
+
+                            ${start} – ${end}
+
+                          </div>
+
+                          <div
+                            class="small muted"
+                            style="
+                              margin-top:4px;
+                            "
+                          >
+
+                            ${reason}
+
+                          </div>
+
+                        </div>
+
+
+                        <div
+                          style="
+                            display:flex;
+                            gap:8px;
+                            flex-wrap:wrap;
+                          "
+                        >
+
+                          <button
+                            type="button"
+                            class="
+                              btn
+                              secondary
+                              toggle-unavailability
+                            "
+                            data-id="${row.id}"
+                            data-active="${row.is_active}"
+                            style="font-size:12px;"
+                          >
+
+                            ${
+                              row.is_active
+                                ? 'Desactivar'
+                                : 'Activar'
+                            }
+
+                          </button>
+
+
+                          <button
+                            type="button"
+                            class="
+                              btn
+                              secondary
+                              delete-unavailability
+                            "
+                            data-id="${row.id}"
+                            style="
+                              font-size:12px;
+                              border-color:#b91c1c;
+                              color:#b91c1c;
+                            "
+                          >
+
+                            🗑 Eliminar
+
+                          </button>
+
+                        </div>
+
+                      </article>
+
+                    `;
+
+                  })
+                  .join('')
+
+          }
+
+        </div>
+
+      </div>
+
     `;
 
 
     // ===================================================
-    // DURACIÓN DE TURNOS
+    // CONFIGURACIÓN DE DURACIÓN
     // ===================================================
 
     const durationSelect =
@@ -1659,19 +2027,48 @@ document.addEventListener('DOMContentLoaded', async () => {
         'customAppointmentDuration'
       );
 
-    const durationMessage =
+
+    // ===================================================
+    // CONFIGURACIÓN DE DESCANSO
+    // ===================================================
+
+    const breakSelect =
       document.getElementById(
-        'appointmentDurationMessage'
+        'appointmentBreak'
       );
 
-    const saveDurationButton =
+    const customBreakContainer =
       document.getElementById(
-        'saveAppointmentDuration'
+        'customBreakContainer'
+      );
+
+    const customBreakInput =
+      document.getElementById(
+        'customAppointmentBreak'
+      );
+
+
+    const settingsMessage =
+      document.getElementById(
+        'appointmentSettingsMessage'
+      );
+
+    const settingsExample =
+      document.getElementById(
+        'appointmentSettingsExample'
+      );
+
+    const saveSettingsButton =
+      document.getElementById(
+        'saveAppointmentSettings'
       );
 
 
     const standardDurations =
-      [30, 45, 50, 60];
+      [30,45,50,60];
+
+    const standardBreaks =
+      [0,5,10,15,20,30];
 
 
     if (durationSelect) {
@@ -1719,22 +2116,20 @@ document.addEventListener('DOMContentLoaded', async () => {
           ) {
 
             if (customDurationContainer) {
-
               customDurationContainer.style.display =
                 'block';
-
             }
 
           } else {
 
             if (customDurationContainer) {
-
               customDurationContainer.style.display =
                 'none';
-
             }
 
           }
+
+          updateSettingsExample();
 
         }
       );
@@ -1742,46 +2137,187 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
-    if (saveDurationButton) {
+    if (breakSelect) {
 
-      saveDurationButton.addEventListener(
-        'click',
-        async () => {
+      if (
+        standardBreaks.includes(
+          appointmentBreak
+        )
+      ) {
 
-          let newDuration;
+        breakSelect.value =
+          String(
+            appointmentBreak
+          );
 
+      } else {
+
+        breakSelect.value =
+          'custom';
+
+        if (customBreakContainer) {
+
+          customBreakContainer.style.display =
+            'block';
+
+        }
+
+        if (customBreakInput) {
+
+          customBreakInput.value =
+            appointmentBreak;
+
+        }
+
+      }
+
+
+      breakSelect.addEventListener(
+        'change',
+        () => {
 
           if (
-            durationSelect?.value ===
+            breakSelect.value ===
             'custom'
           ) {
 
-            newDuration =
-              Number(
-                customDurationInput?.value
-              );
+            if (customBreakContainer) {
+              customBreakContainer.style.display =
+                'block';
+            }
 
           } else {
 
-            newDuration =
-              Number(
-                durationSelect?.value
-              );
+            if (customBreakContainer) {
+              customBreakContainer.style.display =
+                'none';
+            }
 
           }
 
+          updateSettingsExample();
+
+        }
+      );
+
+    }
+
+
+    function getSelectedDuration() {
+
+      if (
+        durationSelect?.value ===
+        'custom'
+      ) {
+
+        return Number(
+          customDurationInput?.value
+        );
+
+      }
+
+      return Number(
+        durationSelect?.value
+      );
+
+    }
+
+
+    function getSelectedBreak() {
+
+      if (
+        breakSelect?.value ===
+        'custom'
+      ) {
+
+        return Number(
+          customBreakInput?.value
+        );
+
+      }
+
+      return Number(
+        breakSelect?.value
+      );
+
+    }
+
+
+    function updateSettingsExample() {
+
+      const duration =
+        getSelectedDuration();
+
+      const breakMinutes =
+        getSelectedBreak();
+
+
+      if (
+        !Number.isInteger(duration) ||
+        duration < 1 ||
+        duration > 240
+      ) {
+
+        return;
+
+      }
+
+
+      if (
+        !Number.isInteger(breakMinutes) ||
+        breakMinutes < 0 ||
+        breakMinutes > 120
+      ) {
+
+        return;
+
+      }
+
+
+      const frequency =
+        duration +
+        breakMinutes;
+
+
+      if (settingsExample) {
+
+        settingsExample.textContent =
+          `${duration} minutos de consulta + ${breakMinutes} minutos de descanso = turnos cada ${frequency} minutos.`;
+
+      }
+
+    }
+
+
+    updateSettingsExample();
+
+
+    // ===================================================
+    // GUARDAR DURACIÓN + DESCANSO
+    // ===================================================
+
+    if (saveSettingsButton) {
+
+      saveSettingsButton.addEventListener(
+        'click',
+        async () => {
+
+          const newDuration =
+            getSelectedDuration();
+
+          const newBreak =
+            getSelectedBreak();
+
 
           if (
-            !Number.isInteger(
-              newDuration
-            ) ||
+            !Number.isInteger(newDuration) ||
             newDuration < 1 ||
             newDuration > 240
           ) {
 
-            if (durationMessage) {
+            if (settingsMessage) {
 
-              durationMessage.innerHTML = `
+              settingsMessage.innerHTML = `
 
                 <div class="message error">
 
@@ -1799,17 +2335,41 @@ document.addEventListener('DOMContentLoaded', async () => {
           }
 
 
-          saveDurationButton.disabled =
+          if (
+            !Number.isInteger(newBreak) ||
+            newBreak < 0 ||
+            newBreak > 120
+          ) {
+
+            if (settingsMessage) {
+
+              settingsMessage.innerHTML = `
+
+                <div class="message error">
+
+                  El tiempo de descanso debe ser un número
+                  entero entre 0 y 120 minutos.
+
+                </div>
+
+              `;
+
+            }
+
+            return;
+
+          }
+
+
+          saveSettingsButton.disabled =
             true;
 
-          saveDurationButton.textContent =
+          saveSettingsButton.textContent =
             'Guardando…';
 
 
-          if (durationMessage) {
-
-            durationMessage.innerHTML = '';
-
+          if (settingsMessage) {
+            settingsMessage.innerHTML = '';
           }
 
 
@@ -1818,8 +2378,13 @@ document.addEventListener('DOMContentLoaded', async () => {
           } = await sb
             .from('profiles')
             .update({
+
               appointment_duration:
-                newDuration
+                newDuration,
+
+              appointment_break:
+                newBreak
+
             })
             .eq(
               'id',
@@ -1830,18 +2395,18 @@ document.addEventListener('DOMContentLoaded', async () => {
           if (error) {
 
             console.error(
-              'Error guardando duración:',
+              'Error guardando configuración:',
               error
             );
 
 
-            if (durationMessage) {
+            if (settingsMessage) {
 
-              durationMessage.innerHTML = `
+              settingsMessage.innerHTML = `
 
                 <div class="message error">
 
-                  No se pudo guardar la duración.
+                  No se pudo guardar la configuración.
 
                 </div>
 
@@ -1850,11 +2415,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
 
-            saveDurationButton.disabled =
+            saveSettingsButton.disabled =
               false;
 
-            saveDurationButton.textContent =
-              'Guardar duración';
+            saveSettingsButton.textContent =
+              'Guardar configuración';
 
             return;
 
@@ -1864,17 +2429,17 @@ document.addEventListener('DOMContentLoaded', async () => {
           appointmentDuration =
             newDuration;
 
+          appointmentBreak =
+            newBreak;
 
-          if (durationMessage) {
 
-            durationMessage.innerHTML = `
+          if (settingsMessage) {
+
+            settingsMessage.innerHTML = `
 
               <div class="message success">
 
-                Duración guardada: 
-                <strong>
-                  ${newDuration} minutos
-                </strong>.
+                Configuración guardada correctamente.
 
               </div>
 
@@ -1883,11 +2448,14 @@ document.addEventListener('DOMContentLoaded', async () => {
           }
 
 
-          saveDurationButton.disabled =
+          saveSettingsButton.disabled =
             false;
 
-          saveDurationButton.textContent =
-            'Guardar duración';
+          saveSettingsButton.textContent =
+            'Guardar configuración';
+
+
+          updateSettingsExample();
 
         }
       );
@@ -1896,7 +2464,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     // ===================================================
-    // AGREGAR HORARIO
+    // AGREGAR HORARIO HABITUAL
     // ===================================================
 
     const form =
@@ -2001,11 +2569,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
           if (button) {
 
-            button.disabled =
-              true;
-
-            button.textContent =
-              'Guardando…';
+            button.disabled = true;
+            button.textContent = 'Guardando…';
 
           }
 
@@ -2013,9 +2578,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           const {
             error
           } = await sb
-            .from(
-              'professional_availability'
-            )
+            .from('professional_availability')
             .insert({
 
               professional_id:
@@ -2067,14 +2630,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (button) {
 
-              button.disabled =
-                false;
-
+              button.disabled = false;
               button.textContent =
                 '+ Agregar horario';
 
             }
-
 
             return;
 
@@ -2091,7 +2651,191 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     // ===================================================
-    // ACTIVAR / DESACTIVAR
+    // AGREGAR BLOQUE SIN ATENCIÓN
+    // ===================================================
+
+    const unavailabilityForm =
+      document.getElementById(
+        'unavailabilityForm'
+      );
+
+
+    if (unavailabilityForm) {
+
+      unavailabilityForm.addEventListener(
+        'submit',
+        async event => {
+
+          event.preventDefault();
+
+
+          const day =
+            document.getElementById(
+              'unavailabilityDay'
+            )?.value;
+
+
+          const start =
+            document.getElementById(
+              'unavailabilityStart'
+            )?.value;
+
+
+          const end =
+            document.getElementById(
+              'unavailabilityEnd'
+            )?.value;
+
+
+          const reason =
+            document.getElementById(
+              'unavailabilityReason'
+            )?.value.trim();
+
+
+          const message =
+            document.getElementById(
+              'unavailabilityFormMessage'
+            );
+
+
+          if (!day || !start || !end) {
+
+            if (message) {
+
+              message.innerHTML = `
+
+                <div class="message error">
+
+                  Completá el día y el horario.
+
+                </div>
+
+              `;
+
+            }
+
+            return;
+
+          }
+
+
+          if (end <= start) {
+
+            if (message) {
+
+              message.innerHTML = `
+
+                <div class="message error">
+
+                  La hora de finalización debe ser
+                  posterior a la hora de inicio.
+
+                </div>
+
+              `;
+
+            }
+
+            return;
+
+          }
+
+
+          const button =
+            unavailabilityForm.querySelector(
+              'button[type="submit"]'
+            );
+
+
+          if (button) {
+
+            button.disabled = true;
+            button.textContent =
+              'Guardando…';
+
+          }
+
+
+          const {
+            error
+          } = await sb
+            .from('professional_unavailability')
+            .insert({
+
+              professional_id:
+                user.id,
+
+              day_of_week:
+                Number(day),
+
+              specific_date:
+                null,
+
+              start_time:
+                start,
+
+              end_time:
+                end,
+
+              reason:
+                reason || null,
+
+              is_active:
+                true
+
+            });
+
+
+          if (error) {
+
+            console.error(
+              'Error guardando bloque sin atención:',
+              error
+            );
+
+
+            if (message) {
+
+              message.innerHTML = `
+
+                <div class="message error">
+
+                  No se pudo guardar el período
+                  de no atención.
+
+                </div>
+
+              `;
+
+            }
+
+
+            if (button) {
+
+              button.disabled = false;
+
+              button.textContent =
+                '+ Agregar período sin atención';
+
+            }
+
+            return;
+
+          }
+
+
+          await loadAvailability();
+
+        }
+
+      );
+
+    }
+
+
+    // ===================================================
+    // ACTIVAR / DESACTIVAR HORARIOS
     // ===================================================
 
     availabilityContent
@@ -2114,27 +2858,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
             if (!id) {
-
               return;
-
             }
 
 
-            button.disabled =
-              true;
+            button.disabled = true;
 
 
             const {
               error
             } = await sb
-              .from(
-                'professional_availability'
-              )
+              .from('professional_availability')
               .update({
+
                 is_active:
                   !active,
+
                 updated_at:
                   new Date().toISOString()
+
               })
               .eq(
                 'id',
@@ -2154,13 +2896,11 @@ document.addEventListener('DOMContentLoaded', async () => {
               );
 
 
-              button.disabled =
-                false;
+              button.disabled = false;
 
               alert(
                 'No se pudo actualizar el horario.'
               );
-
 
               return;
 
@@ -2195,9 +2935,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
             if (!id) {
-
               return;
-
             }
 
 
@@ -2209,15 +2947,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
             if (!confirmed) {
-
               return;
-
             }
 
 
-            button.disabled =
-              true;
-
+            button.disabled = true;
             button.textContent =
               'Eliminando…';
 
@@ -2225,9 +2959,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const {
               error
             } = await sb
-              .from(
-                'professional_availability'
-              )
+              .from('professional_availability')
               .delete()
               .eq(
                 'id',
@@ -2247,8 +2979,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               );
 
 
-              button.disabled =
-                false;
+              button.disabled = false;
 
               button.textContent =
                 '🗑 Eliminar';
@@ -2258,6 +2989,175 @@ document.addEventListener('DOMContentLoaded', async () => {
                 'No se pudo eliminar el horario.'
               );
 
+              return;
+
+            }
+
+
+            await loadAvailability();
+
+          }
+
+        );
+
+      });
+
+
+    // ===================================================
+    // ACTIVAR / DESACTIVAR BLOQUES SIN ATENCIÓN
+    // ===================================================
+
+    availabilityContent
+      .querySelectorAll(
+        '.toggle-unavailability'
+      )
+      .forEach(button => {
+
+        button.addEventListener(
+          'click',
+          async () => {
+
+            const id =
+              button.dataset.id;
+
+
+            const active =
+              button.dataset.active ===
+              'true';
+
+
+            if (!id) {
+              return;
+            }
+
+
+            button.disabled = true;
+
+
+            const {
+              error
+            } = await sb
+              .from('professional_unavailability')
+              .update({
+
+                is_active:
+                  !active,
+
+                updated_at:
+                  new Date().toISOString()
+
+              })
+              .eq(
+                'id',
+                id
+              )
+              .eq(
+                'professional_id',
+                user.id
+              );
+
+
+            if (error) {
+
+              console.error(
+                'Error actualizando bloque:',
+                error
+              );
+
+
+              button.disabled = false;
+
+              alert(
+                'No se pudo actualizar el bloque.'
+              );
+
+              return;
+
+            }
+
+
+            await loadAvailability();
+
+          }
+
+        );
+
+      });
+
+
+    // ===================================================
+    // ELIMINAR BLOQUE SIN ATENCIÓN
+    // ===================================================
+
+    availabilityContent
+      .querySelectorAll(
+        '.delete-unavailability'
+      )
+      .forEach(button => {
+
+        button.addEventListener(
+          'click',
+          async () => {
+
+            const id =
+              button.dataset.id;
+
+
+            if (!id) {
+              return;
+            }
+
+
+            const confirmed =
+              confirm(
+                '¿Eliminar este período sin atención?\n\n' +
+                'Esta acción no se puede deshacer.'
+              );
+
+
+            if (!confirmed) {
+              return;
+            }
+
+
+            button.disabled = true;
+
+            button.textContent =
+              'Eliminando…';
+
+
+            const {
+              error
+            } = await sb
+              .from('professional_unavailability')
+              .delete()
+              .eq(
+                'id',
+                id
+              )
+              .eq(
+                'professional_id',
+                user.id
+              );
+
+
+            if (error) {
+
+              console.error(
+                'Error eliminando bloque:',
+                error
+              );
+
+
+              button.disabled = false;
+
+              button.textContent =
+                '🗑 Eliminar';
+
+
+              alert(
+                'No se pudo eliminar el bloque.'
+              );
 
               return;
 
@@ -2282,9 +3182,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function loadProfessionalInquiries() {
 
     if (!consultasContent) {
-
       return;
-
     }
 
 
@@ -2308,9 +3206,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           class="btn primary"
           href="#suscripcion"
         >
-
           Conocer PsiCerca PRO
-
         </a>
 
       `;
@@ -2324,9 +3220,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       data,
       error
     } = await sb
-      .from(
-        'professional_inquiries'
-      )
+      .from('professional_inquiries')
       .select(`
         id,
         patient_name,
@@ -2563,9 +3457,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div>
 
                   <h3 style="margin:0;">
-
                     ${safeName}
-
                   </h3>
 
 
@@ -2579,9 +3471,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             margin-top:4px;
                           "
                         >
-
                           ${createdDate}
-
                         </div>
 
                       `
@@ -2594,9 +3484,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <span
                   class="badge ${statusClass}"
                 >
-
                   ${statusLabel}
-
                 </span>
 
               </div>
@@ -2623,9 +3511,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                           margin-bottom:10px;
                         "
                       >
-
                         Datos de contacto
-
                       </div>
 
 
@@ -2668,9 +3554,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                           7px 11px;
                                       "
                                     >
-
                                       Abrir WhatsApp
-
                                     </a>
 
                                   `
@@ -2704,9 +3588,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                               <a
                                 href="mailto:${safeEmail}"
                               >
-
                                 ${safeEmail}
-
                               </a>
 
                             </div>
@@ -2727,14 +3609,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                         margin-top:20px;
                       "
                     >
-
                       Esta consulta no tiene
                       datos de contacto.
-
                     </div>
 
                   `
-
               }
 
 
@@ -2850,7 +3729,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                   `
 
                   : ''
-
               }
 
 
@@ -2866,9 +3744,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     >
 
                       <div class="small muted">
-
                         Motivo de consulta
-
                       </div>
 
                       <div
@@ -2876,9 +3752,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                           margin-top:5px;
                         "
                       >
-
                         ${safeReason}
-
                       </div>
 
                     </div>
@@ -2886,7 +3760,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                   `
 
                   : ''
-
               }
 
 
@@ -2897,9 +3770,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               >
 
                 <div class="small muted">
-
                   Mensaje
-
                 </div>
 
 
@@ -2910,9 +3781,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     line-height:1.5;
                   "
                 >
-
                   ${safeMessage}
-
                 </div>
 
               </div>
@@ -2928,8 +3797,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               >
 
                 ${
-                  inquiry.status ===
-                  'new'
+                  inquiry.status === 'new'
 
                     ? `
 
@@ -2942,15 +3810,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                         "
                         data-id="${inquiry.id}"
                       >
-
                         Marcar como respondida
-
                       </button>
 
                     `
-
                     : ''
-
                 }
 
 
@@ -2967,9 +3831,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     color:#b91c1c;
                   "
                 >
-
                   🗑 Eliminar consulta
-
                 </button>
 
               </div>
@@ -2981,6 +3843,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         })
         .join('');
 
+
+    // ===================================================
+    // MARCAR CONSULTA COMO RESPONDIDA
+    // ===================================================
 
     consultasContent
       .querySelectorAll(
@@ -2997,15 +3863,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
             if (!inquiryId) {
-
               return;
-
             }
 
 
-            button.disabled =
-              true;
-
+            button.disabled = true;
             button.textContent =
               'Guardando…';
 
@@ -3013,14 +3875,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             const {
               error
             } = await sb
-              .from(
-                'professional_inquiries'
-              )
+              .from('professional_inquiries')
               .update({
+
                 status:
                   'responded',
+
                 updated_at:
                   new Date().toISOString()
+
               })
               .eq(
                 'id',
@@ -3040,8 +3903,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               );
 
 
-              button.disabled =
-                false;
+              button.disabled = false;
 
               button.textContent =
                 'Marcar como respondida';
@@ -3050,7 +3912,6 @@ document.addEventListener('DOMContentLoaded', async () => {
               alert(
                 'No se pudo actualizar la consulta.'
               );
-
 
               return;
 
@@ -3065,6 +3926,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       });
 
+
+    // ===================================================
+    // ELIMINAR CONSULTA
+    // ===================================================
 
     consultasContent
       .querySelectorAll(
@@ -3081,9 +3946,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
             if (!inquiryId) {
-
               return;
-
             }
 
 
@@ -3096,15 +3959,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
             if (!confirmed) {
-
               return;
-
             }
 
 
-            button.disabled =
-              true;
-
+            button.disabled = true;
             button.textContent =
               'Eliminando…';
 
@@ -3112,9 +3971,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const {
               error
             } = await sb
-              .from(
-                'professional_inquiries'
-              )
+              .from('professional_inquiries')
               .delete()
               .eq(
                 'id',
@@ -3134,8 +3991,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               );
 
 
-              button.disabled =
-                false;
+              button.disabled = false;
 
               button.textContent =
                 '🗑 Eliminar consulta';
@@ -3144,7 +4000,6 @@ document.addEventListener('DOMContentLoaded', async () => {
               alert(
                 'No se pudo eliminar la consulta.'
               );
-
 
               return;
 
