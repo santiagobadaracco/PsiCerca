@@ -568,6 +568,66 @@
     }
 
     /* =====================================================
+       ESTADÍSTICA — VISITA AL PERFIL
+       ===================================================== */
+
+    try {
+
+      let visitorId =
+        localStorage.getItem(
+          'psicerca_visitor_id'
+        );
+
+      if (!visitorId) {
+
+        if (
+          window.crypto &&
+          typeof window.crypto.randomUUID === 'function'
+        ) {
+
+          visitorId =
+            window.crypto.randomUUID();
+
+        } else {
+
+          visitorId =
+            `${Date.now()}-${Math.random()
+              .toString(36)
+              .slice(2)}`;
+
+        }
+
+        localStorage.setItem(
+          'psicerca_visitor_id',
+          visitorId
+        );
+
+      }
+
+      await sb.rpc(
+        'record_professional_profile_event',
+        {
+          target_professional_id:
+            id,
+
+          target_event_type:
+            'profile_view',
+
+          target_visitor_id:
+            visitorId
+        }
+      );
+
+    } catch (eventError) {
+
+      console.error(
+        'No se pudo registrar la visita:',
+        eventError
+      );
+
+    }
+
+    /* =====================================================
        INICIALES
        ===================================================== */
 
@@ -1012,6 +1072,7 @@
               </div>
 
               <a
+                id="whatsappContactButton"
                 class="btn primary"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -1023,6 +1084,83 @@
             </div>
 
           `;
+
+          /* =================================================
+             ESTADÍSTICA — CONTACTO
+             ================================================= */
+
+          const whatsappButton =
+            document.getElementById(
+              'whatsappContactButton'
+            );
+
+          if (whatsappButton) {
+
+            whatsappButton.addEventListener(
+              'click',
+              async function () {
+
+                try {
+
+                  let visitorId =
+                    localStorage.getItem(
+                      'psicerca_visitor_id'
+                    );
+
+                  if (!visitorId) {
+
+                    if (
+                      window.crypto &&
+                      typeof window.crypto.randomUUID ===
+                        'function'
+                    ) {
+
+                      visitorId =
+                        window.crypto.randomUUID();
+
+                    } else {
+
+                      visitorId =
+                        `${Date.now()}-${Math.random()
+                          .toString(36)
+                          .slice(2)}`;
+
+                    }
+
+                    localStorage.setItem(
+                      'psicerca_visitor_id',
+                      visitorId
+                    );
+
+                  }
+
+                  await sb.rpc(
+                    'record_professional_profile_event',
+                    {
+                      target_professional_id:
+                        id,
+
+                      target_event_type:
+                        'contact_request',
+
+                      target_visitor_id:
+                        visitorId
+                    }
+                  );
+
+                } catch (eventError) {
+
+                  console.error(
+                    'No se pudo registrar el contacto:',
+                    eventError
+                  );
+
+                }
+
+              }
+            );
+
+          }
 
         }
 
@@ -1877,35 +2015,35 @@ async function renderAgenda(
 
     try {
 
-     const {
-  data,
-  error
-} =
-  await sb.rpc(
-    'get_available_slots',
-    {
-      target_professional_id:
-        professionalId,
+      const {
+        data,
+        error
+      } =
+        await sb.rpc(
+          'get_available_slots',
+          {
+            target_professional_id:
+              professionalId,
 
-      target_date:
-        selectedDate,
+            target_date:
+              selectedDate,
 
-      target_modality:
-        modalitySelect.value
-    }
-  );
+            target_modality:
+              modalitySelect.value
+          }
+        );
 
       if (error) {
 
-       console.error(
-  'ERROR DETALLADO OBTENIENDO TURNOS:',
-  JSON.stringify(error, null, 2)
-);
+        console.error(
+          'ERROR DETALLADO OBTENIENDO TURNOS:',
+          JSON.stringify(error, null, 2)
+        );
 
         slotsArea.innerHTML = `
           <div class="agenda-message">
-          </div>
             No pudimos cargar los horarios disponibles.
+          </div>
         `;
 
         return;
