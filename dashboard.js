@@ -574,7 +574,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (profileZone) {
 
+      const locations =
+        normalizeArray(
+          data.locations ??
+          data.attention_locations
+        );
+
+
       profileZone.textContent =
+        locations[0] ||
         data.zone ||
         'No especificada';
 
@@ -928,6 +936,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentProfile &&
         Object.prototype.hasOwnProperty.call(
           currentProfile,
+          'zone'
+        )
+      ) {
+
+        updateData.zone =
+          locations[0] ||
+          null;
+
+      }
+
+
+      if (
+        currentProfile &&
+        Object.prototype.hasOwnProperty.call(
+          currentProfile,
           'updated_at'
         )
       ) {
@@ -1111,14 +1134,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       // GUARDAR WHATSAPP
       // =================================================
       //
-      // WhatsApp YA NO pertenece a profiles.
-      // Se guarda exclusivamente en professional_contacts.
+      // WhatsApp pertenece exclusivamente a
+      // professional_contacts.
       //
-      // Si está vacío, se conserva la fila pero con
-      // whatsapp = NULL.
-      //
-      // La visibilidad pública depende del RPC
-      // get_professional_contact(), que verifica PRO.
+      // El acceso público al contacto continúa
+      // controlado por el RPC y por PRO.
       // =================================================
 
       const {
@@ -1464,7 +1484,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
 
-            preview.innerHTML = '';
+            preview.innerHTML =
+              '';
 
 
             const image =
@@ -1889,6 +1910,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       subscription?.cancel_at_period_end &&
       subscription?.expires_at
     ) {
+
 
       const endDate =
         new Date(
@@ -4490,6 +4512,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById(
         'appointmentsContent'
       );
+
 
     if (!container) return;
 
