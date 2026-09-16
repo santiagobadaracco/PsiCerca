@@ -4558,7 +4558,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ---------------------------------------------------
     // FREE
     // ---------------------------------------------------
-
+console.log(
+  'ESTADÍSTICAS — isPro:',
+  isPro,
+  'isPaidPro:',
+  isPaidPro,
+  'isCourtesyPro:',
+  isCourtesyPro
+);
     if (!isPro) {
 
       container.innerHTML = `
