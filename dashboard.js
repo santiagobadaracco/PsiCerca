@@ -4607,10 +4607,42 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function loadProfessionalInquiries() {
 
-    if (!consultasContent) {
-      return;
-    }
+async function loadProfessionalInquiries() {
 
+  if (!consultasContent) {
+    return;
+  }
+
+  if (!isPro) {
+
+    consultasContent.innerHTML = `
+      <div class="card">
+
+        <strong>
+          🔒 Comunicación interna disponible con PsiCerca PRO
+        </strong>
+
+        <p
+          class="small muted"
+          style="margin-top:8px;"
+        >
+          Recibí y respondé consultas de pacientes
+          desde PsiCerca PRO.
+        </p>
+
+        <a
+          class="btn primary"
+          href="#suscripcion"
+          style="margin-top:12px;"
+        >
+          Conocer PsiCerca PRO
+        </a>
+
+      </div>
+    `;
+
+    return;
+  }
 
     const {
       data,
