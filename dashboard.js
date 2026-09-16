@@ -4501,7 +4501,529 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   }
 
+  // =====================================================
+  // ESTADÍSTICAS PRO
+  // =====================================================
 
+  async function loadStatistics() {
+
+    let container =
+      document.getElementById(
+        'statisticsContent'
+      );
+
+
+    // ---------------------------------------------------
+    // CREAR CONTENEDOR SI TODAVÍA NO EXISTE
+    // ---------------------------------------------------
+
+    if (!container) {
+
+      container =
+        document.createElement(
+          'section'
+        );
+
+      container.id =
+        'statisticsContent';
+
+      container.style.marginBottom =
+        '28px';
+
+
+      if (consultasContent) {
+
+        const parent =
+          consultasContent.parentElement;
+
+        if (parent) {
+
+          parent.insertBefore(
+            container,
+            consultasContent
+          );
+
+        }
+
+      }
+
+    }
+
+
+    if (!container) {
+      return;
+    }
+
+
+    // ---------------------------------------------------
+    // FREE
+    // ---------------------------------------------------
+
+    if (!isPro) {
+
+      container.innerHTML = `
+
+        <div
+          class="card"
+          style="
+            padding:22px;
+            margin-bottom:20px;
+          "
+        >
+
+          <div
+            style="
+              display:flex;
+              justify-content:space-between;
+              align-items:flex-start;
+              gap:15px;
+              flex-wrap:wrap;
+            "
+          >
+
+            <div>
+
+              <h3 style="margin:0;">
+                📊 Estadísticas de tu perfil
+              </h3>
+
+              <p
+                class="small muted"
+                style="margin-top:7px;"
+              >
+                Conocé cómo interactúan los pacientes
+                con tu perfil profesional.
+              </p>
+
+            </div>
+
+            <span class="badge">
+              🔒 PRO
+            </span>
+
+          </div>
+
+
+          <div
+            style="
+              margin-top:18px;
+              padding:18px;
+              border-radius:14px;
+              background:var(--background);
+            "
+          >
+
+            <strong>
+              Tus estadísticas están disponibles
+              con PsiCerca PRO.
+            </strong>
+
+            <p
+              class="small muted"
+              style="margin-top:7px;"
+            >
+              Vas a poder consultar las visitas a tu
+              perfil, visitantes únicos, contactos,
+              consultas y turnos recibidos.
+            </p>
+
+          </div>
+
+
+          <a
+            class="btn primary"
+            href="#suscripcion"
+            style="margin-top:16px;"
+          >
+            Conocer PsiCerca PRO
+          </a>
+
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+
+    // ---------------------------------------------------
+    // CARGANDO
+    // ---------------------------------------------------
+
+    container.innerHTML = `
+
+      <div
+        class="card"
+        style="padding:22px;"
+      >
+
+        <h3 style="margin:0;">
+          📊 Estadísticas de tu perfil
+        </h3>
+
+        <p
+          class="small muted"
+          style="margin-top:7px;"
+        >
+          Cargando estadísticas…
+        </p>
+
+      </div>
+
+    `;
+
+
+    // ---------------------------------------------------
+    // CONSULTAR SUPABASE
+    // ---------------------------------------------------
+
+    const {
+      data,
+      error
+    } = await sb.rpc(
+      'get_professional_statistics'
+    );
+
+
+    if (error) {
+
+      console.error(
+        'Error cargando estadísticas:',
+        error
+      );
+
+
+      container.innerHTML = `
+
+        <div
+          class="card"
+          style="padding:22px;"
+        >
+
+          <h3 style="margin:0;">
+            📊 Estadísticas de tu perfil
+          </h3>
+
+          <div
+            class="message error"
+            style="margin-top:14px;"
+          >
+            No se pudieron cargar las estadísticas.
+          </div>
+
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+
+    const statistics =
+      typeof data === 'string'
+        ? JSON.parse(data)
+        : (
+            data ||
+            {}
+          );
+
+
+    const profileViews =
+      Number(
+        statistics.profile_views
+      ) || 0;
+
+
+    const uniqueVisitors =
+      Number(
+        statistics.unique_visitors
+      ) || 0;
+
+
+    const contactRequests =
+      Number(
+        statistics.contact_requests
+      ) || 0;
+
+
+    const inquiries =
+      Number(
+        statistics.inquiries
+      ) || 0;
+
+
+    const appointments =
+      Number(
+        statistics.appointments
+      ) || 0;
+
+
+    // ---------------------------------------------------
+    // CONVERSIÓN VISITA → CONTACTO
+    // ---------------------------------------------------
+
+    let contactRate = 0;
+
+
+    if (profileViews > 0) {
+
+      contactRate =
+        (
+          contactRequests /
+          profileViews
+        ) * 100;
+
+    }
+
+
+    const formattedRate =
+      contactRate
+        .toFixed(1)
+        .replace(
+          '.',
+          ','
+        );
+
+
+    // ---------------------------------------------------
+    // RENDER
+    // ---------------------------------------------------
+
+    container.innerHTML = `
+
+      <div
+        class="card"
+        style="
+          padding:22px;
+          margin-bottom:20px;
+        "
+      >
+
+        <div
+          style="
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-start;
+            gap:15px;
+            flex-wrap:wrap;
+          "
+        >
+
+          <div>
+
+            <h3 style="margin:0;">
+              📊 Estadísticas de tu perfil
+            </h3>
+
+            <p
+              class="small muted"
+              style="margin-top:7px;"
+            >
+              Actividad registrada desde la publicación
+              de tu perfil.
+            </p>
+
+          </div>
+
+          <span class="badge success">
+            PRO
+          </span>
+
+        </div>
+
+
+        <div
+          style="
+            display:grid;
+            grid-template-columns:
+              repeat(
+                auto-fit,
+                minmax(150px,1fr)
+              );
+            gap:12px;
+            margin-top:20px;
+          "
+        >
+
+
+          <div
+            style="
+              padding:18px;
+              border-radius:14px;
+              background:var(--background);
+            "
+          >
+
+            <div
+              class="small muted"
+            >
+              Visitas al perfil
+            </div>
+
+            <strong
+              style="
+                display:block;
+                font-size:28px;
+                margin-top:5px;
+              "
+            >
+              ${profileViews}
+            </strong>
+
+          </div>
+
+
+          <div
+            style="
+              padding:18px;
+              border-radius:14px;
+              background:var(--background);
+            "
+          >
+
+            <div
+              class="small muted"
+            >
+              Visitantes únicos
+            </div>
+
+            <strong
+              style="
+                display:block;
+                font-size:28px;
+                margin-top:5px;
+              "
+            >
+              ${uniqueVisitors}
+            </strong>
+
+          </div>
+
+
+          <div
+            style="
+              padding:18px;
+              border-radius:14px;
+              background:var(--background);
+            "
+          >
+
+            <div
+              class="small muted"
+            >
+              Contactos
+            </div>
+
+            <strong
+              style="
+                display:block;
+                font-size:28px;
+                margin-top:5px;
+              "
+            >
+              ${contactRequests}
+            </strong>
+
+          </div>
+
+
+          <div
+            style="
+              padding:18px;
+              border-radius:14px;
+              background:var(--background);
+            "
+          >
+
+            <div
+              class="small muted"
+            >
+              Consultas
+            </div>
+
+            <strong
+              style="
+                display:block;
+                font-size:28px;
+                margin-top:5px;
+              "
+            >
+              ${inquiries}
+            </strong>
+
+          </div>
+
+
+          <div
+            style="
+              padding:18px;
+              border-radius:14px;
+              background:var(--background);
+            "
+          >
+
+            <div
+              class="small muted"
+            >
+              Turnos
+            </div>
+
+            <strong
+              style="
+                display:block;
+                font-size:28px;
+                margin-top:5px;
+              "
+            >
+              ${appointments}
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        <div
+          style="
+            margin-top:16px;
+            padding:15px 18px;
+            border-radius:14px;
+            border:1px solid rgba(0,0,0,.07);
+            background:var(--soft);
+          "
+        >
+
+          <div class="small muted">
+            Conversión de visitas a contactos
+          </div>
+
+          <strong
+            style="
+              display:block;
+              margin-top:4px;
+              font-size:20px;
+            "
+          >
+            ${formattedRate}%
+          </strong>
+
+          <p
+            class="small muted"
+            style="margin-top:5px;"
+          >
+            Porcentaje calculado sobre las visitas
+            registradas a tu perfil.
+          </p>
+
+        </div>
+
+      </div>
+
+    `;
+
+  }
   // =====================================================
   // TURNOS
   // =====================================================
