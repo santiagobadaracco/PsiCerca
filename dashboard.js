@@ -6032,20 +6032,21 @@ async function loadProfessionalInquiries() {
 
   try {
 
-    await loadProfile();
+  await loadProfile();
 
-    await loadSubscription();
+  await loadSubscription();
 
-    await loadProfessionalInquiries();
+  await loadStatistics();
 
-    await loadAppointments();
+  await loadProfessionalInquiries();
 
-    await loadAvailability();
+  await loadAppointments();
 
+  await loadAvailability();
 
-    console.log(
-      'Dashboard cargado correctamente.'
-    );
+  console.log(
+    'Dashboard cargado correctamente.'
+  );
 
 
   } catch (error) {
