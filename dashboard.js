@@ -4605,8 +4605,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   // CONSULTAS PROFESIONALES
   // =====================================================
 
-  async function loadProfessionalInquiries() {
-
 async function loadProfessionalInquiries() {
 
   if (!consultasContent) {
