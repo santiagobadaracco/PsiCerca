@@ -6086,3 +6086,85 @@ async function loadProfessionalInquiries() {
   }
 
 });
+
+const upgradeProButton =
+  document.getElementById('upgradeProButton');
+
+if (upgradeProButton) {
+
+  upgradeProButton.addEventListener(
+    'click',
+    async () => {
+
+      try {
+
+        upgradeProButton.disabled = true;
+        upgradeProButton.textContent =
+          'Preparando contratación…';
+
+        const sb = requireSupabase();
+
+        const {
+          data: {
+            session
+          },
+          error: sessionError
+        } = await sb.auth.getSession();
+
+        if (
+          sessionError ||
+          !session
+        ) {
+          throw new Error(
+            'Tu sesión no está activa. Volvé a iniciar sesión.'
+          );
+        }
+
+        const {
+          data,
+          error
+        } = await sb.functions.invoke(
+          'create-pro-subscription',
+          {
+            body: {}
+          }
+        );
+
+        if (error) {
+          throw error;
+        }
+
+        if (
+          !data ||
+          !data.checkout_url
+        ) {
+          throw new Error(
+            'Mercado Pago no devolvió una URL de pago.'
+          );
+        }
+
+        window.location.href =
+          data.checkout_url;
+
+      } catch (error) {
+
+        console.error(
+          'Error al contratar PsiCerca PRO:',
+          error
+        );
+
+        alert(
+          error?.message ||
+          'No se pudo iniciar la contratación de PsiCerca PRO.'
+        );
+
+        upgradeProButton.disabled = false;
+        upgradeProButton.textContent =
+          'Contratar PsiCerca PRO';
+
+      }
+
+    }
+  );
+
+}
