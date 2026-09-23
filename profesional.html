@@ -2757,394 +2757,286 @@ async function renderAgenda(
 
   async function loadSlots() {
 
-    selectedSlot =
-      null;
+  selectedSlot = null;
 
-    confirmArea.style.display =
-      'none';
+  confirmArea.style.display = 'none';
+  confirmArea.innerHTML = '';
 
-    confirmArea.innerHTML =
-      '';
+  slotsArea.innerHTML = `
+
+    <div class="agenda-message">
+      Buscando horarios disponibles…
+    </div>
+
+  `;
+
+  selectedDateArea.innerHTML = `
+
+    <div class="agenda-selected-date-label">
+      Turnos disponibles
+    </div>
+
+    <div class="agenda-selected-date-value">
+      ${escapeHTML(
+        formatSpanishDate(selectedDate)
+      )}
+    </div>
+
+  `;
+
+  try {
+
+    /*
+      Consultamos ambas modalidades por separado.
+
+      Esto es necesario porque la consulta original
+      comenzaba siempre con "virtual", por lo que nunca
+      podía descubrir que también existían horarios
+      presenciales.
+    */
+
+    const [
+      virtualResult,
+      presencialResult
+    ] = await Promise.all([
+
+      sb.rpc(
+        'get_available_slots',
+        {
+          target_professional_id:
+            professionalId,
+
+          target_date:
+            selectedDate,
+
+          target_modality:
+            'virtual'
+        }
+      ),
+
+      sb.rpc(
+        'get_available_slots',
+        {
+          target_professional_id:
+            professionalId,
+
+          target_date:
+            selectedDate,
+
+          target_modality:
+            'presencial'
+        }
+      )
+
+    ]);
+
+    if (virtualResult.error) {
+
+      console.error(
+        'Error obteniendo turnos virtuales:',
+        virtualResult.error
+      );
+
+    }
+
+    if (presencialResult.error) {
+
+      console.error(
+        'Error obteniendo turnos presenciales:',
+        presencialResult.error
+      );
+
+    }
+
+    /*
+      Unimos los resultados de ambas consultas.
+    */
+
+    const virtualSlots =
+      Array.isArray(virtualResult.data)
+        ? virtualResult.data
+        : [];
+
+    const presencialSlots =
+      Array.isArray(presencialResult.data)
+        ? presencialResult.data
+        : [];
+
+    /*
+      Evitamos duplicados.
+
+      Esto es especialmente importante si la función
+      devuelve una disponibilidad "ambas" tanto al
+      consultar virtual como al consultar presencial.
+    */
+
+    const combinedSlots = [
+      ...virtualSlots,
+      ...presencialSlots
+    ];
+
+    const uniqueSlots =
+      combinedSlots.filter(
+        (slot, index, array) => {
+
+          const normalized =
+            normalizeSlot(slot);
+
+          if (!normalized) {
+            return false;
+          }
+
+          return (
+            index ===
+            array.findIndex(
+              other => {
+
+                const otherNormalized =
+                  normalizeSlot(other);
+
+                if (!otherNormalized) {
+                  return false;
+                }
+
+                return (
+                  otherNormalized.slot_start ===
+                    normalized.slot_start &&
+
+                  otherNormalized.slot_end ===
+                    normalized.slot_end &&
+
+                  otherNormalized.modality ===
+                    normalized.modality &&
+
+                  otherNormalized.zone ===
+                    normalized.zone
+                );
+
+              }
+            )
+          );
+
+        }
+      );
+
+    currentSlots =
+      uniqueSlots
+        .map(normalizeSlot)
+        .filter(Boolean);
+
+    /*
+      Detectamos qué modalidades existen realmente.
+    */
+
+    const hasVirtual =
+      currentSlots.some(
+        slot =>
+          slot.modality === 'virtual' ||
+          slot.modality === 'ambas'
+      );
+
+    const hasPresencial =
+      currentSlots.some(
+        slot =>
+          slot.modality === 'presencial' ||
+          slot.modality === 'ambas'
+      );
+
+    /*
+      Si existen ambas modalidades mostramos el selector.
+      Si solamente existe una, la seleccionamos automáticamente.
+    */
+
+    if (
+      hasVirtual &&
+      hasPresencial
+    ) {
+
+      modalityControl.style.display =
+        'block';
+
+      /*
+        Conservamos la modalidad actualmente seleccionada
+        si sigue siendo válida.
+      */
+
+      if (
+        modalitySelect.value !== 'virtual' &&
+        modalitySelect.value !== 'presencial'
+      ) {
+
+        modalitySelect.value =
+          'virtual';
+
+      }
+
+    } else {
+
+      modalityControl.style.display =
+        'none';
+
+      if (hasPresencial) {
+
+        modalitySelect.value =
+          'presencial';
+
+      } else {
+
+        modalitySelect.value =
+          'virtual';
+
+      }
+
+    }
+
+    updateModalityUI();
+
+    if (!currentSlots.length) {
+
+      slotsArea.innerHTML = `
+
+        <div class="agenda-message agenda-message-empty">
+
+          <div class="agenda-message-icon">
+            ○
+          </div>
+
+          <strong>
+            No hay turnos disponibles
+          </strong>
+
+          <span>
+            Probá seleccionando otro día.
+          </span>
+
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+    renderSlots();
+
+  } catch (error) {
+
+    console.error(
+      'Error cargando agenda:',
+      error
+    );
 
     slotsArea.innerHTML = `
 
       <div class="agenda-message">
-        Buscando horarios disponibles…
+        No pudimos cargar la agenda.
       </div>
 
     `;
-
-    selectedDateArea.innerHTML = `
-
-      <div class="agenda-selected-date-label">
-        Turnos disponibles
-      </div>
-
-      <div class="agenda-selected-date-value">
-        ${escapeHTML(
-          formatSpanishDate(
-            selectedDate
-          )
-        )}
-      </div>
-
-    `;
-
-    try {
-
-      const {
-        data,
-        error
-      } =
-        await sb.rpc(
-          'get_available_slots',
-          {
-
-            target_professional_id:
-              professionalId,
-
-            target_date:
-              selectedDate,
-
-            target_modality:
-              modalitySelect.value
-
-          }
-        );
-
-      if (error) {
-
-        console.error(
-          'ERROR DETALLADO OBTENIENDO TURNOS:',
-          JSON.stringify(
-            error,
-            null,
-            2
-          )
-        );
-
-        slotsArea.innerHTML = `
-
-          <div class="agenda-message">
-            No pudimos cargar los horarios disponibles.
-          </div>
-
-        `;
-
-        return;
-
-      }
-
-      const rawSlots =
-        Array.isArray(data)
-          ? data
-          : [];
-
-      currentSlots =
-        rawSlots
-          .map(normalizeSlot)
-          .filter(Boolean);
-
-      const hasVirtual =
-        currentSlots.some(
-          slot =>
-            slot.modality === 'virtual' ||
-            slot.modality === 'ambas'
-        );
-
-      const hasPresencial =
-        currentSlots.some(
-          slot =>
-            slot.modality === 'presencial' ||
-            slot.modality === 'ambas'
-        );
-
-      if (
-        hasVirtual &&
-        hasPresencial
-      ) {
-
-        modalityControl.style.display =
-          'block';
-
-      } else {
-
-        modalityControl.style.display =
-          'none';
-
-        if (hasPresencial) {
-
-          modalitySelect.value =
-            'presencial';
-
-        } else {
-
-          modalitySelect.value =
-            'virtual';
-
-        }
-
-      }
-
-      updateModalityUI();
-
-      if (!currentSlots.length) {
-
-        slotsArea.innerHTML = `
-
-          <div class="agenda-message agenda-message-empty">
-
-            <div class="agenda-message-icon">
-              ○
-            </div>
-
-            <strong>
-              No hay turnos disponibles
-            </strong>
-
-            <span>
-              Probá seleccionando otro día.
-            </span>
-
-          </div>
-
-        `;
-
-        return;
-
-      }
-
-      renderSlots();
-
-    } catch (error) {
-
-      console.error(
-        'Error cargando agenda:',
-        error
-      );
-
-      slotsArea.innerHTML = `
-
-        <div class="agenda-message">
-          No pudimos cargar la agenda.
-        </div>
-
-      `;
-
-    }
 
   }
 
-
-  /* =======================================================
-     RENDER DE SLOTS
-     ======================================================= */
-
-  function renderSlots() {
-
-    const selectedModality =
-      modalitySelect.value;
-
-    const filteredSlots =
-      currentSlots.filter(
-        slot => {
-
-          if (
-            slot.modality === 'ambas'
-          ) {
-
-            return true;
-
-          }
-
-          return (
-            slot.modality ===
-            selectedModality
-          );
-
-        }
-      );
-
-    if (!filteredSlots.length) {
-
-      slotsArea.innerHTML = `
-
-        <div class="agenda-message">
-          No hay horarios disponibles para
-          la modalidad seleccionada.
-        </div>
-
-      `;
-
-      return;
-
-    }
-
-    slotsArea.innerHTML = `
-
-      <div class="agenda-section-label">
-        Elegí un horario
-      </div>
-
-      <div class="agenda-slots">
-
-        ${
-          filteredSlots
-            .map(
-              (slot, index) => {
-
-                const start =
-                  formatTime(
-                    slot.slot_start
-                  );
-
-                const end =
-                  formatTime(
-                    slot.slot_end
-                  );
-
-                if (!start || !end) {
-                  return '';
-                }
-
-                return `
-
-                  <button
-                    type="button"
-                    class="agenda-slot"
-                    data-index="${index}"
-                  >
-
-                    <span class="agenda-slot-time">
-                      ${escapeHTML(start)}
-                    </span>
-
-                    <span class="agenda-slot-end">
-                      hasta ${escapeHTML(end)}
-                    </span>
-
-                  </button>
-
-                `;
-
-              }
-            )
-            .join('')
-        }
-
-      </div>
-
-    `;
-
-    if (
-      !slotsArea.querySelector(
-        '.agenda-slot'
-      )
-    ) {
-
-      slotsArea.innerHTML = `
-
-        <div class="agenda-message">
-          Los horarios configurados no pudieron
-          ser interpretados correctamente.
-        </div>
-
-      `;
-
-      return;
-
-    }
-
-    slotsArea
-      .querySelectorAll(
-        '.agenda-slot'
-      )
-      .forEach(
-        button => {
-
-          button.addEventListener(
-            'click',
-            function () {
-
-              const index =
-                Number(
-                  this.dataset.index
-                );
-
-              const slot =
-                filteredSlots[index];
-
-              if (!slot) {
-                return;
-              }
-
-              let selectedModality =
-                modalitySelect.value;
-
-              if (
-                slot.modality ===
-                'presencial'
-              ) {
-
-                selectedModality =
-                  'presencial';
-
-              }
-
-              if (
-                slot.modality ===
-                'virtual'
-              ) {
-
-                selectedModality =
-                  'virtual';
-
-              }
-
-              selectedSlot = {
-
-                date:
-                  selectedDate,
-
-                startTime:
-                  slot.slot_start,
-
-                endTime:
-                  slot.slot_end,
-
-                modality:
-                  selectedModality,
-
-                zone:
-                  slot.zone || null
-
-              };
-
-              document
-                .querySelectorAll(
-                  '.agenda-slot'
-                )
-                .forEach(
-                  slotButton =>
-                    slotButton.classList.remove(
-                      'is-selected'
-                    )
-                );
-
-              this.classList.add(
-                'is-selected'
-              );
-
-              showConfirmation();
-
-            }
-          );
-
-        }
-      );
-
-  }
-
+}
 
   /* =======================================================
      CONFIRMACIÓN
