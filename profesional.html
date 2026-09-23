@@ -65,7 +65,7 @@
       display: flex;
       align-items: flex-start;
       gap: 14px;
-      margin-bottom: 22px;
+      margin-bottom: 24px;
     }
 
     .agenda-icon {
@@ -93,29 +93,250 @@
       line-height: 1.55;
     }
 
-    .agenda-controls {
+    /* =====================================================
+       CALENDARIO
+       ===================================================== */
+
+    .agenda-calendar-header {
       display: flex;
+      align-items: center;
+      justify-content: space-between;
       gap: 12px;
-      align-items: flex-end;
-      flex-wrap: wrap;
-      margin-bottom: 22px;
+      margin-bottom: 18px;
+      padding: 0 2px;
     }
 
-    .agenda-control {
+    .agenda-month-title {
+      flex: 1;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .agenda-month-button {
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      color: var(--text);
+      cursor: pointer;
+      font: inherit;
+      font-size: 27px;
+      line-height: 1;
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: .15s ease;
+    }
+
+    .agenda-month-button:hover:not(:disabled) {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .agenda-month-button:disabled {
+      opacity: .35;
+      cursor: not-allowed;
+    }
+
+    .agenda-calendar {
+      width: 100%;
+    }
+
+    .agenda-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 7px;
+      margin-bottom: 7px;
+    }
+
+    .agenda-weekday {
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .agenda-days {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
       gap: 7px;
     }
 
-    .agenda-control label {
-      font-size: 13px;
-      font-weight: 700;
+    .agenda-day {
+      position: relative;
+      min-height: 58px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: #fff;
+      color: var(--text);
+      cursor: pointer;
+      font: inherit;
+      transition: .15s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      padding: 6px;
     }
 
-    .agenda-control input,
-    .agenda-control select {
-      min-height: 44px;
-      box-sizing: border-box;
+    .agenda-day:hover:not(:disabled) {
+      border-color: var(--accent);
+      background: var(--soft);
+      transform: translateY(-1px);
+    }
+
+    .agenda-day-number {
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .agenda-day-label {
+      font-size: 9px;
+      font-weight: 800;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .agenda-day-today {
+      border-color: var(--accent);
+    }
+
+    .agenda-day-selected {
+      background: var(--accent) !important;
+      border-color: var(--accent) !important;
+      color: #fff !important;
+      box-shadow: 0 5px 14px rgba(40, 125, 114, .18);
+    }
+
+    .agenda-day-selected .agenda-day-label {
+      color: #fff;
+    }
+
+    .agenda-day-disabled {
+      background: #f7f7f7;
+      color: #b8b8b8;
+      cursor: not-allowed;
+      border-color: #eeeeee;
+    }
+
+    .agenda-day-empty {
+      border-color: transparent;
+      background: transparent;
+      cursor: default;
+    }
+
+    /* =====================================================
+       FECHA SELECCIONADA
+       ===================================================== */
+
+    .agenda-selected-date {
+      margin-top: 22px;
+      padding: 16px 18px;
+      border-radius: 15px;
+      background: var(--soft);
+    }
+
+    .agenda-selected-date-label {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-bottom: 4px;
+    }
+
+    .agenda-selected-date-value {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text);
+      text-transform: capitalize;
+    }
+
+    /* =====================================================
+       MODALIDAD
+       ===================================================== */
+
+    .agenda-modality {
+      margin-top: 18px;
+    }
+
+    .agenda-section-label {
+      margin-bottom: 10px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .agenda-modality-options {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .agenda-modality-option {
+      min-height: 62px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+      cursor: pointer;
+      text-align: left;
+      font: inherit;
+      transition: .15s ease;
+    }
+
+    .agenda-modality-option:hover {
+      border-color: var(--accent);
+    }
+
+    .agenda-modality-option.is-selected {
+      border-color: var(--accent);
+      background: var(--soft);
+    }
+
+    .agenda-modality-dot {
+      width: 10px;
+      height: 10px;
+      min-width: 10px;
+      border-radius: 50%;
+      background: #c7c7c7;
+    }
+
+    .agenda-modality-option.is-selected .agenda-modality-dot {
+      background: var(--accent);
+    }
+
+    .agenda-modality-option strong {
+      display: block;
+      font-size: 13px;
+    }
+
+    .agenda-modality-option small {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    /* =====================================================
+       HORARIOS
+       ===================================================== */
+
+    .agenda-slots-area {
+      margin-top: 22px;
     }
 
     .agenda-slots {
@@ -126,35 +347,52 @@
 
     .agenda-slot {
       width: 100%;
-      min-height: 58px;
+      min-height: 64px;
       border: 1px solid var(--line);
       border-radius: 14px;
       background: #fff;
       cursor: pointer;
       font: inherit;
-      font-weight: 700;
       transition: .15s ease;
-      padding: 10px;
+      padding: 11px;
+      text-align: center;
     }
 
     .agenda-slot:hover {
       transform: translateY(-1px);
       border-color: var(--accent);
+      background: var(--soft);
+    }
+
+    .agenda-slot.is-selected {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 5px 14px rgba(40, 125, 114, .18);
     }
 
     .agenda-slot-time {
       display: block;
-      font-size: 16px;
+      font-size: 17px;
       font-weight: 800;
+      line-height: 1.2;
     }
 
-    .agenda-slot small {
+    .agenda-slot-end {
       display: block;
-      margin-top: 3px;
+      margin-top: 4px;
       font-size: 11px;
       font-weight: 500;
       color: var(--muted);
     }
+
+    .agenda-slot.is-selected .agenda-slot-end {
+      color: rgba(255, 255, 255, .82);
+    }
+
+    /* =====================================================
+       MENSAJES
+       ===================================================== */
 
     .agenda-message {
       padding: 16px;
@@ -165,6 +403,34 @@
       line-height: 1.5;
     }
 
+    .agenda-message-empty {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      align-items: center;
+      text-align: center;
+      padding: 24px 16px;
+    }
+
+    .agenda-message-icon {
+      font-size: 24px;
+      margin-bottom: 4px;
+    }
+
+    .agenda-message-empty strong {
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .agenda-message-empty span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    /* =====================================================
+       CONFIRMACIÓN
+       ===================================================== */
+
     .agenda-confirm {
       margin-top: 20px;
       padding: 20px;
@@ -174,25 +440,80 @@
 
     .agenda-confirm-title {
       font-weight: 800;
-      margin-bottom: 6px;
+      margin-bottom: 12px;
+      font-size: 18px;
     }
 
-    .agenda-confirm-details {
-      margin: 0 0 16px;
+    .agenda-confirm-summary {
+      display: grid;
+      gap: 9px;
+      margin-bottom: 14px;
+    }
+
+    .agenda-confirm-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
       font-size: 14px;
-      line-height: 1.5;
+    }
+
+    .agenda-confirm-label {
+      color: var(--muted);
+    }
+
+    .agenda-confirm-zone {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #fff;
+      font-size: 13px;
     }
 
     .agenda-confirm-actions {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
+      margin-top: 18px;
     }
 
     .agenda-status {
       margin-top: 14px;
       font-size: 13px;
       font-weight: 600;
+    }
+
+    .agenda-confirm-success {
+      text-align: center;
+    }
+
+    .agenda-success-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 12px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .agenda-success-details {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin: 14px 0 18px;
+      padding: 15px;
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .agenda-success-details span {
+      font-size: 13px;
+      color: var(--muted);
     }
 
     /* =====================================================
@@ -407,19 +728,54 @@
         border-radius: 18px;
       }
 
+      .agenda-days,
+      .agenda-weekdays {
+        gap: 5px;
+      }
+
+      .agenda-day {
+        min-height: 50px;
+        border-radius: 11px;
+      }
+
+      .agenda-day-number {
+        font-size: 14px;
+      }
+
+      .agenda-weekday {
+        font-size: 9px;
+      }
+
+      .agenda-month-title {
+        font-size: 18px;
+      }
+
+      .agenda-month-button {
+        width: 38px;
+        height: 38px;
+      }
+
+      .agenda-modality-options {
+        grid-template-columns: 1fr;
+      }
+
       .agenda-slots {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
-      .agenda-controls {
+      .agenda-confirm-row {
+        align-items: flex-start;
         flex-direction: column;
-        align-items: stretch;
+        gap: 2px;
       }
 
-      .agenda-control,
-      .agenda-control input,
-      .agenda-control select {
+      .agenda-confirm-actions {
+        flex-direction: column;
+      }
+
+      .agenda-confirm-actions .btn {
         width: 100%;
+        justify-content: center;
       }
 
       .inquiry-fields {
@@ -1780,841 +2136,1233 @@
    ========================================================= */
 
 async function renderAgenda(
-sb,
-professionalId,
-professional,
-user,
-agendaArea
+  sb,
+  professionalId,
+  professional,
+  user,
+  agendaArea
 ) {
 
-const today = new Date();
-today.setHours(0, 0, 0, 0);
+  const today = new Date();
 
-const todayString = formatDateInput(today);
-
-let selectedDate = todayString;
-
-let currentMonth = new Date(
-today.getFullYear(),
-today.getMonth(),
-1
-);
-
-let selectedSlot = null;
-let currentSlots = [];
-
-agendaArea.innerHTML = ` <section class="agenda-card">
-
-```
-  <div class="agenda-header">
-    <div class="agenda-icon">📅</div>
-
-    <div>
-      <span class="eyebrow">Agenda digital</span>
-
-      <h2 class="agenda-title">
-        Reservá tu turno
-      </h2>
-
-      <p class="agenda-subtitle">
-        Seleccioná un día y elegí un horario disponible.
-      </p>
-    </div>
-  </div>
-
-  <div class="agenda-calendar-header">
-
-    <button
-      type="button"
-      class="agenda-month-button"
-      id="agendaPreviousMonth"
-      aria-label="Mes anterior"
-    >
-      ‹
-    </button>
-
-    <div
-      id="agendaMonthTitle"
-      class="agenda-month-title"
-    ></div>
-
-    <button
-      type="button"
-      class="agenda-month-button"
-      id="agendaNextMonth"
-      aria-label="Mes siguiente"
-    >
-      ›
-    </button>
-
-  </div>
-
-  <div
-    id="agendaCalendar"
-    class="agenda-calendar"
-  ></div>
-
-  <div
-    id="agendaSelectedDate"
-    class="agenda-selected-date"
-  ></div>
-
-  <div
-    id="agendaModalityControl"
-    class="agenda-modality"
-    style="display:none;"
-  >
-    <div class="agenda-section-label">
-      Modalidad
-    </div>
-
-    <div class="agenda-modality-options">
-
-      <button
-        type="button"
-        class="agenda-modality-option"
-        data-modality="virtual"
-      >
-        <span class="agenda-modality-dot"></span>
-        <span>
-          <strong>Virtual</strong>
-          <small>Videollamada</small>
-        </span>
-      </button>
-
-      <button
-        type="button"
-        class="agenda-modality-option"
-        data-modality="presencial"
-      >
-        <span class="agenda-modality-dot"></span>
-        <span>
-          <strong>Presencial</strong>
-          <small>En consultorio</small>
-        </span>
-      </button>
-
-    </div>
-
-    <select
-      id="agendaModality"
-      style="display:none;"
-    >
-      <option value="virtual">Virtual</option>
-      <option value="presencial">Presencial</option>
-    </select>
-
-  </div>
-
-  <div
-    id="agendaSlots"
-    class="agenda-slots-area"
-  >
-    <div class="agenda-message">
-      Seleccioná un día para consultar los horarios.
-    </div>
-  </div>
-
-  <div
-    id="agendaConfirm"
-    style="display:none;"
-  ></div>
-
-</section>
-```
-
-`;
-
-const calendarArea =
-document.getElementById('agendaCalendar');
-
-const monthTitle =
-document.getElementById('agendaMonthTitle');
-
-const previousMonthButton =
-document.getElementById('agendaPreviousMonth');
-
-const nextMonthButton =
-document.getElementById('agendaNextMonth');
-
-const selectedDateArea =
-document.getElementById('agendaSelectedDate');
-
-const modalityControl =
-document.getElementById('agendaModalityControl');
-
-const modalitySelect =
-document.getElementById('agendaModality');
-
-const modalityButtons =
-modalityControl.querySelectorAll(
-'.agenda-modality-option'
-);
-
-const slotsArea =
-document.getElementById('agendaSlots');
-
-const confirmArea =
-document.getElementById('agendaConfirm');
-
-/* =======================================================
-NORMALIZAR SLOT
-======================================================= */
-
-function normalizeSlot(slot) {
-
-```
-if (!slot) {
-  return null;
-}
-
-const start =
-  slot.slot_start ??
-  slot.slot_start_time ??
-  slot.start_time ??
-  slot.start ??
-  slot.hora_inicio ??
-  null;
-
-const end =
-  slot.slot_end ??
-  slot.slot_end_time ??
-  slot.end_time ??
-  slot.end ??
-  slot.hora_fin ??
-  null;
-
-const modality =
-  slot.modality ??
-  slot.modalidad ??
-  'virtual';
-
-const zone =
-  slot.zone ??
-  slot.zona ??
-  null;
-
-if (
-  start === null ||
-  start === undefined ||
-  end === null ||
-  end === undefined
-) {
-
-  console.warn(
-    'Slot descartado por no tener inicio/fin:',
-    slot
+  today.setHours(
+    0,
+    0,
+    0,
+    0
   );
 
-  return null;
-}
+  const todayString =
+    formatDateInput(today);
 
-return {
-  slot_start: String(start),
-  slot_end: String(end),
-  modality: String(modality).toLowerCase(),
-  zone:
-    zone !== null &&
-    zone !== undefined &&
-    String(zone).trim()
-      ? String(zone)
-      : null
-};
-```
+  let selectedDate =
+    todayString;
 
-}
-
-/* =======================================================
-NOMBRE DEL MES
-======================================================= */
-
-function getMonthName(date) {
-
-```
-const value =
-  date.toLocaleDateString(
-    'es-AR',
-    {
-      month: 'long',
-      year: 'numeric'
-    }
-  );
-
-return value.charAt(0).toUpperCase() +
-  value.slice(1);
-```
-
-}
-
-/* =======================================================
-CALENDARIO
-======================================================= */
-
-function renderCalendar() {
-
-```
-monthTitle.textContent =
-  getMonthName(currentMonth);
-
-const year =
-  currentMonth.getFullYear();
-
-const month =
-  currentMonth.getMonth();
-
-const firstDay =
-  new Date(year, month, 1);
-
-const lastDay =
-  new Date(year, month + 1, 0);
-
-let startDay =
-  firstDay.getDay();
-
-startDay =
-  startDay === 0
-    ? 6
-    : startDay - 1;
-
-const totalDays =
-  lastDay.getDate();
-
-const weekdayNames = [
-  'Lun',
-  'Mar',
-  'Mié',
-  'Jue',
-  'Vie',
-  'Sáb',
-  'Dom'
-];
-
-let html = `
-  <div class="agenda-weekdays">
-    ${
-      weekdayNames
-        .map(
-          day => `
-            <div class="agenda-weekday">
-              ${day}
-            </div>
-          `
-        )
-        .join('')
-    }
-  </div>
-
-  <div class="agenda-days">
-`;
-
-for (
-  let i = 0;
-  i < startDay;
-  i++
-) {
-
-  html += `
-    <div class="agenda-day agenda-day-empty"></div>
-  `;
-}
-
-for (
-  let day = 1;
-  day <= totalDays;
-  day++
-) {
-
-  const date =
+  let currentMonth =
     new Date(
-      year,
-      month,
-      day
+      today.getFullYear(),
+      today.getMonth(),
+      1
     );
 
-  date.setHours(0, 0, 0, 0);
+  let selectedSlot =
+    null;
 
-  const dateString =
-    formatDateInput(date);
+  let currentSlots =
+    [];
 
-  const isPast =
-    date < today;
+  agendaArea.innerHTML = `
 
-  const isSelected =
-    dateString === selectedDate;
+    <section class="agenda-card">
 
-  const isToday =
-    dateString === todayString;
+      <div class="agenda-header">
 
-  html += `
-    <button
-      type="button"
-      class="
-        agenda-day
-        ${isPast ? 'agenda-day-disabled' : ''}
-        ${isSelected ? 'agenda-day-selected' : ''}
-        ${isToday ? 'agenda-day-today' : ''}
-      "
-      data-date="${dateString}"
-      ${isPast ? 'disabled' : ''}
-    >
+        <div class="agenda-icon">
+          📅
+        </div>
 
-      <span class="agenda-day-number">
-        ${day}
-      </span>
+        <div>
 
-      ${
-        isToday
-          ? `
-            <span class="agenda-day-label">
-              Hoy
+          <span class="eyebrow">
+            Agenda digital
+          </span>
+
+          <h2 class="agenda-title">
+            Reservá tu turno
+          </h2>
+
+          <p class="agenda-subtitle">
+            Seleccioná un día y elegí un horario disponible.
+          </p>
+
+        </div>
+
+      </div>
+
+      <div class="agenda-calendar-header">
+
+        <button
+          type="button"
+          class="agenda-month-button"
+          id="agendaPreviousMonth"
+          aria-label="Mes anterior"
+        >
+          ‹
+        </button>
+
+        <div
+          id="agendaMonthTitle"
+          class="agenda-month-title"
+        ></div>
+
+        <button
+          type="button"
+          class="agenda-month-button"
+          id="agendaNextMonth"
+          aria-label="Mes siguiente"
+        >
+          ›
+        </button>
+
+      </div>
+
+      <div
+        id="agendaCalendar"
+        class="agenda-calendar"
+      ></div>
+
+      <div
+        id="agendaSelectedDate"
+        class="agenda-selected-date"
+      ></div>
+
+      <div
+        id="agendaModalityControl"
+        class="agenda-modality"
+        style="display:none;"
+      >
+
+        <div class="agenda-section-label">
+          Modalidad
+        </div>
+
+        <div class="agenda-modality-options">
+
+          <button
+            type="button"
+            class="agenda-modality-option"
+            data-modality="virtual"
+          >
+
+            <span class="agenda-modality-dot"></span>
+
+            <span>
+
+              <strong>
+                Virtual
+              </strong>
+
+              <small>
+                Videollamada
+              </small>
+
             </span>
-          `
-          : ''
-      }
 
-    </button>
+          </button>
+
+          <button
+            type="button"
+            class="agenda-modality-option"
+            data-modality="presencial"
+          >
+
+            <span class="agenda-modality-dot"></span>
+
+            <span>
+
+              <strong>
+                Presencial
+              </strong>
+
+              <small>
+                En consultorio
+              </small>
+
+            </span>
+
+          </button>
+
+        </div>
+
+        <select
+          id="agendaModality"
+          style="display:none;"
+        >
+
+          <option value="virtual">
+            Virtual
+          </option>
+
+          <option value="presencial">
+            Presencial
+          </option>
+
+        </select>
+
+      </div>
+
+      <div
+        id="agendaSlots"
+        class="agenda-slots-area"
+      >
+
+        <div class="agenda-message">
+          Seleccioná un día para consultar los horarios.
+        </div>
+
+      </div>
+
+      <div
+        id="agendaConfirm"
+        style="display:none;"
+      ></div>
+
+    </section>
+
   `;
-}
 
-html += `
-  </div>
-`;
+  const calendarArea =
+    document.getElementById(
+      'agendaCalendar'
+    );
 
-calendarArea.innerHTML =
-  html;
+  const monthTitle =
+    document.getElementById(
+      'agendaMonthTitle'
+    );
 
-calendarArea
-  .querySelectorAll(
-    '.agenda-day:not(.agenda-day-disabled)'
-  )
-  .forEach(
+  const previousMonthButton =
+    document.getElementById(
+      'agendaPreviousMonth'
+    );
+
+  const nextMonthButton =
+    document.getElementById(
+      'agendaNextMonth'
+    );
+
+  const selectedDateArea =
+    document.getElementById(
+      'agendaSelectedDate'
+    );
+
+  const modalityControl =
+    document.getElementById(
+      'agendaModalityControl'
+    );
+
+  const modalitySelect =
+    document.getElementById(
+      'agendaModality'
+    );
+
+  const modalityButtons =
+    modalityControl.querySelectorAll(
+      '.agenda-modality-option'
+    );
+
+  const slotsArea =
+    document.getElementById(
+      'agendaSlots'
+    );
+
+  const confirmArea =
+    document.getElementById(
+      'agendaConfirm'
+    );
+
+
+  /* =======================================================
+     NORMALIZAR SLOT
+     ======================================================= */
+
+  function normalizeSlot(slot) {
+
+    if (!slot) {
+      return null;
+    }
+
+    const start =
+      slot.slot_start ??
+      slot.slot_start_time ??
+      slot.start_time ??
+      slot.start ??
+      slot.hora_inicio ??
+      null;
+
+    const end =
+      slot.slot_end ??
+      slot.slot_end_time ??
+      slot.end_time ??
+      slot.end ??
+      slot.hora_fin ??
+      null;
+
+    const modality =
+      slot.modality ??
+      slot.modalidad ??
+      'virtual';
+
+    const zone =
+      slot.zone ??
+      slot.zona ??
+      null;
+
+    if (
+      start === null ||
+      start === undefined ||
+      end === null ||
+      end === undefined
+    ) {
+
+      console.warn(
+        'Slot descartado por no tener inicio/fin:',
+        slot
+      );
+
+      return null;
+
+    }
+
+    return {
+
+      slot_start:
+        String(start),
+
+      slot_end:
+        String(end),
+
+      modality:
+        String(modality).toLowerCase(),
+
+      zone:
+        zone !== null &&
+        zone !== undefined &&
+        String(zone).trim()
+          ? String(zone)
+          : null
+
+    };
+
+  }
+
+
+  /* =======================================================
+     NOMBRE DEL MES
+     ======================================================= */
+
+  function getMonthName(date) {
+
+    const value =
+      date.toLocaleDateString(
+        'es-AR',
+        {
+          month: 'long',
+          year: 'numeric'
+        }
+      );
+
+    return (
+      value.charAt(0).toUpperCase() +
+      value.slice(1)
+    );
+
+  }
+
+
+  /* =======================================================
+     CALENDARIO
+     ======================================================= */
+
+  function renderCalendar() {
+
+    monthTitle.textContent =
+      getMonthName(currentMonth);
+
+    const year =
+      currentMonth.getFullYear();
+
+    const month =
+      currentMonth.getMonth();
+
+    const firstDay =
+      new Date(
+        year,
+        month,
+        1
+      );
+
+    const lastDay =
+      new Date(
+        year,
+        month + 1,
+        0
+      );
+
+    let startDay =
+      firstDay.getDay();
+
+    /*
+      JS:
+      Domingo = 0
+      Lunes = 1
+      ...
+      Domingo debe quedar como séptimo día.
+    */
+
+    startDay =
+      startDay === 0
+        ? 6
+        : startDay - 1;
+
+    const totalDays =
+      lastDay.getDate();
+
+    const weekdayNames = [
+      'Lun',
+      'Mar',
+      'Mié',
+      'Jue',
+      'Vie',
+      'Sáb',
+      'Dom'
+    ];
+
+    let html = `
+
+      <div class="agenda-weekdays">
+
+        ${
+          weekdayNames
+            .map(
+              day => `
+                <div class="agenda-weekday">
+                  ${day}
+                </div>
+              `
+            )
+            .join('')
+        }
+
+      </div>
+
+      <div class="agenda-days">
+    `;
+
+    for (
+      let i = 0;
+      i < startDay;
+      i++
+    ) {
+
+      html += `
+
+        <div
+          class="agenda-day agenda-day-empty"
+          aria-hidden="true"
+        ></div>
+
+      `;
+
+    }
+
+    for (
+      let day = 1;
+      day <= totalDays;
+      day++
+    ) {
+
+      const date =
+        new Date(
+          year,
+          month,
+          day
+        );
+
+      date.setHours(
+        0,
+        0,
+        0,
+        0
+      );
+
+      const dateString =
+        formatDateInput(date);
+
+      const isPast =
+        date < today;
+
+      const isSelected =
+        dateString === selectedDate;
+
+      const isToday =
+        dateString === todayString;
+
+      html += `
+
+        <button
+          type="button"
+          class="
+            agenda-day
+            ${isPast ? 'agenda-day-disabled' : ''}
+            ${isSelected ? 'agenda-day-selected' : ''}
+            ${isToday ? 'agenda-day-today' : ''}
+          "
+          data-date="${dateString}"
+          ${isPast ? 'disabled' : ''}
+        >
+
+          <span class="agenda-day-number">
+            ${day}
+          </span>
+
+          ${
+            isToday
+              ? `
+                <span class="agenda-day-label">
+                  Hoy
+                </span>
+              `
+              : ''
+          }
+
+        </button>
+
+      `;
+
+    }
+
+    html += `
+
+      </div>
+
+    `;
+
+    calendarArea.innerHTML =
+      html;
+
+    calendarArea
+      .querySelectorAll(
+        '.agenda-day:not(.agenda-day-disabled)'
+      )
+      .forEach(
+        button => {
+
+          button.addEventListener(
+            'click',
+            async function () {
+
+              const date =
+                this.dataset.date;
+
+              if (!date) {
+                return;
+              }
+
+              selectedDate =
+                date;
+
+              renderCalendar();
+
+              await loadSlots();
+
+            }
+          );
+
+        }
+      );
+
+    const minimumMonth =
+      new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        1
+      );
+
+    const currentMonthStart =
+      new Date(
+        currentMonth.getFullYear(),
+        currentMonth.getMonth(),
+        1
+      );
+
+    previousMonthButton.disabled =
+      currentMonthStart <= minimumMonth;
+
+  }
+
+
+  /* =======================================================
+     ACTUALIZAR MODALIDAD VISUAL
+     ======================================================= */
+
+  function updateModalityUI() {
+
+    modalityButtons.forEach(
+      button => {
+
+        button.classList.toggle(
+          'is-selected',
+          button.dataset.modality ===
+            modalitySelect.value
+        );
+
+      }
+    );
+
+  }
+
+
+  modalityButtons.forEach(
     button => {
 
       button.addEventListener(
         'click',
         async function () {
 
-          const date =
-            this.dataset.date;
+          const modality =
+            this.dataset.modality;
 
-          if (!date) {
+          if (!modality) {
             return;
           }
 
-          selectedDate =
-            date;
+          modalitySelect.value =
+            modality;
 
-          renderCalendar();
+          updateModalityUI();
 
-          await loadSlots();
+          renderSlots();
+
         }
       );
+
     }
   );
 
-const minimumMonth =
-  new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    1
-  );
 
-const currentMonthStart =
-  new Date(
-    currentMonth.getFullYear(),
-    currentMonth.getMonth(),
-    1
-  );
+  /* =======================================================
+     CARGAR SLOTS
+     ======================================================= */
 
-previousMonthButton.disabled =
-  currentMonthStart <= minimumMonth;
-```
+  async function loadSlots() {
 
-}
+    selectedSlot =
+      null;
 
-/* =======================================================
-ACTUALIZAR MODALIDAD VISUAL
-======================================================= */
+    confirmArea.style.display =
+      'none';
 
-function updateModalityUI() {
+    confirmArea.innerHTML =
+      '';
 
-```
-modalityButtons.forEach(
-  button => {
+    slotsArea.innerHTML = `
 
-    button.classList.toggle(
-      'is-selected',
-      button.dataset.modality ===
-        modalitySelect.value
-    );
+      <div class="agenda-message">
+        Buscando horarios disponibles…
+      </div>
 
-  }
-);
-```
+    `;
 
-}
+    selectedDateArea.innerHTML = `
 
-modalityButtons.forEach(
-button => {
+      <div class="agenda-selected-date-label">
+        Turnos disponibles
+      </div>
 
-```
-  button.addEventListener(
-    'click',
-    async function () {
+      <div class="agenda-selected-date-value">
+        ${escapeHTML(
+          formatSpanishDate(
+            selectedDate
+          )
+        )}
+      </div>
 
-      const modality =
-        this.dataset.modality;
+    `;
 
-      if (!modality) {
+    try {
+
+      const {
+        data,
+        error
+      } =
+        await sb.rpc(
+          'get_available_slots',
+          {
+
+            target_professional_id:
+              professionalId,
+
+            target_date:
+              selectedDate,
+
+            target_modality:
+              modalitySelect.value
+
+          }
+        );
+
+      if (error) {
+
+        console.error(
+          'ERROR DETALLADO OBTENIENDO TURNOS:',
+          JSON.stringify(
+            error,
+            null,
+            2
+          )
+        );
+
+        slotsArea.innerHTML = `
+
+          <div class="agenda-message">
+            No pudimos cargar los horarios disponibles.
+          </div>
+
+        `;
+
         return;
+
       }
 
-      modalitySelect.value =
-        modality;
+      const rawSlots =
+        Array.isArray(data)
+          ? data
+          : [];
+
+      currentSlots =
+        rawSlots
+          .map(normalizeSlot)
+          .filter(Boolean);
+
+      const hasVirtual =
+        currentSlots.some(
+          slot =>
+            slot.modality === 'virtual' ||
+            slot.modality === 'ambas'
+        );
+
+      const hasPresencial =
+        currentSlots.some(
+          slot =>
+            slot.modality === 'presencial' ||
+            slot.modality === 'ambas'
+        );
+
+      if (
+        hasVirtual &&
+        hasPresencial
+      ) {
+
+        modalityControl.style.display =
+          'block';
+
+      } else {
+
+        modalityControl.style.display =
+          'none';
+
+        if (hasPresencial) {
+
+          modalitySelect.value =
+            'presencial';
+
+        } else {
+
+          modalitySelect.value =
+            'virtual';
+
+        }
+
+      }
 
       updateModalityUI();
 
-      renderSlots();
-    }
-  );
+      if (!currentSlots.length) {
 
-}
-```
+        slotsArea.innerHTML = `
 
-);
+          <div class="agenda-message agenda-message-empty">
 
-/* =======================================================
-CARGAR SLOTS
-======================================================= */
+            <div class="agenda-message-icon">
+              ○
+            </div>
 
-async function loadSlots() {
+            <strong>
+              No hay turnos disponibles
+            </strong>
 
-```
-selectedSlot = null;
+            <span>
+              Probá seleccionando otro día.
+            </span>
 
-confirmArea.style.display =
-  'none';
+          </div>
 
-confirmArea.innerHTML =
-  '';
+        `;
 
-slotsArea.innerHTML = `
-  <div class="agenda-message">
-    Buscando horarios disponibles…
-  </div>
-`;
+        return;
 
-selectedDateArea.innerHTML = `
-  <div class="agenda-selected-date-label">
-    Turnos disponibles
-  </div>
-
-  <div class="agenda-selected-date-value">
-    ${escapeHTML(
-      formatSpanishDate(selectedDate)
-    )}
-  </div>
-`;
-
-try {
-
-  const {
-    data,
-    error
-  } =
-    await sb.rpc(
-      'get_available_slots',
-      {
-        target_professional_id:
-          professionalId,
-
-        target_date:
-          selectedDate,
-
-        target_modality:
-          modalitySelect.value
       }
-    );
 
-  if (error) {
+      renderSlots();
 
-    console.error(
-      'ERROR DETALLADO OBTENIENDO TURNOS:',
-      JSON.stringify(
-        error,
-        null,
-        2
-      )
-    );
+    } catch (error) {
 
-    slotsArea.innerHTML = `
-      <div class="agenda-message">
-        No pudimos cargar los horarios disponibles.
-      </div>
-    `;
+      console.error(
+        'Error cargando agenda:',
+        error
+      );
 
-    return;
-  }
+      slotsArea.innerHTML = `
 
-  const rawSlots =
-    Array.isArray(data)
-      ? data
-      : [];
-
-  currentSlots =
-    rawSlots
-      .map(normalizeSlot)
-      .filter(Boolean);
-
-  const hasVirtual =
-    currentSlots.some(
-      slot =>
-        slot.modality === 'virtual' ||
-        slot.modality === 'ambas'
-    );
-
-  const hasPresencial =
-    currentSlots.some(
-      slot =>
-        slot.modality === 'presencial' ||
-        slot.modality === 'ambas'
-    );
-
-  if (
-    hasVirtual &&
-    hasPresencial
-  ) {
-
-    modalityControl.style.display =
-      'block';
-
-  } else {
-
-    modalityControl.style.display =
-      'none';
-
-    if (hasPresencial) {
-
-      modalitySelect.value =
-        'presencial';
-
-    } else {
-
-      modalitySelect.value =
-        'virtual';
-    }
-  }
-
-  updateModalityUI();
-
-  if (!currentSlots.length) {
-
-    slotsArea.innerHTML = `
-      <div class="agenda-message agenda-message-empty">
-
-        <div class="agenda-message-icon">
-          ○
+        <div class="agenda-message">
+          No pudimos cargar la agenda.
         </div>
 
-        <strong>
-          No hay turnos disponibles
-        </strong>
+      `;
 
-        <span>
-          Probá seleccionando otro día.
-        </span>
+    }
 
-      </div>
-    `;
-
-    return;
   }
 
-  renderSlots();
 
-} catch (error) {
+  /* =======================================================
+     RENDER DE SLOTS
+     ======================================================= */
 
-  console.error(
-    'Error cargando agenda:',
-    error
-  );
+  function renderSlots() {
 
-  slotsArea.innerHTML = `
-    <div class="agenda-message">
-      No pudimos cargar la agenda.
-    </div>
-  `;
-}
-```
+    const selectedModality =
+      modalitySelect.value;
 
-}
+    const filteredSlots =
+      currentSlots.filter(
+        slot => {
 
-/* =======================================================
-RENDER DE SLOTS
-======================================================= */
+          if (
+            slot.modality === 'ambas'
+          ) {
 
-function renderSlots() {
+            return true;
 
-```
-const selectedModality =
-  modalitySelect.value;
-
-const filteredSlots =
-  currentSlots.filter(
-    slot => {
-
-      if (
-        slot.modality === 'ambas'
-      ) {
-        return true;
-      }
-
-      return (
-        slot.modality ===
-        selectedModality
-      );
-    }
-  );
-
-if (!filteredSlots.length) {
-
-  slotsArea.innerHTML = `
-    <div class="agenda-message">
-      No hay horarios disponibles para
-      la modalidad seleccionada.
-    </div>
-  `;
-
-  return;
-}
-
-slotsArea.innerHTML = `
-  <div class="agenda-section-label">
-    Elegí un horario
-  </div>
-
-  <div class="agenda-slots">
-    ${
-      filteredSlots
-        .map(
-          (slot, index) => {
-
-            const start =
-              formatTime(
-                slot.slot_start
-              );
-
-            const end =
-              formatTime(
-                slot.slot_end
-              );
-
-            if (!start || !end) {
-              return '';
-            }
-
-            return `
-              <button
-                type="button"
-                class="agenda-slot"
-                data-index="${index}"
-              >
-
-                <span class="agenda-slot-time">
-                  ${escapeHTML(start)}
-                </span>
-
-                <span class="agenda-slot-end">
-                  ${escapeHTML(end)}
-                </span>
-
-              </button>
-            `;
           }
-        )
-        .join('')
+
+          return (
+            slot.modality ===
+            selectedModality
+          );
+
+        }
+      );
+
+    if (!filteredSlots.length) {
+
+      slotsArea.innerHTML = `
+
+        <div class="agenda-message">
+          No hay horarios disponibles para
+          la modalidad seleccionada.
+        </div>
+
+      `;
+
+      return;
+
     }
-  </div>
-`;
 
-if (
-  !slotsArea.querySelector(
-    '.agenda-slot'
-  )
-) {
+    slotsArea.innerHTML = `
 
-  slotsArea.innerHTML = `
-    <div class="agenda-message">
-      Los horarios configurados no pudieron
-      ser interpretados correctamente.
-    </div>
-  `;
+      <div class="agenda-section-label">
+        Elegí un horario
+      </div>
 
-  return;
-}
+      <div class="agenda-slots">
 
-slotsArea
-  .querySelectorAll(
-    '.agenda-slot'
-  )
-  .forEach(
-    button => {
+        ${
+          filteredSlots
+            .map(
+              (slot, index) => {
 
-      button.addEventListener(
+                const start =
+                  formatTime(
+                    slot.slot_start
+                  );
+
+                const end =
+                  formatTime(
+                    slot.slot_end
+                  );
+
+                if (!start || !end) {
+                  return '';
+                }
+
+                return `
+
+                  <button
+                    type="button"
+                    class="agenda-slot"
+                    data-index="${index}"
+                  >
+
+                    <span class="agenda-slot-time">
+                      ${escapeHTML(start)}
+                    </span>
+
+                    <span class="agenda-slot-end">
+                      hasta ${escapeHTML(end)}
+                    </span>
+
+                  </button>
+
+                `;
+
+              }
+            )
+            .join('')
+        }
+
+      </div>
+
+    `;
+
+    if (
+      !slotsArea.querySelector(
+        '.agenda-slot'
+      )
+    ) {
+
+      slotsArea.innerHTML = `
+
+        <div class="agenda-message">
+          Los horarios configurados no pudieron
+          ser interpretados correctamente.
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+    slotsArea
+      .querySelectorAll(
+        '.agenda-slot'
+      )
+      .forEach(
+        button => {
+
+          button.addEventListener(
+            'click',
+            function () {
+
+              const index =
+                Number(
+                  this.dataset.index
+                );
+
+              const slot =
+                filteredSlots[index];
+
+              if (!slot) {
+                return;
+              }
+
+              let selectedModality =
+                modalitySelect.value;
+
+              if (
+                slot.modality ===
+                'presencial'
+              ) {
+
+                selectedModality =
+                  'presencial';
+
+              }
+
+              if (
+                slot.modality ===
+                'virtual'
+              ) {
+
+                selectedModality =
+                  'virtual';
+
+              }
+
+              selectedSlot = {
+
+                date:
+                  selectedDate,
+
+                startTime:
+                  slot.slot_start,
+
+                endTime:
+                  slot.slot_end,
+
+                modality:
+                  selectedModality,
+
+                zone:
+                  slot.zone || null
+
+              };
+
+              document
+                .querySelectorAll(
+                  '.agenda-slot'
+                )
+                .forEach(
+                  slotButton =>
+                    slotButton.classList.remove(
+                      'is-selected'
+                    )
+                );
+
+              this.classList.add(
+                'is-selected'
+              );
+
+              showConfirmation();
+
+            }
+          );
+
+        }
+      );
+
+  }
+
+
+  /* =======================================================
+     CONFIRMACIÓN
+     ======================================================= */
+
+  function showConfirmation() {
+
+    if (!selectedSlot) {
+      return;
+    }
+
+    const formattedDate =
+      formatSpanishDate(
+        selectedSlot.date
+      );
+
+    const modalityText =
+      selectedSlot.modality === 'presencial'
+        ? 'Presencial'
+        : 'Virtual';
+
+    confirmArea.style.display =
+      'block';
+
+    confirmArea.innerHTML = `
+
+      <div class="agenda-confirm">
+
+        <div class="agenda-confirm-title">
+          Confirmá tu turno
+        </div>
+
+        <div class="agenda-confirm-summary">
+
+          <div class="agenda-confirm-row">
+
+            <span class="agenda-confirm-label">
+              Día
+            </span>
+
+            <strong>
+              ${escapeHTML(formattedDate)}
+            </strong>
+
+          </div>
+
+          <div class="agenda-confirm-row">
+
+            <span class="agenda-confirm-label">
+              Horario
+            </span>
+
+            <strong>
+
+              ${escapeHTML(
+                formatTime(
+                  selectedSlot.startTime
+                )
+              )}
+
+              –
+
+              ${escapeHTML(
+                formatTime(
+                  selectedSlot.endTime
+                )
+              )}
+
+            </strong>
+
+          </div>
+
+          <div class="agenda-confirm-row">
+
+            <span class="agenda-confirm-label">
+              Modalidad
+            </span>
+
+            <strong>
+              ${escapeHTML(modalityText)}
+            </strong>
+
+          </div>
+
+        </div>
+
+        ${
+          selectedSlot.zone &&
+          selectedSlot.modality === 'presencial'
+            ? `
+              <div class="agenda-confirm-zone">
+
+                📍 ${escapeHTML(
+                  selectedSlot.zone
+                )}
+
+              </div>
+            `
+            : ''
+        }
+
+        ${
+          user
+            ? `
+
+              <div class="agenda-confirm-actions">
+
+                <button
+                  type="button"
+                  class="btn primary"
+                  id="confirmAppointmentButton"
+                >
+                  Confirmar turno
+                </button>
+
+                <button
+                  type="button"
+                  class="btn secondary"
+                  id="cancelAppointmentSelection"
+                >
+                  Cambiar horario
+                </button>
+
+              </div>
+
+              <div
+                id="bookingStatus"
+                class="agenda-status"
+              ></div>
+
+            `
+            : `
+
+              <div class="access-box">
+
+                <div
+                  style="
+                    font-weight:700;
+                    margin-bottom:6px;
+                  "
+                >
+                  🔐 Iniciá sesión para reservar
+                </div>
+
+                <p
+                  class="small"
+                  style="margin:0 0 12px;"
+                >
+                  Necesitás una cuenta de paciente
+                  para confirmar este turno.
+                </p>
+
+                <div
+                  style="
+                    display:flex;
+                    gap:10px;
+                    flex-wrap:wrap;
+                  "
+                >
+
+                  <a
+                    href="login.html"
+                    class="btn primary"
+                  >
+                    Iniciar sesión
+                  </a>
+
+                  <a
+                    href="registro-paciente.html"
+                    class="btn secondary"
+                  >
+                    Crear cuenta
+                  </a>
+
+                </div>
+
+              </div>
+
+            `
+        }
+
+      </div>
+
+    `;
+
+    const confirmButton =
+      document.getElementById(
+        'confirmAppointmentButton'
+      );
+
+    const cancelButton =
+      document.getElementById(
+        'cancelAppointmentSelection'
+      );
+
+    if (confirmButton) {
+
+      confirmButton.addEventListener(
+        'click',
+        bookSelectedAppointment
+      );
+
+    }
+
+    if (cancelButton) {
+
+      cancelButton.addEventListener(
         'click',
         function () {
 
-          const index =
-            Number(
-              this.dataset.index
-            );
+          selectedSlot =
+            null;
 
-          const slot =
-            filteredSlots[index];
+          confirmArea.style.display =
+            'none';
 
-          if (!slot) {
-            return;
-          }
-
-          let selectedModality =
-            modalitySelect.value;
-
-          if (
-            slot.modality ===
-            'presencial'
-          ) {
-
-            selectedModality =
-              'presencial';
-          }
-
-          if (
-            slot.modality ===
-            'virtual'
-          ) {
-
-            selectedModality =
-              'virtual';
-          }
-
-          selectedSlot = {
-
-            date:
-              selectedDate,
-
-            startTime:
-              slot.slot_start,
-
-            endTime:
-              slot.slot_end,
-
-            modality:
-              selectedModality,
-
-            zone:
-              slot.zone || null
-
-          };
+          confirmArea.innerHTML =
+            '';
 
           document
             .querySelectorAll(
@@ -2627,500 +3375,288 @@ slotsArea
                 )
             );
 
-          this.classList.add(
-            'is-selected'
-          );
-
-          showConfirmation();
         }
       );
-    }
-  );
-```
 
-}
-
-/* =======================================================
-CONFIRMACIÓN
-======================================================= */
-
-function showConfirmation() {
-
-```
-if (!selectedSlot) {
-  return;
-}
-
-const formattedDate =
-  formatSpanishDate(
-    selectedSlot.date
-  );
-
-const modalityText =
-  selectedSlot.modality === 'presencial'
-    ? 'Presencial'
-    : 'Virtual';
-
-confirmArea.style.display =
-  'block';
-
-confirmArea.innerHTML = `
-
-  <div class="agenda-confirm">
-
-    <div class="agenda-confirm-title">
-      Confirmá tu turno
-    </div>
-
-    <div class="agenda-confirm-summary">
-
-      <div class="agenda-confirm-row">
-
-        <span class="agenda-confirm-label">
-          Día
-        </span>
-
-        <strong>
-          ${escapeHTML(formattedDate)}
-        </strong>
-
-      </div>
-
-      <div class="agenda-confirm-row">
-
-        <span class="agenda-confirm-label">
-          Horario
-        </span>
-
-        <strong>
-          ${escapeHTML(
-            formatTime(
-              selectedSlot.startTime
-            )
-          )}
-          –
-          ${escapeHTML(
-            formatTime(
-              selectedSlot.endTime
-            )
-          )}
-        </strong>
-
-      </div>
-
-      <div class="agenda-confirm-row">
-
-        <span class="agenda-confirm-label">
-          Modalidad
-        </span>
-
-        <strong>
-          ${escapeHTML(modalityText)}
-        </strong>
-
-      </div>
-
-    </div>
-
-    ${
-      selectedSlot.zone &&
-      selectedSlot.modality === 'presencial'
-        ? `
-          <div class="agenda-confirm-zone">
-            📍 ${escapeHTML(
-              selectedSlot.zone
-            )}
-          </div>
-        `
-        : ''
     }
 
-    ${
-      user
-        ? `
-          <div class="agenda-confirm-actions">
+  }
 
-            <button
-              type="button"
-              class="btn primary"
-              id="confirmAppointmentButton"
-            >
-              Confirmar turno
-            </button>
 
-            <button
-              type="button"
-              class="btn secondary"
-              id="cancelAppointmentSelection"
-            >
-              Cambiar horario
-            </button>
+  /* =======================================================
+     RESERVAR TURNO
+     ======================================================= */
 
-          </div>
+  async function bookSelectedAppointment() {
 
-          <div
-            id="bookingStatus"
-            class="agenda-status"
-          ></div>
-        `
-        : `
-          <div class="access-box">
-
-            <div
-              style="
-                font-weight:700;
-                margin-bottom:6px;
-              "
-            >
-              🔐 Iniciá sesión para reservar
-            </div>
-
-            <p
-              class="small"
-              style="margin:0 0 12px;"
-            >
-              Necesitás una cuenta de paciente
-              para confirmar este turno.
-            </p>
-
-            <div
-              style="
-                display:flex;
-                gap:10px;
-                flex-wrap:wrap;
-              "
-            >
-
-              <a
-                href="login.html"
-                class="btn primary"
-              >
-                Iniciar sesión
-              </a>
-
-              <a
-                href="registro-paciente.html"
-                class="btn secondary"
-              >
-                Crear cuenta
-              </a>
-
-            </div>
-
-          </div>
-        `
+    if (!selectedSlot) {
+      return;
     }
 
-  </div>
-`;
+    const button =
+      document.getElementById(
+        'confirmAppointmentButton'
+      );
 
-const confirmButton =
-  document.getElementById(
-    'confirmAppointmentButton'
-  );
+    const status =
+      document.getElementById(
+        'bookingStatus'
+      );
 
-const cancelButton =
-  document.getElementById(
-    'cancelAppointmentSelection'
-  );
+    if (button) {
 
-if (confirmButton) {
+      button.disabled =
+        true;
 
-  confirmButton.addEventListener(
-    'click',
-    bookSelectedAppointment
-  );
-}
+      button.textContent =
+        'Reservando…';
 
-if (cancelButton) {
+    }
 
-  cancelButton.addEventListener(
+    if (status) {
+
+      status.textContent =
+        '';
+
+      status.style.color =
+        '';
+
+    }
+
+    try {
+
+      const {
+        data: {
+          user: currentUser
+        }
+      } =
+        await sb.auth.getUser();
+
+      if (!currentUser) {
+
+        throw new Error(
+          'Tu sesión expiró. Iniciá sesión nuevamente.'
+        );
+
+      }
+
+      const {
+        data: appointmentId,
+        error
+      } =
+        await sb.rpc(
+          'book_appointment',
+          {
+
+            target_professional_id:
+              professionalId,
+
+            target_date:
+              selectedSlot.date,
+
+            target_start_time:
+              selectedSlot.startTime,
+
+            target_modality:
+              selectedSlot.modality
+
+          }
+        );
+
+      if (error) {
+
+        console.error(
+          'Error reservando turno:',
+          error
+        );
+
+        throw error;
+
+      }
+
+      if (!appointmentId) {
+
+        throw new Error(
+          'No se pudo confirmar el turno.'
+        );
+
+      }
+
+      confirmArea.style.display =
+        'block';
+
+      confirmArea.innerHTML = `
+
+        <div class="agenda-confirm agenda-confirm-success">
+
+          <div class="agenda-success-icon">
+            ✓
+          </div>
+
+          <div class="agenda-confirm-title">
+            Turno reservado
+          </div>
+
+          <p class="agenda-confirm-details">
+
+            Tu turno con
+
+            <strong>
+              ${escapeHTML(
+                professional.display_name ||
+                'este profesional'
+              )}
+            </strong>
+
+            quedó reservado para:
+
+          </p>
+
+          <div class="agenda-success-details">
+
+            <strong>
+              ${escapeHTML(
+                formatSpanishDate(
+                  selectedSlot.date
+                )
+              )}
+            </strong>
+
+            <span>
+
+              ${escapeHTML(
+                formatTime(
+                  selectedSlot.startTime
+                )
+              )}
+
+              –
+
+              ${escapeHTML(
+                formatTime(
+                  selectedSlot.endTime
+                )
+              )}
+
+              ·
+
+              ${escapeHTML(
+                selectedSlot.modality === 'presencial'
+                  ? 'Presencial'
+                  : 'Virtual'
+              )}
+
+            </span>
+
+          </div>
+
+          <div class="agenda-message">
+
+            El turno fue registrado correctamente
+            en PsiCerca.
+
+          </div>
+
+        </div>
+
+      `;
+
+      selectedSlot =
+        null;
+
+    } catch (error) {
+
+      console.error(
+        'Error reservando turno:',
+        error
+      );
+
+      if (status) {
+
+        status.textContent =
+          error.message ||
+          'No se pudo reservar el turno.';
+
+        status.style.color =
+          '#b42318';
+
+      }
+
+      if (button) {
+
+        button.disabled =
+          false;
+
+        button.textContent =
+          'Confirmar turno';
+
+      }
+
+    }
+
+  }
+
+
+  /* =======================================================
+     EVENTOS DEL CALENDARIO
+     ======================================================= */
+
+  previousMonthButton.addEventListener(
     'click',
     function () {
 
-      selectedSlot = null;
-
-      confirmArea.style.display =
-        'none';
-
-      confirmArea.innerHTML =
-        '';
-
-      document
-        .querySelectorAll(
-          '.agenda-slot'
-        )
-        .forEach(
-          slotButton =>
-            slotButton.classList.remove(
-              'is-selected'
-            )
+      const minimumMonth =
+        new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          1
         );
-    }
-  );
-}
-```
 
-}
+      const previousMonth =
+        new Date(
+          currentMonth.getFullYear(),
+          currentMonth.getMonth() - 1,
+          1
+        );
 
-/* =======================================================
-RESERVAR TURNO
-======================================================= */
+      if (
+        previousMonth <
+        minimumMonth
+      ) {
 
-async function bookSelectedAppointment() {
-
-```
-if (!selectedSlot) {
-  return;
-}
-
-const button =
-  document.getElementById(
-    'confirmAppointmentButton'
-  );
-
-const status =
-  document.getElementById(
-    'bookingStatus'
-  );
-
-if (button) {
-
-  button.disabled = true;
-
-  button.textContent =
-    'Reservando…';
-}
-
-if (status) {
-
-  status.textContent = '';
-
-  status.style.color = '';
-}
-
-try {
-
-  const {
-    data: {
-      user: currentUser
-    }
-  } =
-    await sb.auth.getUser();
-
-  if (!currentUser) {
-
-    throw new Error(
-      'Tu sesión expiró. Iniciá sesión nuevamente.'
-    );
-  }
-
-  const {
-    data: appointmentId,
-    error
-  } =
-    await sb.rpc(
-      'book_appointment',
-      {
-
-        target_professional_id:
-          professionalId,
-
-        target_date:
-          selectedSlot.date,
-
-        target_start_time:
-          selectedSlot.startTime,
-
-        target_modality:
-          selectedSlot.modality
+        return;
 
       }
-    );
 
-  if (error) {
+      currentMonth =
+        previousMonth;
 
-    console.error(
-      'Error reservando turno:',
-      error
-    );
+      renderCalendar();
 
-    throw error;
-  }
-
-  if (!appointmentId) {
-
-    throw new Error(
-      'No se pudo confirmar el turno.'
-    );
-  }
-
-  confirmArea.style.display =
-    'block';
-
-  confirmArea.innerHTML = `
-
-    <div class="agenda-confirm agenda-confirm-success">
-
-      <div class="agenda-success-icon">
-        ✓
-      </div>
-
-      <div class="agenda-confirm-title">
-        Turno reservado
-      </div>
-
-      <p class="agenda-confirm-details">
-
-        Tu turno con
-
-        <strong>
-          ${escapeHTML(
-            professional.display_name ||
-            'este profesional'
-          )}
-        </strong>
-
-        quedó reservado para:
-
-      </p>
-
-      <div class="agenda-success-details">
-
-        <strong>
-          ${escapeHTML(
-            formatSpanishDate(
-              selectedSlot.date
-            )
-          )}
-        </strong>
-
-        <span>
-          ${escapeHTML(
-            formatTime(
-              selectedSlot.startTime
-            )
-          )}
-          –
-          ${escapeHTML(
-            formatTime(
-              selectedSlot.endTime
-            )
-          )}
-
-          ·
-
-          ${escapeHTML(
-            selectedSlot.modality === 'presencial'
-              ? 'Presencial'
-              : 'Virtual'
-          )}
-        </span>
-
-      </div>
-
-      <div class="agenda-message">
-
-        El turno fue registrado correctamente
-        en PsiCerca.
-
-      </div>
-
-    </div>
-
-  `;
-
-  selectedSlot = null;
-
-} catch (error) {
-
-  console.error(
-    'Error reservando turno:',
-    error
+    }
   );
 
-  if (status) {
 
-    status.textContent =
-      error.message ||
-      'No se pudo reservar el turno.';
+  nextMonthButton.addEventListener(
+    'click',
+    function () {
 
-    status.style.color =
-      '#b42318';
-  }
+      currentMonth =
+        new Date(
+          currentMonth.getFullYear(),
+          currentMonth.getMonth() + 1,
+          1
+        );
 
-  if (button) {
+      renderCalendar();
 
-    button.disabled = false;
+    }
+  );
 
-    button.textContent =
-      'Confirmar turno';
-  }
-}
-```
-
-}
-
-/* =======================================================
-EVENTOS
-======================================================= */
-
-previousMonthButton.addEventListener(
-'click',
-function () {
-
-```
-  const minimumMonth =
-    new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      1
-    );
-
-  const previousMonth =
-    new Date(
-      currentMonth.getFullYear(),
-      currentMonth.getMonth() - 1,
-      1
-    );
-
-  if (
-    previousMonth <
-    minimumMonth
-  ) {
-    return;
-  }
-
-  currentMonth =
-    previousMonth;
 
   renderCalendar();
-}
-```
 
-);
-
-nextMonthButton.addEventListener(
-'click',
-function () {
-
-```
-  currentMonth =
-    new Date(
-      currentMonth.getFullYear(),
-      currentMonth.getMonth() + 1,
-      1
-    );
-
-  renderCalendar();
-}
-```
-
-);
-
-renderCalendar();
-
-await loadSlots();
+  await loadSlots();
 
 }
 
@@ -3137,12 +3673,18 @@ function formatDateInput(date) {
   const month =
     String(
       date.getMonth() + 1
-    ).padStart(2, '0');
+    ).padStart(
+      2,
+      '0'
+    );
 
   const day =
     String(
       date.getDate()
-    ).padStart(2, '0');
+    ).padStart(
+      2,
+      '0'
+    );
 
   return `${year}-${month}-${day}`;
 
