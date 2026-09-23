@@ -5158,7 +5158,12 @@ async function loadAppointments() {
   container.innerHTML =
     appointments
       .map(appointment => {
-
+const appointmentStatus =
+  String(
+    appointment.status || ''
+  )
+    .trim()
+    .toLowerCase();
         const date =
           appointment.appointment_date
             ? new Date(
@@ -5225,9 +5230,9 @@ async function loadAppointments() {
 
 
         const statusInfo =
-          statusMap[
-            appointment.status
-          ] || {
+  statusMap[
+    appointmentStatus
+  ] || {
             label:
               appointment.status ||
               'Pendiente',
@@ -5457,8 +5462,8 @@ async function loadAppointments() {
 
 
             ${
-              appointment.status ===
-              'pending'
+              appointmentStatus ===
+'pending'
 
                 ? `
 
@@ -5514,9 +5519,9 @@ async function loadAppointments() {
 
                 `
 
-                : appointment.status ===
-                  'confirmed'
-
+                : appointmentStatus ===
+  'confirmed'
+ment.status
                   ? `
 
                     ${
