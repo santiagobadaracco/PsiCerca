@@ -5035,7 +5035,8 @@ console.log(
   // TURNOS
   // =====================================================
 
-  async function loadAppointments() {
+  ```javascript
+async function loadAppointments() {
 
   const container =
     document.getElementById(
@@ -5211,7 +5212,7 @@ console.log(
           },
 
           cancelled: {
-            label: 'Cancelado',
+            label: 'Rechazado',
             className: ''
           },
 
@@ -5232,6 +5233,23 @@ console.log(
               'Pendiente',
             className: ''
           };
+
+
+        const whatsappNumber =
+          appointment.patient_whatsapp
+            ? String(
+                appointment.patient_whatsapp
+              ).replace(
+                /[^0-9]/g,
+                ''
+              )
+            : '';
+
+
+        const whatsappUrl =
+          whatsappNumber
+            ? `https://wa.me/${whatsappNumber}`
+            : '';
 
 
         return `
@@ -5437,6 +5455,100 @@ console.log(
 
             </div>
 
+
+            ${
+              appointment.status ===
+              'pending'
+
+                ? `
+
+                  <div
+                    style="
+                      display:flex;
+                      gap:8px;
+                      flex-wrap:wrap;
+                      margin-top:14px;
+                    "
+                  >
+
+                    <button
+                      type="button"
+                      class="btn primary confirm-appointment"
+                      data-id="${appointment.id}"
+                    >
+                      ✓ Confirmar turno
+                    </button>
+
+
+                    ${
+                      whatsappUrl
+                        ? `
+                          <a
+                            class="btn secondary"
+                            href="${escapeHTML(
+                              whatsappUrl
+                            )}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            💬 Contactar paciente
+                          </a>
+                        `
+                        : ''
+                    }
+
+
+                    <button
+                      type="button"
+                      class="btn secondary reject-appointment"
+                      data-id="${appointment.id}"
+                      style="
+                        border-color:#b91c1c;
+                        color:#b91c1c;
+                      "
+                    >
+                      ✕ Rechazar
+                    </button>
+
+                  </div>
+
+                `
+
+                : appointment.status ===
+                  'confirmed'
+
+                  ? `
+
+                    ${
+                      whatsappUrl
+                        ? `
+                          <div
+                            style="
+                              margin-top:14px;
+                            "
+                          >
+
+                            <a
+                              class="btn secondary"
+                              href="${escapeHTML(
+                                whatsappUrl
+                              )}"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              💬 Contactar paciente
+                            </a>
+
+                          </div>
+                        `
+                        : ''
+                    }
+
+                  `
+
+                  : ''
+            }
+
           </article>
 
         `;
@@ -5444,7 +5556,196 @@ console.log(
       })
       .join('');
 
+
+  // ===================================================
+  // CONFIRMAR TURNO
+  // ===================================================
+
+  container
+    .querySelectorAll(
+      '.confirm-appointment'
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        'click',
+        async () => {
+
+          const appointmentId =
+            button.dataset.id;
+
+
+          if (!appointmentId) {
+            return;
+          }
+
+
+          const confirmed =
+            confirm(
+              '¿Confirmar este turno?'
+            );
+
+
+          if (!confirmed) {
+            return;
+          }
+
+
+          button.disabled =
+            true;
+
+          button.textContent =
+            'Confirmando…';
+
+
+          const {
+            error
+          } = await sb
+            .from(
+              'professional_appointments'
+            )
+            .update({
+              status:
+                'confirmed'
+            })
+            .eq(
+              'id',
+              appointmentId
+            )
+            .eq(
+              'professional_id',
+              user.id
+            );
+
+
+          if (error) {
+
+            console.error(
+              'Error confirmando turno:',
+              error
+            );
+
+
+            button.disabled =
+              false;
+
+            button.textContent =
+              '✓ Confirmar turno';
+
+
+            alert(
+              'No se pudo confirmar el turno.'
+            );
+
+            return;
+
+          }
+
+
+          await loadAppointments();
+
+        }
+      );
+
+    });
+
+
+  // ===================================================
+  // RECHAZAR TURNO
+  // ===================================================
+
+  container
+    .querySelectorAll(
+      '.reject-appointment'
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        'click',
+        async () => {
+
+          const appointmentId =
+            button.dataset.id;
+
+
+          if (!appointmentId) {
+            return;
+          }
+
+
+          const confirmed =
+            confirm(
+              '¿Rechazar este turno?\n\n' +
+              'El paciente deberá solicitar otro horario.'
+            );
+
+
+          if (!confirmed) {
+            return;
+          }
+
+
+          button.disabled =
+            true;
+
+          button.textContent =
+            'Rechazando…';
+
+
+          const {
+            error
+          } = await sb
+            .from(
+              'professional_appointments'
+            )
+            .update({
+              status:
+                'cancelled'
+            })
+            .eq(
+              'id',
+              appointmentId
+            )
+            .eq(
+              'professional_id',
+              user.id
+            );
+
+
+          if (error) {
+
+            console.error(
+              'Error rechazando turno:',
+              error
+            );
+
+
+            button.disabled =
+              false;
+
+            button.textContent =
+              '✕ Rechazar';
+
+
+            alert(
+              'No se pudo rechazar el turno.'
+            );
+
+            return;
+
+          }
+
+
+          await loadAppointments();
+
+        }
+      );
+
+    });
+
 }
+```
+
   // =====================================================
   // CONSULTAS PROFESIONALES
   // =====================================================
