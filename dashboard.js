@@ -5037,99 +5037,414 @@ console.log(
 
   async function loadAppointments() {
 
-    const container =
-      document.getElementById(
-        'appointmentsContent'
-      );
+  const container =
+    document.getElementById(
+      'appointmentsContent'
+    );
 
 
-    if (!container) return;
+  if (!container) return;
 
 
-    if (!isPro) {
-
-      container.innerHTML = `
-        <p class="small">
-          La gestión de turnos está disponible con el plan Pro.
-        </p>
-      `;
-
-      return;
-
-    }
-
+  if (!isPro) {
 
     container.innerHTML = `
       <p class="small">
-        Cargando turnos…
+        La gestión de turnos está disponible con el plan Pro.
       </p>
     `;
 
-
-    const {
-      data,
-      error
-    } = await sb
-      .from('professional_appointments')
-      .select(`
-        id,
-        appointment_date,
-        start_time,
-        end_time,
-        modality,
-        zone,
-        status,
-        patient_name,
-        patient_whatsapp,
-        patient_email,
-        notes,
-        created_at
-      `)
-      .eq(
-        'professional_id',
-        user.id
-      )
-      .order(
-        'appointment_date',
-        {
-          ascending: true
-        }
-      )
-      .order(
-        'start_time',
-        {
-          ascending: true
-        }
-      );
-
-
-    if (error) {
-
-      console.error(
-        'Error cargando turnos:',
-        error
-      );
-
-
-      container.innerHTML = `
-        <p
-          class="small"
-          style="color:#b42318;"
-        >
-          No se pudieron cargar los turnos.
-        </p>
-      `;
-
-      return;
-
-    }
-
-
-    // Acá termina loadAppointments()
+    return;
 
   }
 
 
+  container.innerHTML = `
+    <p class="small">
+      Cargando turnos…
+    </p>
+  `;
+
+
+  const {
+    data,
+    error
+  } = await sb
+    .from('professional_appointments')
+    .select(`
+      id,
+      appointment_date,
+      start_time,
+      end_time,
+      modality,
+      zone,
+      status,
+      patient_name,
+      patient_whatsapp,
+      patient_email,
+      notes,
+      created_at
+    `)
+    .eq(
+      'professional_id',
+      user.id
+    )
+    .order(
+      'appointment_date',
+      {
+        ascending: true
+      }
+    )
+    .order(
+      'start_time',
+      {
+        ascending: true
+      }
+    );
+
+
+  if (error) {
+
+    console.error(
+      'Error cargando turnos:',
+      error
+    );
+
+
+    container.innerHTML = `
+      <p
+        class="small"
+        style="color:#b42318;"
+      >
+        No se pudieron cargar los turnos.
+      </p>
+    `;
+
+    return;
+
+  }
+
+
+  const appointments =
+    data || [];
+
+
+  if (appointments.length === 0) {
+
+    container.innerHTML = `
+      <div class="card">
+
+        <p style="margin:0;">
+          Todavía no recibiste turnos.
+        </p>
+
+        <p
+          class="small muted"
+          style="margin-top:6px;"
+        >
+          Cuando un paciente reserve un turno
+          desde tu perfil, aparecerá acá.
+        </p>
+
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  container.innerHTML =
+    appointments
+      .map(appointment => {
+
+        const date =
+          appointment.appointment_date
+            ? new Date(
+                appointment.appointment_date +
+                'T00:00:00'
+              ).toLocaleDateString(
+                'es-AR',
+                {
+                  weekday: 'long',
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric'
+                }
+              )
+            : 'Fecha no disponible';
+
+
+        const start =
+          appointment.start_time
+            ? String(
+                appointment.start_time
+              ).slice(0, 5)
+            : '';
+
+
+        const end =
+          appointment.end_time
+            ? String(
+                appointment.end_time
+              ).slice(0, 5)
+            : '';
+
+
+        const modalityLabel =
+          appointment.modality ===
+          'presencial'
+            ? '📍 Presencial'
+            : '💻 Virtual';
+
+
+        const statusMap = {
+
+          pending: {
+            label: 'Pendiente',
+            className: ''
+          },
+
+          confirmed: {
+            label: 'Confirmado',
+            className: 'success'
+          },
+
+          cancelled: {
+            label: 'Cancelado',
+            className: ''
+          },
+
+          completed: {
+            label: 'Realizado',
+            className: 'success'
+          }
+
+        };
+
+
+        const statusInfo =
+          statusMap[
+            appointment.status
+          ] || {
+            label:
+              appointment.status ||
+              'Pendiente',
+            className: ''
+          };
+
+
+        return `
+
+          <article
+            class="card"
+            style="
+              padding:20px;
+              margin-bottom:16px;
+            "
+          >
+
+            <div
+              style="
+                display:flex;
+                justify-content:space-between;
+                align-items:flex-start;
+                gap:12px;
+                flex-wrap:wrap;
+              "
+            >
+
+              <div>
+
+                <strong
+                  style="
+                    font-size:18px;
+                  "
+                >
+                  ${escapeHTML(
+                    appointment.patient_name ||
+                    'Paciente'
+                  )}
+                </strong>
+
+                <div
+                  class="small muted"
+                  style="
+                    margin-top:5px;
+                  "
+                >
+                  ${escapeHTML(
+                    date
+                  )}
+                </div>
+
+              </div>
+
+
+              <span
+                class="badge ${statusInfo.className}"
+              >
+                ${escapeHTML(
+                  statusInfo.label
+                )}
+              </span>
+
+            </div>
+
+
+            <div
+              style="
+                margin-top:18px;
+                padding:16px;
+                border-radius:12px;
+                background:var(--background);
+              "
+            >
+
+              <div
+                style="
+                  font-size:20px;
+                  font-weight:600;
+                "
+              >
+                ${escapeHTML(
+                  start
+                )}
+                ${
+                  end
+                    ? `– ${escapeHTML(end)}`
+                    : ''
+                }
+              </div>
+
+
+              <div
+                class="small"
+                style="
+                  margin-top:8px;
+                "
+              >
+                <strong>
+                  Modalidad:
+                </strong>
+
+                ${escapeHTML(
+                  modalityLabel
+                )}
+              </div>
+
+
+              ${
+                appointment.zone
+                  ? `
+                    <div
+                      class="small"
+                      style="
+                        margin-top:5px;
+                      "
+                    >
+                      <strong>
+                        Zona:
+                      </strong>
+
+                      ${escapeHTML(
+                        appointment.zone
+                      )}
+                    </div>
+                  `
+                  : ''
+              }
+
+
+              ${
+                appointment.patient_whatsapp
+                  ? `
+                    <div
+                      class="small"
+                      style="
+                        margin-top:5px;
+                      "
+                    >
+                      <strong>
+                        WhatsApp:
+                      </strong>
+
+                      ${escapeHTML(
+                        appointment.patient_whatsapp
+                      )}
+                    </div>
+                  `
+                  : ''
+              }
+
+
+              ${
+                appointment.patient_email
+                  ? `
+                    <div
+                      class="small"
+                      style="
+                        margin-top:5px;
+                      "
+                    >
+                      <strong>
+                        Email:
+                      </strong>
+
+                      ${escapeHTML(
+                        appointment.patient_email
+                      )}
+                    </div>
+                  `
+                  : ''
+              }
+
+
+              ${
+                appointment.notes
+                  ? `
+                    <div
+                      style="
+                        margin-top:14px;
+                        padding-top:12px;
+                        border-top:
+                          1px solid
+                          rgba(0,0,0,.08);
+                      "
+                    >
+                      <strong>
+                        Notas
+                      </strong>
+
+                      <div
+                        class="small"
+                        style="
+                          margin-top:5px;
+                          line-height:1.5;
+                        "
+                      >
+                        ${escapeHTML(
+                          appointment.notes
+                        ).replace(
+                          /\n/g,
+                          '<br>'
+                        )}
+                      </div>
+                    </div>
+                  `
+                  : ''
+              }
+
+            </div>
+
+          </article>
+
+        `;
+
+      })
+      .join('');
+
+}
   // =====================================================
   // CONSULTAS PROFESIONALES
   // =====================================================
