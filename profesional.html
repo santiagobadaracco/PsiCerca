@@ -2797,40 +2797,45 @@ async function renderAgenda(
       a detectarla.
     */
 
-    const [
-      virtualResult,
-      presencialResult
-    ] = await Promise.all([
+   const virtualResult =
+  await sb.rpc(
+    'get_available_slots',
+    {
+      target_professional_id:
+        professionalId,
 
-      sb.rpc(
-        'get_available_slots',
-        {
-          target_professional_id:
-            professionalId,
+      target_date:
+        selectedDate,
 
-          target_date:
-            selectedDate,
+      target_modality:
+        'virtual'
+    }
+  );
 
-          target_modality:
-            'virtual'
-        }
-      ),
+console.log(
+  'RESULTADO VIRTUAL:',
+  virtualResult
+);
 
-      sb.rpc(
-        'get_available_slots',
-        {
-          target_professional_id:
-            professionalId,
+const presencialResult =
+  await sb.rpc(
+    'get_available_slots',
+    {
+      target_professional_id:
+        professionalId,
 
-          target_date:
-            selectedDate,
+      target_date:
+        selectedDate,
 
-          target_modality:
-            'presencial'
-        }
-      )
+      target_modality:
+        'presencial'
+    }
+  );
 
-    ]);
+console.log(
+  'RESULTADO PRESENCIAL:',
+  presencialResult
+);
 
     /*
       Si alguna consulta devuelve error,
