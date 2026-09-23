@@ -3017,112 +3017,156 @@ async function renderAgenda(
 }
 function renderSlots() {
 
-  const selectedModality =
-    modalitySelect.value;
-
-  const filteredSlots =
+  const virtualSlots =
     currentSlots.filter(
-      slot => {
-
-        if (
-          slot.modality === 'ambas'
-        ) {
-
-          return true;
-
-        }
-
-        return (
-          slot.modality ===
-          selectedModality
-        );
-
-      }
+      slot =>
+        slot.modality === 'virtual' ||
+        slot.modality === 'ambas'
     );
 
-  if (!filteredSlots.length) {
+  const presencialSlots =
+    currentSlots.filter(
+      slot =>
+        slot.modality === 'presencial' ||
+        slot.modality === 'ambas'
+    );
 
-    slotsArea.innerHTML = `
-      <div class="agenda-message">
+  function renderSlotButtons(slots) {
 
-        No hay horarios disponibles para
-        la modalidad seleccionada.
+    return slots
+      .map(
+        (slot, index) => {
+
+          const start =
+            formatTime(
+              slot.slot_start
+            );
+
+          const end =
+            formatTime(
+              slot.slot_end
+            );
+
+          if (!start || !end) {
+            return '';
+          }
+
+          return `
+
+            <button
+              type="button"
+              class="agenda-slot"
+              data-modality="${escapeHTML(slot.modality)}"
+              data-start="${escapeHTML(slot.slot_start)}"
+              data-end="${escapeHTML(slot.slot_end)}"
+              data-zone="${escapeHTML(slot.zone || '')}"
+            >
+
+              <span class="agenda-slot-time">
+                ${escapeHTML(start)}
+              </span>
+
+              <small>
+                hasta ${escapeHTML(end)}
+              </small>
+
+            </button>
+
+          `;
+
+        }
+      )
+      .join('');
+
+  }
+
+  let html = '';
+
+  /*
+    ==========================
+    VIRTUAL
+    ==========================
+  */
+
+  if (virtualSlots.length) {
+
+    html += `
+
+      <div class="agenda-modality-group">
+
+        <div class="agenda-section-label">
+          💻 Virtual
+        </div>
+
+        <div class="agenda-slots">
+
+          ${renderSlotButtons(virtualSlots)}
+
+        </div>
 
       </div>
+
+    `;
+
+  }
+
+  /*
+    ==========================
+    PRESENCIAL
+    ==========================
+  */
+
+  if (presencialSlots.length) {
+
+    html += `
+
+      <div class="agenda-modality-group">
+
+        <div class="agenda-section-label">
+          📍 Presencial
+        </div>
+
+        <div class="agenda-slots">
+
+          ${renderSlotButtons(presencialSlots)}
+
+        </div>
+
+      </div>
+
+    `;
+
+  }
+
+  /*
+    ==========================
+    SIN HORARIOS
+    ==========================
+  */
+
+  if (!html) {
+
+    slotsArea.innerHTML = `
+
+      <div class="agenda-message">
+
+        No hay horarios disponibles.
+
+      </div>
+
     `;
 
     return;
 
   }
 
-  slotsArea.innerHTML = `
+  slotsArea.innerHTML = html;
 
-    <div class="agenda-slots">
-
-      ${
-        filteredSlots
-          .map(
-            (slot, index) => {
-
-              const start =
-                formatTime(
-                  slot.slot_start
-                );
-
-              const end =
-                formatTime(
-                  slot.slot_end
-                );
-
-              if (!start || !end) {
-                return '';
-              }
-
-              return `
-
-                <button
-                  type="button"
-                  class="agenda-slot"
-                  data-index="${index}"
-                >
-
-                  <span class="agenda-slot-time">
-                    ${escapeHTML(start)}
-                  </span>
-
-                  <small>
-                    hasta ${escapeHTML(end)}
-                  </small>
-
-                </button>
-
-              `;
-
-            }
-          )
-          .join('')
-      }
-
-    </div>
-
-  `;
-
-  if (
-    !slotsArea.querySelector(
-      '.agenda-slot'
-    )
-  ) {
-
-    slotsArea.innerHTML = `
-      <div class="agenda-message">
-        Los horarios configurados no pudieron
-        ser interpretados correctamente.
-      </div>
-    `;
-
-    return;
-
-  }
+  /*
+    ==========================
+    SELECCIÓN DE TURNO
+    ==========================
+  */
 
   slotsArea
     .querySelectorAll(
@@ -3135,40 +3179,18 @@ function renderSlots() {
           'click',
           function () {
 
-            const index =
-              Number(
-                this.dataset.index
-              );
+            const modality =
+              this.dataset.modality;
 
-            const slot =
-              filteredSlots[index];
+            const startTime =
+              this.dataset.start;
 
-            if (!slot) {
-              return;
-            }
+            const endTime =
+              this.dataset.end;
 
-            let selectedModality =
-              modalitySelect.value;
-
-            if (
-              slot.modality ===
-              'presencial'
-            ) {
-
-              selectedModality =
-                'presencial';
-
-            }
-
-            if (
-              slot.modality ===
-              'virtual'
-            ) {
-
-              selectedModality =
-                'virtual';
-
-            }
+            const zone =
+              this.dataset.zone ||
+              null;
 
             selectedSlot = {
 
@@ -3176,16 +3198,18 @@ function renderSlots() {
                 selectedDate,
 
               startTime:
-                slot.slot_start,
+                startTime,
 
               endTime:
-                slot.slot_end,
+                endTime,
 
               modality:
-                selectedModality,
+                modality === 'ambas'
+                  ? 'virtual'
+                  : modality,
 
               zone:
-                slot.zone || null
+                zone
 
             };
 
