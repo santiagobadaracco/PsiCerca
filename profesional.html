@@ -3056,7 +3056,7 @@ function renderSlots() {
             <button
               type="button"
               class="agenda-slot"
-              data-modality="${escapeHTML(slot.modality)}"
+              data-modality="${escapeHTML(slot._displayModality || slot.modality)}"
               data-start="${escapeHTML(slot.slot_start)}"
               data-end="${escapeHTML(slot.slot_end)}"
               data-zone="${escapeHTML(slot.zone || '')}"
@@ -3100,8 +3100,12 @@ function renderSlots() {
 
         <div class="agenda-slots">
 
-          ${renderSlotButtons(virtualSlots)}
-
+          ${renderSlotButtons(
+  virtualSlots.map(slot => ({
+    ...slot,
+    _displayModality: 'virtual'
+  }))
+)}
         </div>
 
       </div>
@@ -3128,7 +3132,12 @@ function renderSlots() {
 
         <div class="agenda-slots">
 
-          ${renderSlotButtons(presencialSlots)}
+          ${renderSlotButtons(
+  presencialSlots.map(slot => ({
+    ...slot,
+    _displayModality: 'presencial'
+  }))
+)}
 
         </div>
 
@@ -3192,26 +3201,24 @@ function renderSlots() {
               this.dataset.zone ||
               null;
 
-            selectedSlot = {
+           selectedSlot = {
 
-              date:
-                selectedDate,
+  date:
+    selectedDate,
 
-              startTime:
-                startTime,
+  startTime:
+    startTime,
 
-              endTime:
-                endTime,
+  endTime:
+    endTime,
 
-              modality:
-                modality === 'ambas'
-                  ? 'virtual'
-                  : modality,
+  modality:
+    modality,
 
-              zone:
-                zone
+  zone:
+    zone
 
-            };
+};
 
             showConfirmation();
 
