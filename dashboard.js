@@ -5037,25 +5037,18 @@ console.log(
 
 javascript
 async function loadAppointments() {
-
-  const container =
-    document.getElementById(
-      'appointmentsContent'
-    );
+  const container = document.getElementById('appointmentsContent');
 
   if (!container) return;
 
   if (!isPro) {
-
     container.innerHTML = `
       <p class="small">
         La gestión de turnos está disponible con el plan Pro.
       </p>
     `;
-
     return;
   }
-
 
   container.innerHTML = `
     <p class="small">
@@ -5063,11 +5056,7 @@ async function loadAppointments() {
     </p>
   `;
 
-
-  const {
-    data,
-    error
-  } = await sb
+  const { data, error } = await sb
     .from('professional_appointments')
     .select(`
       id,
@@ -5083,31 +5072,12 @@ async function loadAppointments() {
       notes,
       created_at
     `)
-    .eq(
-      'professional_id',
-      user.id
-    )
-    .order(
-      'appointment_date',
-      {
-        ascending: true
-      }
-    )
-    .order(
-      'start_time',
-      {
-        ascending: true
-      }
-    );
-
+    .eq('professional_id', user.id)
+    .order('appointment_date', { ascending: true })
+    .order('start_time', { ascending: true });
 
   if (error) {
-
-    console.error(
-      'Error cargando turnos:',
-      error
-    );
-
+    console.error('Error cargando turnos:', error);
 
     container.innerHTML = `
       <p
@@ -5119,19 +5089,13 @@ async function loadAppointments() {
     `;
 
     return;
-
   }
 
-
-  const appointments =
-    data || [];
-
+  const appointments = data || [];
 
   if (appointments.length === 0) {
-
     container.innerHTML = `
       <div class="card">
-
         <p style="margin:0;">
           Todavía no recibiste turnos.
         </p>
@@ -5143,225 +5107,157 @@ async function loadAppointments() {
           Cuando un paciente reserve un turno
           desde tu perfil, aparecerá acá.
         </p>
-
       </div>
     `;
 
     return;
-
   }
 
+  container.innerHTML = appointments
+    .map(appointment => {
 
-  container.innerHTML =
-    appointments
-      .map(appointment => {
-const appointmentStatus =
-  String(
-    appointment.status || ''
-  )
-    .trim()
-    .toLowerCase();
-        const date =
-          appointment.appointment_date
-            ? new Date(
-                appointment.appointment_date +
-                'T00:00:00'
-              ).toLocaleDateString(
-                'es-AR',
-                {
-                  weekday: 'long',
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric'
-                }
-              )
-            : 'Fecha no disponible';
+      const appointmentStatus =
+        String(appointment.status || '')
+          .trim()
+          .toLowerCase();
 
+      const date =
+        appointment.appointment_date
+          ? new Date(
+              appointment.appointment_date + 'T00:00:00'
+            ).toLocaleDateString(
+              'es-AR',
+              {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+              }
+            )
+          : 'Fecha no disponible';
 
-        const start =
-          appointment.start_time
-            ? String(
-                appointment.start_time
-              ).slice(0, 5)
-            : '';
+      const start =
+        appointment.start_time
+          ? String(appointment.start_time).slice(0, 5)
+          : '';
 
+      const end =
+        appointment.end_time
+          ? String(appointment.end_time).slice(0, 5)
+          : '';
 
-        const end =
-          appointment.end_time
-            ? String(
-                appointment.end_time
-              ).slice(0, 5)
-            : '';
+      const modalityLabel =
+        appointment.modality === 'presencial'
+          ? '📍 Presencial'
+          : '💻 Virtual';
 
+      const statusMap = {
+        pending: {
+          label: 'Pendiente',
+          className: ''
+        },
 
-        const modalityLabel =
-          appointment.modality ===
-          'presencial'
-            ? '📍 Presencial'
-            : '💻 Virtual';
+        confirmed: {
+          label: 'Confirmado',
+          className: 'success'
+        },
 
+        cancelled: {
+          label: 'Rechazado',
+          className: ''
+        },
 
-        const statusMap = {
+        completed: {
+          label: 'Realizado',
+          className: 'success'
+        }
+      };
 
-          pending: {
-            label: 'Pendiente',
-            className: ''
-          },
-
-          confirmed: {
-            label: 'Confirmado',
-            className: 'success'
-          },
-
-          cancelled: {
-            label: 'Rechazado',
-            className: ''
-          },
-
-          completed: {
-            label: 'Realizado',
-            className: 'success'
-          }
-
+      const statusInfo =
+        statusMap[appointmentStatus] || {
+          label: appointment.status || 'Pendiente',
+          className: ''
         };
 
+      const whatsappNumber =
+        appointment.patient_whatsapp
+          ? String(
+              appointment.patient_whatsapp
+            ).replace(/[^0-9]/g, '')
+          : '';
 
-        const statusInfo =
-  statusMap[
-    appointmentStatus
-  ] || {
-            label:
-              appointment.status ||
-              'Pendiente',
-            className: ''
-          };
+      const whatsappUrl =
+        whatsappNumber
+          ? `https://wa.me/${whatsappNumber}`
+          : '';
 
+      return `
+        <article
+          class="card"
+          style="
+            padding:20px;
+            margin-bottom:16px;
+          "
+        >
 
-        const whatsappNumber =
-          appointment.patient_whatsapp
-            ? String(
-                appointment.patient_whatsapp
-              ).replace(
-                /[^0-9]/g,
-                ''
-              )
-            : '';
-
-
-        const whatsappUrl =
-          whatsappNumber
-            ? `https://wa.me/${whatsappNumber}`
-            : '';
-
-
-        return `
-
-          <article
-            class="card"
+          <div
             style="
-              padding:20px;
-              margin-bottom:16px;
+              display:flex;
+              justify-content:space-between;
+              align-items:flex-start;
+              gap:12px;
+              flex-wrap:wrap;
             "
           >
 
-            <div
-              style="
-                display:flex;
-                justify-content:space-between;
-                align-items:flex-start;
-                gap:12px;
-                flex-wrap:wrap;
-              "
-            >
-
-              <div>
-
-                <strong
-                  style="
-                    font-size:18px;
-                  "
-                >
-                  ${escapeHTML(
-                    appointment.patient_name ||
-                    'Paciente'
-                  )}
-                </strong>
-
-                <div
-                  class="small muted"
-                  style="
-                    margin-top:5px;
-                  "
-                >
-                  ${escapeHTML(
-                    date
-                  )}
-                </div>
-
-              </div>
-
-
-              <span
-                class="badge ${statusInfo.className}"
-              >
+            <div>
+              <h3 style="margin:0;">
                 ${escapeHTML(
-                  statusInfo.label
+                  appointment.patient_name ||
+                  'Paciente'
                 )}
-              </span>
-
-            </div>
-
-
-            <div
-              style="
-                margin-top:18px;
-                padding:16px;
-                border-radius:12px;
-                background:var(--background);
-              "
-            >
+              </h3>
 
               <div
-                style="
-                  font-size:20px;
-                  font-weight:600;
-                "
+                class="small"
+                style="margin-top:6px;"
               >
-                ${escapeHTML(
-                  start
-                )}
+                ${escapeHTML(date)}
+              </div>
+
+              <div
+                class="small"
+                style="margin-top:5px;"
+              >
+                <strong>
+                  Horario:
+                </strong>
+
+                ${escapeHTML(start)}
                 ${
                   end
-                    ? `– ${escapeHTML(end)}`
+                    ? ` - ${escapeHTML(end)}`
                     : ''
                 }
               </div>
 
-
               <div
                 class="small"
-                style="
-                  margin-top:8px;
-                "
+                style="margin-top:8px;"
               >
                 <strong>
                   Modalidad:
                 </strong>
 
-                ${escapeHTML(
-                  modalityLabel
-                )}
+                ${escapeHTML(modalityLabel)}
               </div>
-
 
               ${
                 appointment.zone
                   ? `
                     <div
                       class="small"
-                      style="
-                        margin-top:5px;
-                      "
+                      style="margin-top:5px;"
                     >
                       <strong>
                         Zona:
@@ -5375,15 +5271,12 @@ const appointmentStatus =
                   : ''
               }
 
-
               ${
                 appointment.patient_whatsapp
                   ? `
                     <div
                       class="small"
-                      style="
-                        margin-top:5px;
-                      "
+                      style="margin-top:5px;"
                     >
                       <strong>
                         WhatsApp:
@@ -5397,15 +5290,12 @@ const appointmentStatus =
                   : ''
               }
 
-
               ${
                 appointment.patient_email
                   ? `
                     <div
                       class="small"
-                      style="
-                        margin-top:5px;
-                      "
+                      style="margin-top:5px;"
                     >
                       <strong>
                         Email:
@@ -5419,7 +5309,6 @@ const appointmentStatus =
                   : ''
               }
 
-
               ${
                 appointment.notes
                   ? `
@@ -5427,9 +5316,7 @@ const appointmentStatus =
                       style="
                         margin-top:14px;
                         padding-top:12px;
-                        border-top:
-                          1px solid
-                          rgba(0,0,0,.08);
+                        border-top:1px solid rgba(0,0,0,.08);
                       "
                     >
                       <strong>
@@ -5457,77 +5344,204 @@ const appointmentStatus =
 
             </div>
 
-
-           ${
-  appointmentStatus === 'pending'
-    ? `
-      <div
-        style="
-          display:flex;
-          gap:8px;
-          flex-wrap:wrap;
-          margin-top:14px;
-        "
-      >
-
-        <button
-          type="button"
-          class="btn primary confirm-appointment"
-          data-id="${appointment.id}"
-        >
-          ✓ Confirmar turno
-        </button>
-
-        ${
-          whatsappUrl
-            ? `
-              <a
-                class="btn secondary"
-                href="${escapeHTML(whatsappUrl)}"
-                target="_blank"
-                rel="noopener noreferrer"
+            <div>
+              <span
+                class="badge ${statusInfo.className}"
               >
-                💬 Contactar paciente
-              </a>
-            `
-            : ''
-        }
+                ${escapeHTML(
+                  statusInfo.label
+                )}
+              </span>
+            </div>
 
-        <button
-          type="button"
-          class="btn secondary reject-appointment"
-          data-id="${appointment.id}"
-          style="
-            border-color:#b91c1c;
-            color:#b91c1c;
-          "
-        >
-          ✕ Rechazar
-        </button>
+          </div>
 
-      </div>
-    `
-    : appointmentStatus === 'confirmed'
-      ? (
-          whatsappUrl
-            ? `
-              <div style="margin-top:14px;">
-                <a
-                  class="btn secondary"
-                  href="${escapeHTML(whatsappUrl)}"
-                  target="_blank"
-                  rel="noopener noreferrer"
+          ${
+            appointmentStatus === 'pending'
+              ? `
+                <div
+                  style="
+                    display:flex;
+                    gap:8px;
+                    flex-wrap:wrap;
+                    margin-top:14px;
+                  "
                 >
-                  💬 Contactar paciente
-                </a>
-              </div>
-            `
-            : ''
-        )
-      : ''
-}
-      .join('');
 
+                  <button
+                    type="button"
+                    class="btn primary confirm-appointment"
+                    data-id="${appointment.id}"
+                  >
+                    ✓ Confirmar turno
+                  </button>
+
+                  ${
+                    whatsappUrl
+                      ? `
+                        <a
+                          class="btn secondary"
+                          href="${escapeHTML(
+                            whatsappUrl
+                          )}"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          💬 Contactar paciente
+                        </a>
+                      `
+                      : ''
+                  }
+
+                  <button
+                    type="button"
+                    class="btn secondary reject-appointment"
+                    data-id="${appointment.id}"
+                    style="
+                      border-color:#b91c1c;
+                      color:#b91c1c;
+                    "
+                  >
+                    ✕ Rechazar
+                  </button>
+
+                </div>
+              `
+              : appointmentStatus === 'confirmed'
+                ? (
+                    whatsappUrl
+                      ? `
+                        <div style="margin-top:14px;">
+                          <a
+                            class="btn secondary"
+                            href="${escapeHTML(
+                              whatsappUrl
+                            )}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            💬 Contactar paciente
+                          </a>
+                        </div>
+                      `
+                      : ''
+                  )
+                : ''
+          }
+
+        </article>
+      `;
+    })
+    .join('');
+
+  container
+    .querySelectorAll('.confirm-appointment')
+    .forEach(button => {
+
+      button.addEventListener(
+        'click',
+        async () => {
+
+          const appointmentId =
+            button.dataset.id;
+
+          if (!appointmentId) return;
+
+          const confirmed =
+            confirm(
+              '¿Confirmar este turno?'
+            );
+
+          if (!confirmed) return;
+
+          button.disabled = true;
+          button.textContent = 'Confirmando…';
+
+          const { error } = await sb
+            .from('professional_appointments')
+            .update({
+              status: 'confirmed'
+            })
+            .eq('id', appointmentId)
+            .eq('professional_id', user.id);
+
+          if (error) {
+
+            console.error(
+              'Error confirmando turno:',
+              error
+            );
+
+            button.disabled = false;
+            button.textContent =
+              '✓ Confirmar turno';
+
+            alert(
+              'No se pudo confirmar el turno.'
+            );
+
+            return;
+          }
+
+          await loadAppointments();
+        }
+      );
+    });
+
+  container
+    .querySelectorAll('.reject-appointment')
+    .forEach(button => {
+
+      button.addEventListener(
+        'click',
+        async () => {
+
+          const appointmentId =
+            button.dataset.id;
+
+          if (!appointmentId) return;
+
+          const confirmed =
+            confirm(
+              '¿Rechazar este turno?\n\n' +
+              'El paciente deberá solicitar otro horario.'
+            );
+
+          if (!confirmed) return;
+
+          button.disabled = true;
+          button.textContent = 'Rechazando…';
+
+          const { error } = await sb
+            .from('professional_appointments')
+            .update({
+              status: 'cancelled'
+            })
+            .eq('id', appointmentId)
+            .eq('professional_id', user.id);
+
+          if (error) {
+
+            console.error(
+              'Error rechazando turno:',
+              error
+            );
+
+            button.disabled = false;
+            button.textContent = '✕ Rechazar';
+
+            alert(
+              'No se pudo rechazar el turno.'
+            );
+
+            return;
+          }
+
+          await loadAppointments();
+        }
+      );
+    });
+}
 
   // ===================================================
   // CONFIRMAR TURNO
