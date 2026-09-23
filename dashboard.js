@@ -5031,682 +5031,874 @@ console.log(
     `;
 
   }
-  // =====================================================
+ ```javascript
+  // ===================================================
   // TURNOS
-  // =====================================================
+  // ===================================================
 
-javascript
-async function loadAppointments() {
-  const container = document.getElementById('appointmentsContent');
+  async function loadAppointments() {
 
-  if (!container) return;
+    const container =
+      document.getElementById(
+        'appointmentsContent'
+      );
 
-  if (!isPro) {
+    if (!container) {
+      return;
+    }
+
+
+    if (!isPro) {
+
+      container.innerHTML = `
+
+        <p class="small">
+          La gestión de turnos está disponible
+          con el plan Pro.
+        </p>
+
+      `;
+
+      return;
+
+    }
+
+
     container.innerHTML = `
+
       <p class="small">
-        La gestión de turnos está disponible con el plan Pro.
+        Cargando turnos…
       </p>
-    `;
-    return;
-  }
 
-  container.innerHTML = `
-    <p class="small">Cargando turnos…</p>
-  `;
-
-  const { data, error } = await sb
-    .from('professional_appointments')
-    .select(`
-      id,
-      appointment_date,
-      start_time,
-      end_time,
-      modality,
-      zone,
-      status,
-      patient_name,
-      patient_whatsapp,
-      patient_email,
-      notes,
-      created_at
-    `)
-    .eq('professional_id', user.id)
-    .order('appointment_date', { ascending: true })
-    .order('start_time', { ascending: true });
-
-  if (error) {
-    console.error('Error cargando turnos:', error);
-
-    container.innerHTML = `
-      <p
-        class="small"
-        style="color:#b42318;"
-      >
-        No se pudieron cargar los turnos.
-      </p>
     `;
 
-    return;
-  }
-
-  const appointments = data || [];
-
-  if (appointments.length === 0) {
-    container.innerHTML = `
-      <div class="card">
-        <p style="margin:0;">
-          Todavía no recibiste turnos.
-        </p>
-
-        <p
-          class="small muted"
-          style="margin-top:6px;"
-        >
-          Cuando un paciente reserve un turno
-          desde tu perfil, aparecerá acá.
-        </p>
-      </div>
-    `;
-
-    return;
-  }
-
-  let html = '';
-
-  appointments.forEach(appointment => {
-    const appointmentStatus = String(
-      appointment.status || ''
-    ).trim().toLowerCase();
-
-    const date = appointment.appointment_date
-      ? new Date(
-          appointment.appointment_date + 'T00:00:00'
-        ).toLocaleDateString('es-AR', {
-          weekday: 'long',
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric'
-        })
-      : 'Fecha no disponible';
-
-    const start = appointment.start_time
-      ? String(appointment.start_time).slice(0, 5)
-      : '';
-
-    const end = appointment.end_time
-      ? String(appointment.end_time).slice(0, 5)
-      : '';
-
-    const modalityLabel =
-      appointment.modality === 'presencial'
-        ? '📍 Presencial'
-        : '💻 Virtual';
-
-    let statusLabel = 'Pendiente';
-
-    if (appointmentStatus === 'confirmed') {
-      statusLabel = 'Confirmado';
-    }
-
-    if (appointmentStatus === 'cancelled') {
-      statusLabel = 'Rechazado';
-    }
-
-    if (appointmentStatus === 'completed') {
-      statusLabel = 'Realizado';
-    }
-
-    const whatsappNumber = appointment.patient_whatsapp
-      ? String(
-          appointment.patient_whatsapp
-        ).replace(/[^0-9]/g, '')
-      : '';
-
-    const whatsappUrl = whatsappNumber
-      ? `https://wa.me/${whatsappNumber}`
-      : '';
-
-    let actionsHtml = '';
-
-    if (appointmentStatus === 'pending') {
-      actionsHtml = `
-        <div
-          style="
-            display:flex;
-            gap:8px;
-            flex-wrap:wrap;
-            margin-top:14px;
-          "
-        >
-
-          <button
-            type="button"
-            class="btn primary confirm-appointment"
-            data-id="${appointment.id}"
-          >
-            ✓ Confirmar turno
-          </button>
-
-          ${
-            whatsappUrl
-              ? `
-                <a
-                  class="btn secondary"
-                  href="${escapeHTML(whatsappUrl)}"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  💬 Contactar paciente
-                </a>
-              `
-              : ''
-          }
-
-          <button
-            type="button"
-            class="btn secondary reject-appointment"
-            data-id="${appointment.id}"
-            style="
-              border-color:#b91c1c;
-              color:#b91c1c;
-            "
-          >
-            ✕ Rechazar
-          </button>
-
-        </div>
-      `;
-    }
-
-    if (
-      appointmentStatus === 'confirmed' &&
-      whatsappUrl
-    ) {
-      actionsHtml = `
-        <div style="margin-top:14px;">
-          <a
-            class="btn secondary"
-            href="${escapeHTML(whatsappUrl)}"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            💬 Contactar paciente
-          </a>
-        </div>
-      `;
-    }
-
-    let extraHtml = '';
-
-    if (appointment.zone) {
-      extraHtml += `
-        <div
-          class="small"
-          style="margin-top:5px;"
-        >
-          <strong>Zona:</strong>
-          ${escapeHTML(appointment.zone)}
-        </div>
-      `;
-    }
-
-    if (appointment.patient_whatsapp) {
-      extraHtml += `
-        <div
-          class="small"
-          style="margin-top:5px;"
-        >
-          <strong>WhatsApp:</strong>
-          ${escapeHTML(
-            appointment.patient_whatsapp
-          )}
-        </div>
-      `;
-    }
-
-    if (appointment.patient_email) {
-      extraHtml += `
-        <div
-          class="small"
-          style="margin-top:5px;"
-        >
-          <strong>Email:</strong>
-          ${escapeHTML(
-            appointment.patient_email
-          )}
-        </div>
-      `;
-    }
-
-    if (appointment.notes) {
-      extraHtml += `
-        <div
-          style="
-            margin-top:14px;
-            padding-top:12px;
-            border-top:1px solid rgba(0,0,0,.08);
-          "
-        >
-          <strong>Notas</strong>
-
-          <div
-            class="small"
-            style="
-              margin-top:5px;
-              line-height:1.5;
-            "
-          >
-            ${escapeHTML(
-              appointment.notes
-            ).replace(/\n/g, '<br>')}
-          </div>
-        </div>
-      `;
-    }
-
-    html += `
-      <article
-        class="card"
-        style="
-          padding:20px;
-          margin-bottom:16px;
-        "
-      >
-
-        <div
-          style="
-            display:flex;
-            justify-content:space-between;
-            align-items:flex-start;
-            gap:12px;
-            flex-wrap:wrap;
-          "
-        >
-
-          <div>
-
-            <h3 style="margin:0;">
-              ${escapeHTML(
-                appointment.patient_name ||
-                'Paciente'
-              )}
-            </h3>
-
-            <div
-              class="small"
-              style="margin-top:6px;"
-            >
-              ${escapeHTML(date)}
-            </div>
-
-            <div
-              class="small"
-              style="margin-top:5px;"
-            >
-              <strong>Horario:</strong>
-              ${escapeHTML(start)}
-              ${end ? ` - ${escapeHTML(end)}` : ''}
-            </div>
-
-            <div
-              class="small"
-              style="margin-top:8px;"
-            >
-              <strong>Modalidad:</strong>
-              ${escapeHTML(modalityLabel)}
-            </div>
-
-            ${extraHtml}
-
-          </div>
-
-          <div>
-            <span class="badge">
-              ${escapeHTML(statusLabel)}
-            </span>
-          </div>
-
-        </div>
-
-        ${actionsHtml}
-
-      </article>
-    `;
-  });
-
-  container.innerHTML = html;
-
-  container
-    .querySelectorAll('.confirm-appointment')
-    .forEach(button => {
-      button.addEventListener('click', async () => {
-
-        const appointmentId =
-          button.dataset.id;
-
-        if (!appointmentId) return;
-
-        if (!confirm('¿Confirmar este turno?')) {
-          return;
-        }
-
-        button.disabled = true;
-        button.textContent = 'Confirmando…';
-
-        const { error } = await sb
-          .from('professional_appointments')
-          .update({
-            status: 'confirmed'
-          })
-          .eq('id', appointmentId)
-          .eq('professional_id', user.id);
-
-        if (error) {
-          console.error(
-            'Error confirmando turno:',
-            error
-          );
-
-          button.disabled = false;
-          button.textContent =
-            '✓ Confirmar turno';
-
-          alert(
-            'No se pudo confirmar el turno.'
-          );
-
-          return;
-        }
-
-        await loadAppointments();
-      });
-    });
-
-  container
-    .querySelectorAll('.reject-appointment')
-    .forEach(button => {
-      button.addEventListener('click', async () => {
-
-        const appointmentId =
-          button.dataset.id;
-
-        if (!appointmentId) return;
-
-        if (
-          !confirm(
-            '¿Rechazar este turno?\n\n' +
-            'El paciente deberá solicitar otro horario.'
-          )
-        ) {
-          return;
-        }
-
-        button.disabled = true;
-        button.textContent = 'Rechazando…';
-
-        const { error } = await sb
-          .from('professional_appointments')
-          .update({
-            status: 'cancelled'
-          })
-          .eq('id', appointmentId)
-          .eq('professional_id', user.id);
-
-        if (error) {
-          console.error(
-            'Error rechazando turno:',
-            error
-          );
-
-          button.disabled = false;
-          button.textContent = '✕ Rechazar';
-
-          alert(
-            'No se pudo rechazar el turno.'
-          );
-
-          return;
-        }
-
-        await loadAppointments();
-      });
-    });
-}
-  // ===================================================
-  // CONFIRMAR TURNO
-  // ===================================================
-
-  container
-    .querySelectorAll(
-      '.confirm-appointment'
-    )
-    .forEach(button => {
-
-      button.addEventListener(
-        'click',
-        async () => {
-
-          const appointmentId =
-            button.dataset.id;
-
-
-          if (!appointmentId) {
-            return;
-          }
-
-
-          const confirmed =
-            confirm(
-              '¿Confirmar este turno?'
-            );
-
-
-          if (!confirmed) {
-            return;
-          }
-
-
-          button.disabled =
-            true;
-
-          button.textContent =
-            'Confirmando…';
-
-
-          const {
-            error
-          } = await sb
-            .from(
-              'professional_appointments'
-            )
-            .update({
-              status:
-                'confirmed'
-            })
-            .eq(
-              'id',
-              appointmentId
-            )
-            .eq(
-              'professional_id',
-              user.id
-            );
-
-
-          if (error) {
-
-            console.error(
-              'Error confirmando turno:',
-              error
-            );
-
-
-            button.disabled =
-              false;
-
-            button.textContent =
-              '✓ Confirmar turno';
-
-
-            alert(
-              'No se pudo confirmar el turno.'
-            );
-
-            return;
-
-          }
-
-
-          await loadAppointments();
-
-        }
-      );
-
-    });
-
-
-  // ===================================================
-  // RECHAZAR TURNO
-  // ===================================================
-
-  container
-    .querySelectorAll(
-      '.reject-appointment'
-    )
-    .forEach(button => {
-
-      button.addEventListener(
-        'click',
-        async () => {
-
-          const appointmentId =
-            button.dataset.id;
-
-
-          if (!appointmentId) {
-            return;
-          }
-
-
-          const confirmed =
-            confirm(
-              '¿Rechazar este turno?\n\n' +
-              'El paciente deberá solicitar otro horario.'
-            );
-
-
-          if (!confirmed) {
-            return;
-          }
-
-
-          button.disabled =
-            true;
-
-          button.textContent =
-            'Rechazando…';
-
-
-          const {
-            error
-          } = await sb
-            .from(
-              'professional_appointments'
-            )
-            .update({
-              status:
-                'cancelled'
-            })
-            .eq(
-              'id',
-              appointmentId
-            )
-            .eq(
-              'professional_id',
-              user.id
-            );
-
-
-          if (error) {
-
-            console.error(
-              'Error rechazando turno:',
-              error
-            );
-
-
-            button.disabled =
-              false;
-
-            button.textContent =
-              '✕ Rechazar';
-
-
-            alert(
-              'No se pudo rechazar el turno.'
-            );
-
-            return;
-
-          }
-
-
-          await loadAppointments();
-
-        }
-      );
-
-    });
-
-}
-```
-
-  // =====================================================
-  // CONSULTAS PROFESIONALES
-  // =====================================================
-
-async function loadProfessionalInquiries() {
-
-  if (!consultasContent) {
-    return;
-  }
-
-  if (!isPro) {
-
-    consultasContent.innerHTML = `
-      <div class="card">
-
-        <strong>
-          🔒 Comunicación interna disponible con PsiCerca PRO
-        </strong>
-
-        <p
-          class="small muted"
-          style="margin-top:8px;"
-        >
-          Recibí y respondé consultas de pacientes
-          desde PsiCerca PRO.
-        </p>
-
-        <a
-          class="btn primary"
-          href="#suscripcion"
-          style="margin-top:12px;"
-        >
-          Conocer PsiCerca PRO
-        </a>
-
-      </div>
-    `;
-
-    return;
-  }
 
     const {
       data,
       error
     } = await sb
-      .from('professional_inquiries')
+      .from('professional_appointments')
+      .select(`
+        id,
+        appointment_date,
+        start_time,
+        end_time,
+        modality,
+        zone,
+        status,
+        patient_name,
+        patient_whatsapp,
+        patient_email,
+        notes,
+        created_at
+      `)
+      .eq(
+        'professional_id',
+        user.id
+      )
+      .order(
+        'appointment_date',
+        {
+          ascending: true
+        }
+      )
+      .order(
+        'start_time',
+        {
+          ascending: true
+        }
+      );
+
+
+    if (error) {
+
+      console.error(
+        'Error cargando turnos:',
+        error
+      );
+
+
+      container.innerHTML = `
+
+        <p
+          class="small"
+          style="color:#b42318;"
+        >
+          No se pudieron cargar los turnos.
+        </p>
+
+      `;
+
+      return;
+
+    }
+
+
+    const appointments =
+      data || [];
+
+
+    if (appointments.length === 0) {
+
+      container.innerHTML = `
+
+        <div class="card">
+
+          <p style="margin:0;">
+            Todavía no recibiste turnos.
+          </p>
+
+          <p
+            class="small muted"
+            style="margin-top:6px;"
+          >
+            Cuando un paciente reserve un turno
+            desde tu perfil, aparecerá acá.
+          </p>
+
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+
+    let html = '';
+
+
+    appointments.forEach(
+      appointment => {
+
+        const appointmentStatus =
+          String(
+            appointment.status || ''
+          )
+            .trim()
+            .toLowerCase();
+
+
+        const date =
+          appointment.appointment_date
+
+            ? new Date(
+                appointment.appointment_date +
+                'T00:00:00'
+              ).toLocaleDateString(
+                'es-AR',
+                {
+                  weekday: 'long',
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric'
+                }
+              )
+
+            : 'Fecha no disponible';
+
+
+        const start =
+          appointment.start_time
+            ? String(
+                appointment.start_time
+              ).slice(0, 5)
+            : '';
+
+
+        const end =
+          appointment.end_time
+            ? String(
+                appointment.end_time
+              ).slice(0, 5)
+            : '';
+
+
+        const modalityLabel =
+          appointment.modality ===
+          'presencial'
+
+            ? '📍 Presencial'
+
+            : '💻 Virtual';
+
+
+        let statusLabel =
+          'Pendiente';
+
+
+        if (
+          appointmentStatus ===
+          'confirmed'
+        ) {
+
+          statusLabel =
+            'Confirmado';
+
+        }
+
+
+        if (
+          appointmentStatus ===
+          'cancelled'
+        ) {
+
+          statusLabel =
+            'Rechazado';
+
+        }
+
+
+        if (
+          appointmentStatus ===
+          'completed'
+        ) {
+
+          statusLabel =
+            'Realizado';
+
+        }
+
+
+        const whatsappNumber =
+          appointment.patient_whatsapp
+
+            ? String(
+                appointment.patient_whatsapp
+              ).replace(
+                /[^0-9]/g,
+                ''
+              )
+
+            : '';
+
+
+        const whatsappUrl =
+          whatsappNumber
+
+            ? `https://wa.me/${whatsappNumber}`
+
+            : '';
+
+
+        let actionsHtml = '';
+
+
+        // -------------------------------------------
+        // ACCIONES PARA TURNOS PENDIENTES
+        // -------------------------------------------
+
+        if (
+          appointmentStatus ===
+          'pending'
+        ) {
+
+          actionsHtml = `
+
+            <div
+              style="
+                display:flex;
+                gap:8px;
+                flex-wrap:wrap;
+                margin-top:14px;
+              "
+            >
+
+              <button
+                type="button"
+                class="btn primary confirm-appointment"
+                data-id="${appointment.id}"
+              >
+                ✓ Confirmar turno
+              </button>
+
+
+              ${
+                whatsappUrl
+
+                  ? `
+
+                    <a
+                      class="btn secondary"
+                      href="${escapeHTML(
+                        whatsappUrl
+                      )}"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      💬 Contactar paciente
+                    </a>
+
+                  `
+
+                  : ''
+              }
+
+
+              <button
+                type="button"
+                class="btn secondary reject-appointment"
+                data-id="${appointment.id}"
+                style="
+                  border-color:#b91c1c;
+                  color:#b91c1c;
+                "
+              >
+                ✕ Rechazar
+              </button>
+
+            </div>
+
+          `;
+
+        }
+
+
+        // -------------------------------------------
+        // ACCIÓN PARA TURNOS CONFIRMADOS
+        // -------------------------------------------
+
+        if (
+          appointmentStatus ===
+            'confirmed' &&
+          whatsappUrl
+        ) {
+
+          actionsHtml = `
+
+            <div
+              style="
+                margin-top:14px;
+              "
+            >
+
+              <a
+                class="btn secondary"
+                href="${escapeHTML(
+                  whatsappUrl
+                )}"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                💬 Contactar paciente
+              </a>
+
+            </div>
+
+          `;
+
+        }
+
+
+        // -------------------------------------------
+        // INFORMACIÓN EXTRA
+        // -------------------------------------------
+
+        let extraHtml = '';
+
+
+        if (
+          appointment.zone
+        ) {
+
+          extraHtml += `
+
+            <div
+              class="small"
+              style="
+                margin-top:5px;
+              "
+            >
+
+              <strong>
+                Zona:
+              </strong>
+
+              ${escapeHTML(
+                appointment.zone
+              )}
+
+            </div>
+
+          `;
+
+        }
+
+
+        if (
+          appointment.patient_whatsapp
+        ) {
+
+          extraHtml += `
+
+            <div
+              class="small"
+              style="
+                margin-top:5px;
+              "
+            >
+
+              <strong>
+                WhatsApp:
+              </strong>
+
+              ${escapeHTML(
+                appointment.patient_whatsapp
+              )}
+
+            </div>
+
+          `;
+
+        }
+
+
+        if (
+          appointment.patient_email
+        ) {
+
+          extraHtml += `
+
+            <div
+              class="small"
+              style="
+                margin-top:5px;
+              "
+            >
+
+              <strong>
+                Email:
+              </strong>
+
+              ${escapeHTML(
+                appointment.patient_email
+              )}
+
+            </div>
+
+          `;
+
+        }
+
+
+        if (
+          appointment.notes
+        ) {
+
+          extraHtml += `
+
+            <div
+              style="
+                margin-top:14px;
+                padding-top:12px;
+                border-top:1px solid rgba(0,0,0,.08);
+              "
+            >
+
+              <strong>
+                Notas
+              </strong>
+
+              <div
+                class="small"
+                style="
+                  margin-top:5px;
+                  line-height:1.5;
+                "
+              >
+
+                ${escapeHTML(
+                  appointment.notes
+                ).replace(
+                  /\n/g,
+                  '<br>'
+                )}
+
+              </div>
+
+            </div>
+
+          `;
+
+        }
+
+
+        // -------------------------------------------
+        // TARJETA DEL TURNO
+        // -------------------------------------------
+
+        html += `
+
+          <article
+            class="card"
+            style="
+              padding:20px;
+              margin-bottom:16px;
+            "
+          >
+
+            <div
+              style="
+                display:flex;
+                justify-content:space-between;
+                align-items:flex-start;
+                gap:12px;
+                flex-wrap:wrap;
+              "
+            >
+
+              <div>
+
+                <h3
+                  style="
+                    margin:0;
+                  "
+                >
+                  ${escapeHTML(
+                    appointment.patient_name ||
+                    'Paciente'
+                  )}
+                </h3>
+
+
+                <div
+                  class="small"
+                  style="
+                    margin-top:6px;
+                  "
+                >
+                  ${escapeHTML(
+                    date
+                  )}
+                </div>
+
+
+                <div
+                  class="small"
+                  style="
+                    margin-top:5px;
+                  "
+                >
+
+                  <strong>
+                    Horario:
+                  </strong>
+
+                  ${escapeHTML(
+                    start
+                  )}
+
+                  ${
+                    end
+                      ? ` - ${escapeHTML(
+                          end
+                        )}`
+                      : ''
+                  }
+
+                </div>
+
+
+                <div
+                  class="small"
+                  style="
+                    margin-top:8px;
+                  "
+                >
+
+                  <strong>
+                    Modalidad:
+                  </strong>
+
+                  ${escapeHTML(
+                    modalityLabel
+                  )}
+
+                </div>
+
+
+                ${extraHtml}
+
+              </div>
+
+
+              <div>
+
+                <span class="badge">
+                  ${escapeHTML(
+                    statusLabel
+                  )}
+                </span>
+
+              </div>
+
+            </div>
+
+
+            ${actionsHtml}
+
+          </article>
+
+        `;
+
+      }
+    );
+
+
+    container.innerHTML =
+      html;
+
+
+    // =================================================
+    // CONFIRMAR TURNO
+    // =================================================
+
+    container
+      .querySelectorAll(
+        '.confirm-appointment'
+      )
+      .forEach(
+        button => {
+
+          button.addEventListener(
+            'click',
+            async () => {
+
+              const appointmentId =
+                button.dataset.id;
+
+
+              if (!appointmentId) {
+                return;
+              }
+
+
+              const confirmed =
+                confirm(
+                  '¿Confirmar este turno?'
+                );
+
+
+              if (!confirmed) {
+                return;
+              }
+
+
+              button.disabled =
+                true;
+
+              button.textContent =
+                'Confirmando…';
+
+
+              const {
+                error
+              } = await sb
+                .from(
+                  'professional_appointments'
+                )
+                .update({
+                  status:
+                    'confirmed'
+                })
+                .eq(
+                  'id',
+                  appointmentId
+                )
+                .eq(
+                  'professional_id',
+                  user.id
+                );
+
+
+              if (error) {
+
+                console.error(
+                  'Error confirmando turno:',
+                  error
+                );
+
+
+                button.disabled =
+                  false;
+
+                button.textContent =
+                  '✓ Confirmar turno';
+
+
+                alert(
+                  'No se pudo confirmar el turno.'
+                );
+
+                return;
+
+              }
+
+
+              await loadAppointments();
+
+            }
+          );
+
+        }
+      );
+
+
+    // =================================================
+    // RECHAZAR TURNO
+    // =================================================
+
+    container
+      .querySelectorAll(
+        '.reject-appointment'
+      )
+      .forEach(
+        button => {
+
+          button.addEventListener(
+            'click',
+            async () => {
+
+              const appointmentId =
+                button.dataset.id;
+
+
+              if (!appointmentId) {
+                return;
+              }
+
+
+              const confirmed =
+                confirm(
+                  '¿Rechazar este turno?\n\n' +
+                  'El paciente deberá solicitar otro horario.'
+                );
+
+
+              if (!confirmed) {
+                return;
+              }
+
+
+              button.disabled =
+                true;
+
+              button.textContent =
+                'Rechazando…';
+
+
+              const {
+                error
+              } = await sb
+                .from(
+                  'professional_appointments'
+                )
+                .update({
+                  status:
+                    'cancelled'
+                })
+                .eq(
+                  'id',
+                  appointmentId
+                )
+                .eq(
+                  'professional_id',
+                  user.id
+                );
+
+
+              if (error) {
+
+                console.error(
+                  'Error rechazando turno:',
+                  error
+                );
+
+
+                button.disabled =
+                  false;
+
+                button.textContent =
+                  '✕ Rechazar';
+
+
+                alert(
+                  'No se pudo rechazar el turno.'
+                );
+
+                return;
+
+              }
+
+
+              await loadAppointments();
+
+            }
+          );
+
+        }
+      );
+
+  }
+
+
+  // =====================================================
+  // CONSULTAS PROFESIONALES
+  // =====================================================
+
+  async function loadProfessionalInquiries() {
+
+    if (!consultasContent) {
+      return;
+    }
+
+
+    if (!isPro) {
+
+      consultasContent.innerHTML = `
+
+        <div class="card">
+
+          <strong>
+            🔒 Comunicación interna disponible con PsiCerca PRO
+          </strong>
+
+          <p
+            class="small muted"
+            style="
+              margin-top:8px;
+            "
+          >
+            Recibí y respondé consultas de pacientes
+            desde PsiCerca PRO.
+          </p>
+
+          <a
+            class="btn primary"
+            href="#suscripcion"
+            style="
+              margin-top:12px;
+            "
+          >
+            Conocer PsiCerca PRO
+          </a>
+
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+
+    const {
+      data,
+      error
+    } = await sb
+      .from(
+        'professional_inquiries'
+      )
       .select(`
         id,
         patient_name,
@@ -5744,9 +5936,11 @@ async function loadProfessionalInquiries() {
 
 
       consultasContent.innerHTML = `
+
         <div class="message error">
           No se pudieron cargar las consultas.
         </div>
+
       `;
 
       return;
@@ -5758,22 +5952,34 @@ async function loadProfessionalInquiries() {
       data || [];
 
 
-    if (inquiries.length === 0) {
+    if (
+      inquiries.length === 0
+    ) {
 
       consultasContent.innerHTML = `
+
         <div class="card">
-          <p style="margin:0;">
+
+          <p
+            style="
+              margin:0;
+            "
+          >
             Todavía no recibiste consultas.
           </p>
 
           <p
             class="small muted"
-            style="margin-top:6px;"
+            style="
+              margin-top:6px;
+            "
           >
             Cuando un paciente te escriba desde tu perfil,
             la consulta aparecerá acá.
           </p>
+
         </div>
+
       `;
 
       return;
@@ -5783,399 +5989,475 @@ async function loadProfessionalInquiries() {
 
     consultasContent.innerHTML =
       inquiries
-        .map(inquiry => {
+        .map(
+          inquiry => {
 
-          const createdDate =
-            inquiry.created_at
-              ? new Date(
-                  inquiry.created_at
-                ).toLocaleString(
-                  'es-AR',
-                  {
-                    dateStyle: 'medium',
-                    timeStyle: 'short'
-                  }
-                )
-              : '';
+            const createdDate =
+              inquiry.created_at
 
+                ? new Date(
+                    inquiry.created_at
+                  ).toLocaleString(
+                    'es-AR',
+                    {
+                      dateStyle:
+                        'medium',
+                      timeStyle:
+                        'short'
+                    }
+                  )
 
-          const hasReply =
-            Boolean(
-              inquiry.professional_reply &&
-              inquiry.professional_reply.trim()
-            );
+                : '';
 
 
-          const statusLabel =
-            inquiry.status === 'responded'
-              ? 'Respondida'
-              : 'Nueva';
+            const hasReply =
+              Boolean(
+                inquiry.professional_reply &&
+                inquiry.professional_reply.trim()
+              );
 
 
-          const statusClass =
-            inquiry.status === 'responded'
-              ? 'success'
-              : '';
+            const statusLabel =
+              inquiry.status ===
+              'responded'
+
+                ? 'Respondida'
+
+                : 'Nueva';
 
 
-          return `
+            const statusClass =
+              inquiry.status ===
+              'responded'
 
-            <article
-              class="card"
-              style="
-                padding:20px;
-                margin-bottom:16px;
-              "
-            >
+                ? 'success'
 
-              <div
+                : '';
+
+
+            return `
+
+              <article
+                class="card"
                 style="
-                  display:flex;
-                  justify-content:space-between;
-                  align-items:flex-start;
-                  gap:12px;
-                  flex-wrap:wrap;
+                  padding:20px;
+                  margin-bottom:16px;
                 "
               >
 
-                <div>
+                <div
+                  style="
+                    display:flex;
+                    justify-content:space-between;
+                    align-items:flex-start;
+                    gap:12px;
+                    flex-wrap:wrap;
+                  "
+                >
 
-                  <strong
-                    style="
-                      font-size:18px;
-                    "
+                  <div>
+
+                    <strong
+                      style="
+                        font-size:18px;
+                      "
+                    >
+                      ${escapeHTML(
+                        inquiry.patient_name ||
+                        'Paciente'
+                      )}
+                    </strong>
+
+
+                    ${
+                      inquiry.patient_age
+
+                        ? `
+
+                          <div
+                            class="small muted"
+                            style="
+                              margin-top:4px;
+                            "
+                          >
+                            ${escapeHTML(
+                              inquiry.patient_age
+                            )} años
+                          </div>
+
+                        `
+
+                        : ''
+                    }
+
+                  </div>
+
+
+                  <span
+                    class="badge ${statusClass}"
                   >
-                    ${escapeHTML(
-                      inquiry.patient_name ||
-                      'Paciente'
-                    )}
-                  </strong>
-
-                  ${
-                    inquiry.patient_age
-                      ? `
-                        <div
-                          class="small muted"
-                          style="margin-top:4px;"
-                        >
-                          ${escapeHTML(
-                            inquiry.patient_age
-                          )} años
-                        </div>
-                      `
-                      : ''
-                  }
+                    ${statusLabel}
+                  </span>
 
                 </div>
 
 
-                <span
-                  class="badge ${statusClass}"
+                <div
+                  class="small muted"
+                  style="
+                    margin-top:8px;
+                  "
                 >
-                  ${statusLabel}
-                </span>
-
-              </div>
-
-
-              <div
-                class="small muted"
-                style="margin-top:8px;"
-              >
-                ${escapeHTML(createdDate)}
-              </div>
-
-
-              <div
-                style="
-                  margin-top:18px;
-                  padding:16px;
-                  border-radius:12px;
-                  background:var(--background);
-                "
-              >
-
-                <strong>
-                  Consulta del paciente
-                </strong>
-
-
-                ${
-                  inquiry.modality
-                    ? `
-                      <div
-                        class="small"
-                        style="margin-top:8px;"
-                      >
-                        <strong>Modalidad:</strong>
-                        ${escapeHTML(
-                          inquiry.modality
-                        )}
-                      </div>
-                    `
-                    : ''
-                }
-
-
-                ${
-                  inquiry.availability
-                    ? `
-                      <div
-                        class="small"
-                        style="margin-top:5px;"
-                      >
-                        <strong>Disponibilidad:</strong>
-                        ${escapeHTML(
-                          inquiry.availability
-                        )}
-                      </div>
-                    `
-                    : ''
-                }
-
-
-                ${
-                  inquiry.zone
-                    ? `
-                      <div
-                        class="small"
-                        style="margin-top:5px;"
-                      >
-                        <strong>Zona:</strong>
-                        ${escapeHTML(
-                          inquiry.zone
-                        )}
-                      </div>
-                    `
-                    : ''
-                }
-
-
-                ${
-                  inquiry.reason
-                    ? `
-                      <div
-                        class="small"
-                        style="margin-top:5px;"
-                      >
-                        <strong>Motivo:</strong>
-                        ${escapeHTML(
-                          inquiry.reason
-                        )}
-                      </div>
-                    `
-                    : ''
-                }
+                  ${escapeHTML(
+                    createdDate
+                  )}
+                </div>
 
 
                 <div
                   style="
-                    margin-top:14px;
-                    line-height:1.6;
+                    margin-top:18px;
+                    padding:16px;
+                    border-radius:12px;
+                    background:var(--background);
                   "
                 >
-                  ${escapeHTML(
-                    inquiry.message ||
-                    ''
-                  ).replace(
-                    /\n/g,
-                    '<br>'
-                  )}
+
+                  <strong>
+                    Consulta del paciente
+                  </strong>
+
+
+                  ${
+                    inquiry.modality
+
+                      ? `
+
+                        <div
+                          class="small"
+                          style="
+                            margin-top:8px;
+                          "
+                        >
+
+                          <strong>
+                            Modalidad:
+                          </strong>
+
+                          ${escapeHTML(
+                            inquiry.modality
+                          )}
+
+                        </div>
+
+                      `
+
+                      : ''
+                  }
+
+
+                  ${
+                    inquiry.availability
+
+                      ? `
+
+                        <div
+                          class="small"
+                          style="
+                            margin-top:5px;
+                          "
+                        >
+
+                          <strong>
+                            Disponibilidad:
+                          </strong>
+
+                          ${escapeHTML(
+                            inquiry.availability
+                          )}
+
+                        </div>
+
+                      `
+
+                      : ''
+                  }
+
+
+                  ${
+                    inquiry.zone
+
+                      ? `
+
+                        <div
+                          class="small"
+                          style="
+                            margin-top:5px;
+                          "
+                        >
+
+                          <strong>
+                            Zona:
+                          </strong>
+
+                          ${escapeHTML(
+                            inquiry.zone
+                          )}
+
+                        </div>
+
+                      `
+
+                      : ''
+                  }
+
+
+                  ${
+                    inquiry.reason
+
+                      ? `
+
+                        <div
+                          class="small"
+                          style="
+                            margin-top:5px;
+                          "
+                        >
+
+                          <strong>
+                            Motivo:
+                          </strong>
+
+                          ${escapeHTML(
+                            inquiry.reason
+                          )}
+
+                        </div>
+
+                      `
+
+                      : ''
+                  }
+
+
+                  <div
+                    style="
+                      margin-top:14px;
+                      line-height:1.6;
+                    "
+                  >
+
+                    ${escapeHTML(
+                      inquiry.message ||
+                      ''
+                    ).replace(
+                      /\n/g,
+                      '<br>'
+                    )}
+
+                  </div>
+
                 </div>
 
-              </div>
 
+                ${
+                  hasReply
 
-              ${
-                hasReply
-
-                  ? `
-
-                    <div
-                      style="
-                        margin-top:18px;
-                        padding:16px;
-                        border-radius:12px;
-                        border:1px solid rgba(34,197,94,.25);
-                        background:rgba(34,197,94,.06);
-                      "
-                    >
+                    ? `
 
                       <div
                         style="
-                          font-weight:600;
-                          margin-bottom:8px;
+                          margin-top:18px;
+                          padding:16px;
+                          border-radius:12px;
+                          border:1px solid rgba(34,197,94,.25);
+                          background:rgba(34,197,94,.06);
                         "
                       >
-                        ✓ Respuesta enviada
+
+                        <div
+                          style="
+                            font-weight:600;
+                            margin-bottom:8px;
+                          "
+                        >
+                          ✓ Respuesta enviada
+                        </div>
+
+                        <div
+                          style="
+                            line-height:1.6;
+                          "
+                        >
+
+                          ${escapeHTML(
+                            inquiry.professional_reply
+                          ).replace(
+                            /\n/g,
+                            '<br>'
+                          )}
+
+                        </div>
+
                       </div>
 
+
                       <div
                         style="
-                          line-height:1.6;
+                          margin-top:14px;
                         "
                       >
-                        ${escapeHTML(
+
+                        <button
+                          type="button"
+                          class="btn secondary edit-inquiry-reply"
+                          data-id="${inquiry.id}"
+                        >
+                          Editar respuesta
+                        </button>
+
+                      </div>
+
+
+                      <div
+                        class="inquiry-reply-editor"
+                        data-id="${inquiry.id}"
+                        style="
+                          display:none;
+                          margin-top:14px;
+                        "
+                      >
+
+                        <textarea
+                          class="inquiry-reply"
+                          data-id="${inquiry.id}"
+                          rows="5"
+                          style="
+                            width:100%;
+                            resize:vertical;
+                          "
+                        >${escapeHTML(
                           inquiry.professional_reply
-                        ).replace(
-                          /\n/g,
-                          '<br>'
-                        )}
+                        )}</textarea>
+
+
+                        <div
+                          style="
+                            display:flex;
+                            gap:8px;
+                            flex-wrap:wrap;
+                            margin-top:10px;
+                          "
+                        >
+
+                          <button
+                            type="button"
+                            class="btn primary save-inquiry-reply"
+                            data-id="${inquiry.id}"
+                          >
+                            Guardar respuesta
+                          </button>
+
+
+                          <button
+                            type="button"
+                            class="btn secondary cancel-inquiry-edit"
+                            data-id="${inquiry.id}"
+                          >
+                            Cancelar
+                          </button>
+
+                        </div>
+
                       </div>
 
-                    </div>
+                    `
 
-
-                    <div
-                      style="
-                        margin-top:14px;
-                      "
-                    >
-
-                      <button
-                        type="button"
-                        class="btn secondary edit-inquiry-reply"
-                        data-id="${inquiry.id}"
-                      >
-                        Editar respuesta
-                      </button>
-
-                    </div>
-
-
-                    <div
-                      class="inquiry-reply-editor"
-                      data-id="${inquiry.id}"
-                      style="
-                        display:none;
-                        margin-top:14px;
-                      "
-                    >
-
-                      <textarea
-                        class="inquiry-reply"
-                        data-id="${inquiry.id}"
-                        rows="5"
-                        style="
-                          width:100%;
-                          resize:vertical;
-                        "
-                      >${escapeHTML(
-                        inquiry.professional_reply
-                      )}</textarea>
-
+                    : `
 
                       <div
                         style="
-                          display:flex;
-                          gap:8px;
-                          flex-wrap:wrap;
-                          margin-top:10px;
+                          margin-top:18px;
                         "
                       >
+
+                        <strong>
+                          Responder al paciente
+                        </strong>
+
+
+                        <textarea
+                          class="inquiry-reply"
+                          data-id="${inquiry.id}"
+                          rows="5"
+                          placeholder="Escribí tu respuesta..."
+                          style="
+                            width:100%;
+                            margin-top:8px;
+                            resize:vertical;
+                          "
+                        ></textarea>
+
 
                         <button
                           type="button"
                           class="btn primary save-inquiry-reply"
                           data-id="${inquiry.id}"
+                          style="
+                            margin-top:10px;
+                          "
                         >
                           Guardar respuesta
                         </button>
 
-
-                        <button
-                          type="button"
-                          class="btn secondary cancel-inquiry-edit"
-                          data-id="${inquiry.id}"
-                        >
-                          Cancelar
-                        </button>
-
                       </div>
 
-                    </div>
-
-                  `
-
-                  : `
-
-                    <div
-                      style="
-                        margin-top:18px;
-                      "
-                    >
-
-                      <strong>
-                        Responder al paciente
-                      </strong>
+                    `
+                }
 
 
-                      <textarea
-                        class="inquiry-reply"
-                        data-id="${inquiry.id}"
-                        rows="5"
-                        placeholder="Escribí tu respuesta..."
-                        style="
-                          width:100%;
-                          margin-top:8px;
-                          resize:vertical;
-                        "
-                      ></textarea>
+                ${
+                  inquiry.status !==
+                  'responded'
 
+                    ? `
 
                       <button
                         type="button"
-                        class="btn primary save-inquiry-reply"
+                        class="btn secondary mark-inquiry-responded"
                         data-id="${inquiry.id}"
-                        style="margin-top:10px;"
+                        style="
+                          margin-top:10px;
+                        "
                       >
-                        Guardar respuesta
+                        Marcar como respondida
                       </button>
 
-                    </div>
+                    `
 
-                  `
-              }
-
-
-              ${
-                inquiry.status !== 'responded'
-
-                  ? `
-                    <button
-                      type="button"
-                      class="btn secondary mark-inquiry-responded"
-                      data-id="${inquiry.id}"
-                      style="
-                        margin-top:10px;
-                      "
-                    >
-                      Marcar como respondida
-                    </button>
-                  `
-
-                  : ''
-              }
+                    : ''
+                }
 
 
-              <button
-                type="button"
-                class="btn secondary delete-inquiry"
-                data-id="${inquiry.id}"
-                style="
-                  margin-top:10px;
-                  border-color:#b91c1c;
-                  color:#b91c1c;
-                "
-              >
-                Eliminar consulta
-              </button>
+                <button
+                  type="button"
+                  class="btn secondary delete-inquiry"
+                  data-id="${inquiry.id}"
+                  style="
+                    margin-top:10px;
+                    border-color:#b91c1c;
+                    color:#b91c1c;
+                  "
+                >
+                  Eliminar consulta
+                </button>
 
-            </article>
+              </article>
 
-          `;
+            `;
 
-        })
+          }
+        )
         .join('');
 
 
@@ -6187,98 +6469,103 @@ async function loadProfessionalInquiries() {
       .querySelectorAll(
         '.save-inquiry-reply'
       )
-      .forEach(button => {
+      .forEach(
+        button => {
 
-        button.addEventListener(
-          'click',
-          async () => {
+          button.addEventListener(
+            'click',
+            async () => {
 
-            const inquiryId =
-              button.dataset.id;
-
-
-            const textarea =
-              consultasContent.querySelector(
-                `.inquiry-reply[data-id="${inquiryId}"]`
-              );
+              const inquiryId =
+                button.dataset.id;
 
 
-            const reply =
-              textarea?.value.trim() || '';
+              const textarea =
+                consultasContent.querySelector(
+                  `.inquiry-reply[data-id="${inquiryId}"]`
+                );
 
 
-            if (!reply) {
-
-              alert(
-                'Escribí una respuesta antes de guardarla.'
-              );
-
-              return;
-
-            }
+              const reply =
+                textarea?.value.trim() ||
+                '';
 
 
-            button.disabled =
-              true;
+              if (!reply) {
 
-            button.textContent =
-              'Enviando…';
+                alert(
+                  'Escribí una respuesta antes de guardarla.'
+                );
 
+                return;
 
-            const {
-              error
-            } = await sb
-              .from('professional_inquiries')
-              .update({
-                professional_reply:
-                  reply,
-
-                status:
-                  'responded',
-
-                updated_at:
-                  new Date().toISOString()
-              })
-              .eq(
-                'id',
-                inquiryId
-              )
-              .eq(
-                'professional_id',
-                user.id
-              );
-
-
-            if (error) {
-
-              console.error(
-                'Error guardando respuesta:',
-                error
-              );
+              }
 
 
               button.disabled =
-                false;
+                true;
 
               button.textContent =
-                'Guardar respuesta';
+                'Enviando…';
 
 
-              alert(
-                'No se pudo enviar la respuesta.'
-              );
+              const {
+                error
+              } = await sb
+                .from(
+                  'professional_inquiries'
+                )
+                .update({
+                  professional_reply:
+                    reply,
 
-              return;
+                  status:
+                    'responded',
+
+                  updated_at:
+                    new Date().toISOString()
+                })
+                .eq(
+                  'id',
+                  inquiryId
+                )
+                .eq(
+                  'professional_id',
+                  user.id
+                );
+
+
+              if (error) {
+
+                console.error(
+                  'Error guardando respuesta:',
+                  error
+                );
+
+
+                button.disabled =
+                  false;
+
+                button.textContent =
+                  'Guardar respuesta';
+
+
+                alert(
+                  'No se pudo enviar la respuesta.'
+                );
+
+                return;
+
+              }
+
+
+              await loadProfessionalInquiries();
 
             }
+          );
 
-
-            await loadProfessionalInquiries();
-
-          }
-        );
-
-      });
+        }
+      );
 
 
     // ===================================================
@@ -6289,37 +6576,39 @@ async function loadProfessionalInquiries() {
       .querySelectorAll(
         '.edit-inquiry-reply'
       )
-      .forEach(button => {
+      .forEach(
+        button => {
 
-        button.addEventListener(
-          'click',
-          () => {
+          button.addEventListener(
+            'click',
+            () => {
 
-            const inquiryId =
-              button.dataset.id;
-
-
-            const editor =
-              consultasContent.querySelector(
-                `.inquiry-reply-editor[data-id="${inquiryId}"]`
-              );
+              const inquiryId =
+                button.dataset.id;
 
 
-            if (editor) {
+              const editor =
+                consultasContent.querySelector(
+                  `.inquiry-reply-editor[data-id="${inquiryId}"]`
+                );
 
-              editor.style.display =
-                'block';
+
+              if (editor) {
+
+                editor.style.display =
+                  'block';
+
+              }
+
+
+              button.style.display =
+                'none';
 
             }
+          );
 
-
-            button.style.display =
-              'none';
-
-          }
-        );
-
-      });
+        }
+      );
 
 
     // ===================================================
@@ -6330,47 +6619,49 @@ async function loadProfessionalInquiries() {
       .querySelectorAll(
         '.cancel-inquiry-edit'
       )
-      .forEach(button => {
+      .forEach(
+        button => {
 
-        button.addEventListener(
-          'click',
-          () => {
+          button.addEventListener(
+            'click',
+            () => {
 
-            const inquiryId =
-              button.dataset.id;
-
-
-            const editor =
-              consultasContent.querySelector(
-                `.inquiry-reply-editor[data-id="${inquiryId}"]`
-              );
+              const inquiryId =
+                button.dataset.id;
 
 
-            const editButton =
-              consultasContent.querySelector(
-                `.edit-inquiry-reply[data-id="${inquiryId}"]`
-              );
+              const editor =
+                consultasContent.querySelector(
+                  `.inquiry-reply-editor[data-id="${inquiryId}"]`
+                );
 
 
-            if (editor) {
+              const editButton =
+                consultasContent.querySelector(
+                  `.edit-inquiry-reply[data-id="${inquiryId}"]`
+                );
 
-              editor.style.display =
-                'none';
+
+              if (editor) {
+
+                editor.style.display =
+                  'none';
+
+              }
+
+
+              if (editButton) {
+
+                editButton.style.display =
+                  'inline-block';
+
+              }
 
             }
+          );
 
-
-            if (editButton) {
-
-              editButton.style.display =
-                'inline-block';
-
-            }
-
-          }
-        );
-
-      });
+        }
+      );
 
 
     // ===================================================
@@ -6381,70 +6672,74 @@ async function loadProfessionalInquiries() {
       .querySelectorAll(
         '.mark-inquiry-responded'
       )
-      .forEach(button => {
+      .forEach(
+        button => {
 
-        button.addEventListener(
-          'click',
-          async () => {
+          button.addEventListener(
+            'click',
+            async () => {
 
-            const inquiryId =
-              button.dataset.id;
-
-
-            button.disabled =
-              true;
-
-
-            const {
-              error
-            } = await sb
-              .from('professional_inquiries')
-              .update({
-
-                status:
-                  'responded',
-
-                updated_at:
-                  new Date().toISOString()
-
-              })
-              .eq(
-                'id',
-                inquiryId
-              )
-              .eq(
-                'professional_id',
-                user.id
-              );
-
-
-            if (error) {
-
-              console.error(
-                'Error marcando consulta:',
-                error
-              );
+              const inquiryId =
+                button.dataset.id;
 
 
               button.disabled =
-                false;
+                true;
 
 
-              alert(
-                'No se pudo actualizar la consulta.'
-              );
+              const {
+                error
+              } = await sb
+                .from(
+                  'professional_inquiries'
+                )
+                .update({
 
-              return;
+                  status:
+                    'responded',
+
+                  updated_at:
+                    new Date().toISOString()
+
+                })
+                .eq(
+                  'id',
+                  inquiryId
+                )
+                .eq(
+                  'professional_id',
+                  user.id
+                );
+
+
+              if (error) {
+
+                console.error(
+                  'Error marcando consulta:',
+                  error
+                );
+
+
+                button.disabled =
+                  false;
+
+
+                alert(
+                  'No se pudo actualizar la consulta.'
+                );
+
+                return;
+
+              }
+
+
+              await loadProfessionalInquiries();
 
             }
+          );
 
-
-            await loadProfessionalInquiries();
-
-          }
-        );
-
-      });
+        }
+      );
 
 
     // ===================================================
@@ -6455,87 +6750,91 @@ async function loadProfessionalInquiries() {
       .querySelectorAll(
         '.delete-inquiry'
       )
-      .forEach(button => {
+      .forEach(
+        button => {
 
-        button.addEventListener(
-          'click',
-          async () => {
+          button.addEventListener(
+            'click',
+            async () => {
 
-            const inquiryId =
-              button.dataset.id;
-
-
-            const confirmed =
-              confirm(
-                '¿Eliminar esta consulta?\n\n' +
-                'Esta acción no se puede deshacer.'
-              );
+              const inquiryId =
+                button.dataset.id;
 
 
-            if (!confirmed) {
-              return;
-            }
+              const confirmed =
+                confirm(
+                  '¿Eliminar esta consulta?\n\n' +
+                  'Esta acción no se puede deshacer.'
+                );
 
 
-            button.disabled =
-              true;
-
-            button.textContent =
-              'Eliminando…';
-
-
-            const {
-              error
-            } = await sb
-              .from('professional_inquiries')
-              .delete()
-              .eq(
-                'id',
-                inquiryId
-              )
-              .eq(
-                'professional_id',
-                user.id
-              );
-
-
-            if (error) {
-
-              console.error(
-                'Error eliminando consulta:',
-                error
-              );
+              if (!confirmed) {
+                return;
+              }
 
 
               button.disabled =
-                false;
+                true;
 
               button.textContent =
-                'Eliminar consulta';
+                'Eliminando…';
 
 
-              alert(
-                'No se pudo eliminar la consulta.'
-              );
+              const {
+                error
+              } = await sb
+                .from(
+                  'professional_inquiries'
+                )
+                .delete()
+                .eq(
+                  'id',
+                  inquiryId
+                )
+                .eq(
+                  'professional_id',
+                  user.id
+                );
 
-              return;
+
+              if (error) {
+
+                console.error(
+                  'Error eliminando consulta:',
+                  error
+                );
+
+
+                button.disabled =
+                  false;
+
+                button.textContent =
+                  'Eliminar consulta';
+
+
+                alert(
+                  'No se pudo eliminar la consulta.'
+                );
+
+                return;
+
+              }
+
+
+              await loadProfessionalInquiries();
 
             }
+          );
 
-
-            await loadProfessionalInquiries();
-
-          }
-        );
-
-      });
+        }
+      );
 
   }
 
 
-  // =====================================================
+  // ===================================================
   // LOGOUT
-  // =====================================================
+  // ===================================================
 
   const logoutButton =
     document.getElementById(
@@ -6557,28 +6856,27 @@ async function loadProfessionalInquiries() {
   }
 
 
-  // =====================================================
+  // ===================================================
   // CARGA INICIAL
-  // =====================================================
+  // ===================================================
 
   try {
 
-  await loadProfile();
+    await loadProfile();
 
-  await loadSubscription();
+    await loadSubscription();
 
-  await loadStatistics();
+    await loadStatistics();
 
-  await loadProfessionalInquiries();
+    await loadProfessionalInquiries();
 
-  await loadAppointments();
+    await loadAppointments();
 
-  await loadAvailability();
+    await loadAvailability();
 
-  console.log(
-    'Dashboard cargado correctamente.'
-  );
-
+    console.log(
+      'Dashboard cargado correctamente.'
+    );
 
   } catch (error) {
 
@@ -6618,8 +6916,12 @@ async function loadProfessionalInquiries() {
 
 });
 
+
 const upgradeProButton =
-  document.getElementById('upgradeProButton');
+  document.getElementById(
+    'upgradeProButton'
+  );
+
 
 if (upgradeProButton) {
 
@@ -6629,11 +6931,16 @@ if (upgradeProButton) {
 
       try {
 
-        upgradeProButton.disabled = true;
+        upgradeProButton.disabled =
+          true;
+
         upgradeProButton.textContent =
           'Preparando contratación…';
 
-        const sb = requireSupabase();
+
+        const sb =
+          requireSupabase();
+
 
         const {
           data: {
@@ -6642,14 +6949,18 @@ if (upgradeProButton) {
           error: sessionError
         } = await sb.auth.getSession();
 
+
         if (
           sessionError ||
           !session
         ) {
+
           throw new Error(
             'Tu sesión no está activa. Volvé a iniciar sesión.'
           );
+
         }
+
 
         const {
           data,
@@ -6661,21 +6972,27 @@ if (upgradeProButton) {
           }
         );
 
+
         if (error) {
           throw error;
         }
+
 
         if (
           !data ||
           !data.checkout_url
         ) {
+
           throw new Error(
             'Mercado Pago no devolvió una URL de pago.'
           );
+
         }
+
 
         window.location.href =
           data.checkout_url;
+
 
       } catch (error) {
 
@@ -6684,12 +7001,16 @@ if (upgradeProButton) {
           error
         );
 
+
         alert(
           error?.message ||
           'No se pudo iniciar la contratación de PsiCerca PRO.'
         );
 
-        upgradeProButton.disabled = false;
+
+        upgradeProButton.disabled =
+          false;
+
         upgradeProButton.textContent =
           'Contratar PsiCerca PRO';
 
