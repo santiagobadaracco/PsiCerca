@@ -5035,7 +5035,7 @@ console.log(
   // TURNOS
   // =====================================================
 
-  ```javascript
+javascript
 async function loadAppointments() {
 
   const container =
@@ -5043,9 +5043,7 @@ async function loadAppointments() {
       'appointmentsContent'
     );
 
-
   if (!container) return;
-
 
   if (!isPro) {
 
@@ -5056,7 +5054,6 @@ async function loadAppointments() {
     `;
 
     return;
-
   }
 
 
