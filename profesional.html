@@ -3015,7 +3015,189 @@ async function renderAgenda(
   }
 
 }
+function renderSlots() {
 
+  const selectedModality =
+    modalitySelect.value;
+
+  const filteredSlots =
+    currentSlots.filter(
+      slot => {
+
+        if (
+          slot.modality === 'ambas'
+        ) {
+
+          return true;
+
+        }
+
+        return (
+          slot.modality ===
+          selectedModality
+        );
+
+      }
+    );
+
+  if (!filteredSlots.length) {
+
+    slotsArea.innerHTML = `
+      <div class="agenda-message">
+
+        No hay horarios disponibles para
+        la modalidad seleccionada.
+
+      </div>
+    `;
+
+    return;
+
+  }
+
+  slotsArea.innerHTML = `
+
+    <div class="agenda-slots">
+
+      ${
+        filteredSlots
+          .map(
+            (slot, index) => {
+
+              const start =
+                formatTime(
+                  slot.slot_start
+                );
+
+              const end =
+                formatTime(
+                  slot.slot_end
+                );
+
+              if (!start || !end) {
+                return '';
+              }
+
+              return `
+
+                <button
+                  type="button"
+                  class="agenda-slot"
+                  data-index="${index}"
+                >
+
+                  <span class="agenda-slot-time">
+                    ${escapeHTML(start)}
+                  </span>
+
+                  <small>
+                    hasta ${escapeHTML(end)}
+                  </small>
+
+                </button>
+
+              `;
+
+            }
+          )
+          .join('')
+      }
+
+    </div>
+
+  `;
+
+  if (
+    !slotsArea.querySelector(
+      '.agenda-slot'
+    )
+  ) {
+
+    slotsArea.innerHTML = `
+      <div class="agenda-message">
+        Los horarios configurados no pudieron
+        ser interpretados correctamente.
+      </div>
+    `;
+
+    return;
+
+  }
+
+  slotsArea
+    .querySelectorAll(
+      '.agenda-slot'
+    )
+    .forEach(
+      button => {
+
+        button.addEventListener(
+          'click',
+          function () {
+
+            const index =
+              Number(
+                this.dataset.index
+              );
+
+            const slot =
+              filteredSlots[index];
+
+            if (!slot) {
+              return;
+            }
+
+            let selectedModality =
+              modalitySelect.value;
+
+            if (
+              slot.modality ===
+              'presencial'
+            ) {
+
+              selectedModality =
+                'presencial';
+
+            }
+
+            if (
+              slot.modality ===
+              'virtual'
+            ) {
+
+              selectedModality =
+                'virtual';
+
+            }
+
+            selectedSlot = {
+
+              date:
+                selectedDate,
+
+              startTime:
+                slot.slot_start,
+
+              endTime:
+                slot.slot_end,
+
+              modality:
+                selectedModality,
+
+              zone:
+                slot.zone || null
+
+            };
+
+            showConfirmation();
+
+          }
+        );
+
+      }
+    );
+
+}
   /* =======================================================
      CONFIRMACIÓN
      ======================================================= */
