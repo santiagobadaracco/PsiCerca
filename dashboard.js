@@ -5458,104 +5458,74 @@ const appointmentStatus =
             </div>
 
 
-            ${
-              appointmentStatus ===
-'pending'
+           ${
+  appointmentStatus === 'pending'
+    ? `
+      <div
+        style="
+          display:flex;
+          gap:8px;
+          flex-wrap:wrap;
+          margin-top:14px;
+        "
+      >
 
-                ? `
+        <button
+          type="button"
+          class="btn primary confirm-appointment"
+          data-id="${appointment.id}"
+        >
+          ✓ Confirmar turno
+        </button>
 
-                  <div
-                    style="
-                      display:flex;
-                      gap:8px;
-                      flex-wrap:wrap;
-                      margin-top:14px;
-                    "
-                  >
+        ${
+          whatsappUrl
+            ? `
+              <a
+                class="btn secondary"
+                href="${escapeHTML(whatsappUrl)}"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                💬 Contactar paciente
+              </a>
+            `
+            : ''
+        }
 
-                    <button
-                      type="button"
-                      class="btn primary confirm-appointment"
-                      data-id="${appointment.id}"
-                    >
-                      ✓ Confirmar turno
-                    </button>
+        <button
+          type="button"
+          class="btn secondary reject-appointment"
+          data-id="${appointment.id}"
+          style="
+            border-color:#b91c1c;
+            color:#b91c1c;
+          "
+        >
+          ✕ Rechazar
+        </button>
 
-
-                    ${
-                      whatsappUrl
-                        ? `
-                          <a
-                            class="btn secondary"
-                            href="${escapeHTML(
-                              whatsappUrl
-                            )}"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            💬 Contactar paciente
-                          </a>
-                        `
-                        : ''
-                    }
-
-
-                    <button
-                      type="button"
-                      class="btn secondary reject-appointment"
-                      data-id="${appointment.id}"
-                      style="
-                        border-color:#b91c1c;
-                        color:#b91c1c;
-                      "
-                    >
-                      ✕ Rechazar
-                    </button>
-
-                  </div>
-
-                `
-
-                : appointmentStatus ===
-  'confirmed'
-ment.status
-                  ? `
-
-                    ${
-                      whatsappUrl
-                        ? `
-                          <div
-                            style="
-                              margin-top:14px;
-                            "
-                          >
-
-                            <a
-                              class="btn secondary"
-                              href="${escapeHTML(
-                                whatsappUrl
-                              )}"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              💬 Contactar paciente
-                            </a>
-
-                          </div>
-                        `
-                        : ''
-                    }
-
-                  `
-
-                  : ''
-            }
-
-          </article>
-
-        `;
-
-      })
+      </div>
+    `
+    : appointmentStatus === 'confirmed'
+      ? (
+          whatsappUrl
+            ? `
+              <div style="margin-top:14px;">
+                <a
+                  class="btn secondary"
+                  href="${escapeHTML(whatsappUrl)}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  💬 Contactar paciente
+                </a>
+              </div>
+            `
+            : ''
+        )
+      : ''
+}
       .join('');
 
 
