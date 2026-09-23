@@ -2759,40 +2759,42 @@ async function renderAgenda(
 
   selectedSlot = null;
 
-  confirmArea.style.display = 'none';
-  confirmArea.innerHTML = '';
+  confirmArea.style.display =
+    'none';
+
+  confirmArea.innerHTML =
+    '';
 
   slotsArea.innerHTML = `
-
     <div class="agenda-message">
       Buscando horarios disponibles…
     </div>
-
   `;
 
   selectedDateArea.innerHTML = `
 
-    <div class="agenda-selected-date-label">
+    <span>
       Turnos disponibles
-    </div>
+    </span>
 
-    <div class="agenda-selected-date-value">
+    <strong>
       ${escapeHTML(
         formatSpanishDate(selectedDate)
       )}
-    </div>
+    </strong>
 
   `;
 
   try {
 
     /*
-      Consultamos ambas modalidades por separado.
+      Consultamos ambas modalidades.
 
-      Esto es necesario porque la consulta original
-      comenzaba siempre con "virtual", por lo que nunca
-      podía descubrir que también existían horarios
-      presenciales.
+      La versión anterior consultaba solamente
+      la modalidad seleccionada inicialmente
+      (virtual). Por eso, si existía además
+      disponibilidad presencial, nunca llegaba
+      a detectarla.
     */
 
     const [
@@ -2830,6 +2832,12 @@ async function renderAgenda(
 
     ]);
 
+    /*
+      Si alguna consulta devuelve error,
+      lo mostramos en consola pero dejamos
+      continuar la otra consulta.
+    */
+
     if (virtualResult.error) {
 
       console.error(
@@ -2848,26 +2856,22 @@ async function renderAgenda(
 
     }
 
-    /*
-      Unimos los resultados de ambas consultas.
-    */
-
     const virtualSlots =
-      Array.isArray(virtualResult.data)
+      Array.isArray(
+        virtualResult.data
+      )
         ? virtualResult.data
         : [];
 
     const presencialSlots =
-      Array.isArray(presencialResult.data)
+      Array.isArray(
+        presencialResult.data
+      )
         ? presencialResult.data
         : [];
 
     /*
-      Evitamos duplicados.
-
-      Esto es especialmente importante si la función
-      devuelve una disponibilidad "ambas" tanto al
-      consultar virtual como al consultar presencial.
+      Unimos ambas respuestas.
     */
 
     const combinedSlots = [
@@ -2875,57 +2879,42 @@ async function renderAgenda(
       ...presencialSlots
     ];
 
-    const uniqueSlots =
-      combinedSlots.filter(
+    /*
+      Normalizamos y eliminamos duplicados.
+    */
+
+    const normalizedSlots =
+      combinedSlots
+        .map(normalizeSlot)
+        .filter(Boolean);
+
+    currentSlots =
+      normalizedSlots.filter(
         (slot, index, array) => {
-
-          const normalized =
-            normalizeSlot(slot);
-
-          if (!normalized) {
-            return false;
-          }
 
           return (
             index ===
             array.findIndex(
-              other => {
+              other =>
+                other.slot_start ===
+                  slot.slot_start &&
 
-                const otherNormalized =
-                  normalizeSlot(other);
+                other.slot_end ===
+                  slot.slot_end &&
 
-                if (!otherNormalized) {
-                  return false;
-                }
+                other.modality ===
+                  slot.modality &&
 
-                return (
-                  otherNormalized.slot_start ===
-                    normalized.slot_start &&
-
-                  otherNormalized.slot_end ===
-                    normalized.slot_end &&
-
-                  otherNormalized.modality ===
-                    normalized.modality &&
-
-                  otherNormalized.zone ===
-                    normalized.zone
-                );
-
-              }
+                other.zone ===
+                  slot.zone
             )
           );
 
         }
       );
 
-    currentSlots =
-      uniqueSlots
-        .map(normalizeSlot)
-        .filter(Boolean);
-
     /*
-      Detectamos qué modalidades existen realmente.
+      Detectamos qué modalidades existen.
     */
 
     const hasVirtual =
@@ -2943,8 +2932,8 @@ async function renderAgenda(
       );
 
     /*
-      Si existen ambas modalidades mostramos el selector.
-      Si solamente existe una, la seleccionamos automáticamente.
+      Si existen ambas modalidades,
+      mostramos el selector.
     */
 
     if (
@@ -2953,22 +2942,7 @@ async function renderAgenda(
     ) {
 
       modalityControl.style.display =
-        'block';
-
-      /*
-        Conservamos la modalidad actualmente seleccionada
-        si sigue siendo válida.
-      */
-
-      if (
-        modalitySelect.value !== 'virtual' &&
-        modalitySelect.value !== 'presencial'
-      ) {
-
-        modalitySelect.value =
-          'virtual';
-
-      }
+        'flex';
 
     } else {
 
@@ -2989,25 +2963,24 @@ async function renderAgenda(
 
     }
 
-    updateModalityUI();
+    /*
+      Si no hay ningún horario,
+      mostramos el mensaje correspondiente.
+    */
 
     if (!currentSlots.length) {
 
       slotsArea.innerHTML = `
 
-        <div class="agenda-message agenda-message-empty">
-
-          <div class="agenda-message-icon">
-            ○
-          </div>
+        <div class="agenda-message">
 
           <strong>
             No hay turnos disponibles
           </strong>
 
-          <span>
-            Probá seleccionando otro día.
-          </span>
+          <br>
+
+          Probá seleccionando otro día.
 
         </div>
 
@@ -3016,6 +2989,13 @@ async function renderAgenda(
       return;
 
     }
+
+    /*
+      IMPORTANTE:
+      renderSlots() sigue siendo la función
+      original que está inmediatamente
+      después de este bloque.
+    */
 
     renderSlots();
 
@@ -3027,11 +3007,9 @@ async function renderAgenda(
     );
 
     slotsArea.innerHTML = `
-
       <div class="agenda-message">
         No pudimos cargar la agenda.
       </div>
-
     `;
 
   }
