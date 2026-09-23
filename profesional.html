@@ -1787,11 +1787,25 @@ async function renderAgenda(
   agendaArea
 ) {
 
-  const today =
-    new Date();
+  const today = new Date();
+
+  today.setHours(0, 0, 0, 0);
 
   const todayString =
     formatDateInput(today);
+
+  let selectedDate =
+    todayString;
+
+  let currentMonth =
+    new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      1
+    );
+
+  let selectedSlot = null;
+  let currentSlots = [];
 
   agendaArea.innerHTML = `
 
@@ -1814,30 +1828,57 @@ async function renderAgenda(
           </h2>
 
           <p class="agenda-subtitle">
-            Elegí una fecha para consultar los horarios
-            disponibles con este profesional.
+            Elegí un día y después seleccioná
+            uno de los horarios disponibles.
           </p>
 
         </div>
 
       </div>
 
-      <div class="agenda-controls">
+      <div class="agenda-calendar-header">
 
-        <div class="agenda-control">
+        <button
+          type="button"
+          class="agenda-month-button"
+          id="agendaPreviousMonth"
+          aria-label="Mes anterior"
+        >
+          ‹
+        </button>
 
-          <label for="agendaDate">
-            Fecha
-          </label>
+        <div
+          id="agendaMonthTitle"
+          class="agenda-month-title"
+        ></div>
 
-          <input
-            id="agendaDate"
-            type="date"
-            min="${todayString}"
-            value="${todayString}"
-          >
+        <button
+          type="button"
+          class="agenda-month-button"
+          id="agendaNextMonth"
+          aria-label="Mes siguiente"
+        >
+          ›
+        </button>
 
-        </div>
+      </div>
+
+      <div
+        id="agendaCalendar"
+        class="agenda-calendar"
+      ></div>
+
+      <div
+        class="agenda-selected-date"
+        id="agendaSelectedDate"
+      >
+        Seleccioná un día para ver los horarios disponibles.
+      </div>
+
+      <div
+        class="agenda-controls"
+        style="margin-top:16px;"
+      >
 
         <div
           class="agenda-control"
@@ -1868,7 +1909,7 @@ async function renderAgenda(
       <div id="agendaSlots">
 
         <div class="agenda-message">
-          Buscando horarios disponibles…
+          Seleccioná un día para consultar los horarios.
         </div>
 
       </div>
@@ -1882,8 +1923,30 @@ async function renderAgenda(
 
   `;
 
-  const dateInput =
-    document.getElementById('agendaDate');
+  const calendarArea =
+    document.getElementById(
+      'agendaCalendar'
+    );
+
+  const monthTitle =
+    document.getElementById(
+      'agendaMonthTitle'
+    );
+
+  const previousMonthButton =
+    document.getElementById(
+      'agendaPreviousMonth'
+    );
+
+  const nextMonthButton =
+    document.getElementById(
+      'agendaNextMonth'
+    );
+
+  const selectedDateArea =
+    document.getElementById(
+      'agendaSelectedDate'
+    );
 
   const modalityControl =
     document.getElementById(
@@ -1891,16 +1954,19 @@ async function renderAgenda(
     );
 
   const modalitySelect =
-    document.getElementById('agendaModality');
+    document.getElementById(
+      'agendaModality'
+    );
 
   const slotsArea =
-    document.getElementById('agendaSlots');
+    document.getElementById(
+      'agendaSlots'
+    );
 
   const confirmArea =
-    document.getElementById('agendaConfirm');
-
-  let selectedSlot = null;
-  let currentSlots = [];
+    document.getElementById(
+      'agendaConfirm'
+    );
 
 
   /* =======================================================
@@ -1979,6 +2045,246 @@ async function renderAgenda(
 
 
   /* =======================================================
+     NOMBRE DEL MES
+     ======================================================= */
+
+  function getMonthName(date) {
+
+    return date.toLocaleDateString(
+      'es-AR',
+      {
+        month: 'long',
+        year: 'numeric'
+      }
+    );
+
+  }
+
+
+  /* =======================================================
+     RENDER CALENDARIO
+     ======================================================= */
+
+  function renderCalendar() {
+
+    monthTitle.textContent =
+      getMonthName(currentMonth);
+
+    const year =
+      currentMonth.getFullYear();
+
+    const month =
+      currentMonth.getMonth();
+
+    const firstDay =
+      new Date(
+        year,
+        month,
+        1
+      );
+
+    const lastDay =
+      new Date(
+        year,
+        month + 1,
+        0
+      );
+
+    let startDay =
+      firstDay.getDay();
+
+    /*
+      JS:
+      domingo = 0
+      lunes = 1
+
+      Para PsiCerca queremos:
+      lunes → domingo
+    */
+
+    startDay =
+      startDay === 0
+        ? 6
+        : startDay - 1;
+
+    const totalDays =
+      lastDay.getDate();
+
+    const weekdayNames = [
+      'Lun',
+      'Mar',
+      'Mié',
+      'Jue',
+      'Vie',
+      'Sáb',
+      'Dom'
+    ];
+
+    let html = `
+
+      <div class="agenda-weekdays">
+
+        ${
+          weekdayNames
+            .map(
+              day => `
+                <div class="agenda-weekday">
+                  ${day}
+                </div>
+              `
+            )
+            .join('')
+        }
+
+      </div>
+
+      <div class="agenda-days">
+
+    `;
+
+    for (
+      let i = 0;
+      i < startDay;
+      i++
+    ) {
+
+      html += `
+        <div class="agenda-day agenda-day-empty"></div>
+      `;
+
+    }
+
+    for (
+      let day = 1;
+      day <= totalDays;
+      day++
+    ) {
+
+      const date =
+        new Date(
+          year,
+          month,
+          day
+        );
+
+      date.setHours(
+        0,
+        0,
+        0,
+        0
+      );
+
+      const dateString =
+        formatDateInput(date);
+
+      const isPast =
+        date < today;
+
+      const isSelected =
+        dateString === selectedDate;
+
+      const isToday =
+        dateString === todayString;
+
+      html += `
+
+        <button
+          type="button"
+          class="
+            agenda-day
+            ${isPast ? 'agenda-day-disabled' : ''}
+            ${isSelected ? 'agenda-day-selected' : ''}
+            ${isToday ? 'agenda-day-today' : ''}
+          "
+          data-date="${dateString}"
+          ${isPast ? 'disabled' : ''}
+        >
+
+          <span class="agenda-day-number">
+            ${day}
+          </span>
+
+          ${
+            isToday
+              ? `
+                <span class="agenda-day-label">
+                  Hoy
+                </span>
+              `
+              : ''
+          }
+
+        </button>
+
+      `;
+
+    }
+
+    html += `
+      </div>
+    `;
+
+    calendarArea.innerHTML =
+      html;
+
+    calendarArea
+      .querySelectorAll(
+        '.agenda-day:not(.agenda-day-disabled)'
+      )
+      .forEach(
+        button => {
+
+          button.addEventListener(
+            'click',
+            async function () {
+
+              const date =
+                this.dataset.date;
+
+              if (!date) {
+                return;
+              }
+
+              selectedDate =
+                date;
+
+              renderCalendar();
+
+              await loadSlots();
+
+            }
+          );
+
+        }
+      );
+
+    /*
+      No permitimos navegar hacia meses
+      completamente anteriores al mes actual.
+    */
+
+    const minimumMonth =
+      new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        1
+      );
+
+    const currentMonthStart =
+      new Date(
+        currentMonth.getFullYear(),
+        currentMonth.getMonth(),
+        1
+      );
+
+    previousMonthButton.disabled =
+      currentMonthStart <=
+      minimumMonth;
+
+  }
+
+
+  /* =======================================================
      CARGAR SLOTS
      ======================================================= */
 
@@ -1998,20 +2304,19 @@ async function renderAgenda(
       </div>
     `;
 
-    const selectedDate =
-      dateInput.value;
+    selectedDateArea.innerHTML = `
 
-    if (!selectedDate) {
+      <span>
+        Turnos disponibles
+      </span>
 
-      slotsArea.innerHTML = `
-        <div class="agenda-message">
-          Seleccioná una fecha.
-        </div>
-      `;
+      <strong>
+        ${escapeHTML(
+          formatSpanishDate(selectedDate)
+        )}
+      </strong>
 
-      return;
-
-    }
+    `;
 
     try {
 
@@ -2037,7 +2342,11 @@ async function renderAgenda(
 
         console.error(
           'ERROR DETALLADO OBTENIENDO TURNOS:',
-          JSON.stringify(error, null, 2)
+          JSON.stringify(
+            error,
+            null,
+            2
+          )
         );
 
         slotsArea.innerHTML = `
@@ -2050,11 +2359,6 @@ async function renderAgenda(
 
       }
 
-      console.log(
-        'Slots recibidos de Supabase:',
-        data
-      );
-
       const rawSlots =
         Array.isArray(data)
           ? data
@@ -2064,11 +2368,6 @@ async function renderAgenda(
         rawSlots
           .map(normalizeSlot)
           .filter(Boolean);
-
-      console.log(
-        'Slots normalizados:',
-        currentSlots
-      );
 
       const hasVirtual =
         currentSlots.some(
@@ -2114,15 +2413,19 @@ async function renderAgenda(
       if (!currentSlots.length) {
 
         slotsArea.innerHTML = `
+
           <div class="agenda-message">
 
-            No hay turnos disponibles para esta fecha.
+            <strong>
+              No hay turnos disponibles
+            </strong>
 
-            <br><br>
+            <br>
 
             Probá seleccionando otro día.
 
           </div>
+
         `;
 
         return;
@@ -2246,7 +2549,9 @@ async function renderAgenda(
     `;
 
     if (
-      !slotsArea.querySelector('.agenda-slot')
+      !slotsArea.querySelector(
+        '.agenda-slot'
+      )
     ) {
 
       slotsArea.innerHTML = `
@@ -2260,8 +2565,10 @@ async function renderAgenda(
 
     }
 
-    document
-      .querySelectorAll('.agenda-slot')
+    slotsArea
+      .querySelectorAll(
+        '.agenda-slot'
+      )
       .forEach(
         button => {
 
@@ -2307,7 +2614,7 @@ async function renderAgenda(
               selectedSlot = {
 
                 date:
-                  dateInput.value,
+                  selectedDate,
 
                 startTime:
                   slot.slot_start,
@@ -2736,15 +3043,66 @@ async function renderAgenda(
      EVENTOS
      ======================================================= */
 
-  dateInput.addEventListener(
-    'change',
-    loadSlots
+  previousMonthButton.addEventListener(
+    'click',
+    function () {
+
+      const minimumMonth =
+        new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          1
+        );
+
+      const previousMonth =
+        new Date(
+          currentMonth.getFullYear(),
+          currentMonth.getMonth() - 1,
+          1
+        );
+
+      if (
+        previousMonth <
+        minimumMonth
+      ) {
+
+        return;
+
+      }
+
+      currentMonth =
+        previousMonth;
+
+      renderCalendar();
+
+    }
   );
+
+
+  nextMonthButton.addEventListener(
+    'click',
+    function () {
+
+      currentMonth =
+        new Date(
+          currentMonth.getFullYear(),
+          currentMonth.getMonth() + 1,
+          1
+        );
+
+      renderCalendar();
+
+    }
+  );
+
 
   modalitySelect.addEventListener(
     'change',
     renderSlots
   );
+
+
+  renderCalendar();
 
   await loadSlots();
 
