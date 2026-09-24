@@ -3533,7 +3533,37 @@ function renderSlots() {
         '';
 
     }
+const patientPhone =
+  document
+    .getElementById('patientPhone')
+    ?.value
+    .trim();
 
+if (!patientPhone) {
+
+  if (status) {
+
+    status.textContent =
+      'Ingresá un teléfono de contacto.';
+
+    status.style.color =
+      '#b42318';
+
+  }
+
+  if (button) {
+
+    button.disabled =
+      false;
+
+    button.textContent =
+      'Solicitar turno';
+
+  }
+
+  return;
+
+}
     try {
 
       const {
@@ -3570,6 +3600,9 @@ function renderSlots() {
 
             target_modality:
               selectedSlot.modality
+
+            target_patient_phone:
+              patientPhone
 
           }
         );
