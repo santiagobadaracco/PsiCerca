@@ -5240,7 +5240,7 @@ console.log(
 
         if (
           appointmentStatus ===
-          'cancelled'
+          'rejected'
         ) {
 
           statusLabel =
@@ -5793,10 +5793,12 @@ console.log(
                 .from(
                   'professional_appointments'
                 )
-                .update({
+                
+                 .update({
                   status:
-                    'cancelled'
-                })
+                  'rejected'
+                  })
+                
                 .eq(
                   'id',
                   appointmentId
