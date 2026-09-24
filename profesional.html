@@ -3339,23 +3339,45 @@ function renderSlots() {
           user
             ? `
 
-              <div class="agenda-confirm-actions">
+             <div class="agenda-confirm-contact">
 
-                <button
-                  type="button"
-                  class="btn primary"
-                  id="confirmAppointmentButton"
-                >
-                  Confirmar turno
-                </button>
+  <label for="patientPhone">
+    Teléfono de contacto <span>*</span>
+  </label>
 
-                <button
-                  type="button"
-                  class="btn secondary"
-                  id="cancelAppointmentSelection"
-                >
-                  Cambiar horario
-                </button>
+  <input
+    type="tel"
+    id="patientPhone"
+    name="patientPhone"
+    placeholder="Ej.: 11 1234-5678"
+    autocomplete="tel"
+    required
+  >
+
+  <p class="small">
+    Si el profesional acepta tu solicitud, utilizará este número
+    para comunicarse con vos.
+  </p>
+
+</div>
+
+<div class="agenda-confirm-actions">
+
+  <button
+    type="button"
+    class="btn primary"
+    id="confirmAppointmentButton"
+  >
+    Solicitar turno
+  </button>
+
+  <button
+    type="button"
+    class="btn secondary"
+    id="cancelAppointmentSelection"
+  >
+    Cambiar horario
+  </button>
 
               </div>
 
