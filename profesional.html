@@ -3581,31 +3581,31 @@ if (!patientPhone) {
 
       }
 
-      const {
-        data: appointmentId,
-        error
-      } =
-        await sb.rpc(
-          'book_appointment',
-          {
+const {
+  data: appointmentId,
+  error
+} =
+  await sb.rpc(
+    'book_appointment',
+    {
 
-            target_professional_id:
-              professionalId,
+      target_professional_id:
+        professionalId,
 
-            target_date:
-              selectedSlot.date,
+      target_date:
+        selectedSlot.date,
 
-            target_start_time:
-              selectedSlot.startTime,
+      target_start_time:
+        selectedSlot.startTime,
 
-            target_modality:
-              selectedSlot.modality
+      target_modality:
+        selectedSlot.modality,
 
-            target_patient_phone:
-              patientPhone
+      target_patient_phone:
+        patientPhone
 
-          }
-        );
+    }
+  );
 
       if (error) {
 
