@@ -5812,9 +5812,12 @@ console.log(
               if (error) {
 
                 console.error(
-                  'Error rechazando turno:',
-                  error
-                );
+                'Error rechazando turno:',
+                  error.message,
+                  error.details,
+                  error.hint,
+                   error.code
+                  );
 
 
                 button.disabled =
