@@ -5785,7 +5785,13 @@ console.log(
 
               button.textContent =
                 'Rechazando…';
-
+      
+              console.log(
+              'STATUS QUE SE ENVÍA AL RECHAZAR:',
+              'rejected',
+              'TURNO:',
+              appointmentId
+            );
 
               const {
                 error
