@@ -1,3 +1,4 @@
+```js
 function normalizeText(value = '') {
   return String(value)
     .normalize('NFD')
@@ -53,6 +54,92 @@ async function loadProfiles() {
 
   const profileIds = profiles.map(profile => profile.id);
 
+
+  /*
+   * PRO
+   *
+   * Un profesional es PRO si:
+   *
+   * 1. Tiene una suscripción PRO activa
+   *    O
+   *
+   * 2. Tiene una membresía/cortesía PRO vigente.
+   */
+
+  const { data: subscriptions, error: subscriptionsError } = await sb
+    .from('professional_subscriptions')
+    .select(`
+      profile_id,
+      plan,
+      status
+    `)
+    .in('profile_id', profileIds)
+    .eq('plan', 'pro')
+    .eq('status', 'active');
+
+
+  if (subscriptionsError) {
+    console.error(
+      'Error cargando suscripciones PRO:',
+      subscriptionsError
+    );
+  }
+
+
+  const { data: courtesyPro, error: courtesyProError } = await sb
+    .from('professional_courtesy_pro')
+    .select(`
+      profile_id,
+      expires_at,
+      revoked_at
+    `)
+    .in('profile_id', profileIds)
+    .is('revoked_at', null);
+
+
+  if (courtesyProError) {
+    console.error(
+      'Error cargando membresías PRO:',
+      courtesyProError
+    );
+  }
+
+
+  const proProfileIds = new Set();
+
+
+  /*
+   * PRO PAGO
+   */
+
+  (subscriptions || []).forEach(subscription => {
+    proProfileIds.add(subscription.profile_id);
+  });
+
+
+  /*
+   * PRO DE CORTESÍA / MEMBRESÍA
+   */
+
+  const now = new Date();
+
+  (courtesyPro || []).forEach(courtesy => {
+
+    const active =
+      !courtesy.expires_at ||
+      new Date(courtesy.expires_at) > now;
+
+    if (active) {
+      proProfileIds.add(courtesy.profile_id);
+    }
+
+  });
+
+
+  /*
+   * UBICACIONES
+   */
+
   const { data: locations, error: locationsError } = await sb
     .from('professional_locations')
     .select(`
@@ -96,6 +183,10 @@ async function loadProfiles() {
       document.getElementById('population').value
     );
 
+
+  /*
+   * FILTROS
+   */
 
   const filtered = profiles.filter(profile => {
 
@@ -300,6 +391,33 @@ async function loadProfiles() {
 
 
     /*
+     * DISTINTIVO PRO
+     */
+
+    const proBadge = proProfileIds.has(profile.id)
+      ? `
+        <span
+          style="
+            display:inline-flex;
+            align-items:center;
+            margin-left:7px;
+            padding:3px 8px;
+            border-radius:999px;
+            background:#e8f5f2;
+            color:#287d72;
+            font-size:11px;
+            font-weight:700;
+            letter-spacing:.03em;
+            vertical-align:middle;
+          "
+        >
+          ✦ PRO
+        </span>
+      `
+      : '';
+
+
+    /*
      * TARJETA
      */
 
@@ -317,6 +435,9 @@ async function loadProfiles() {
                 profile.display_name ||
                 'Profesional'
               )}
+
+              ${proBadge}
+
             </h3>
 
             <p>
@@ -379,3 +500,4 @@ window.clearFilters = function () {
 
 
 loadProfiles();
+```
