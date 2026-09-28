@@ -6,15 +6,28 @@ function normalizeText(value = '') {
     .trim();
 }
 
+
 async function loadProfiles() {
+
   const box = document.getElementById('results');
   const count = document.getElementById('resultCount');
 
-  box.innerHTML = '<div class="empty">Buscando profesionales...</div>';
+  box.innerHTML =
+    '<div class="empty">Buscando profesionales...</div>';
 
   const sb = requireSupabase();
 
-  const { data: profiles, error: profilesError } = await sb
+
+  /*
+   * =====================================================
+   * CARGAR PROFESIONALES
+   * =====================================================
+   */
+
+  const {
+    data: profiles,
+    error: profilesError
+  } = await sb
     .from('profiles')
     .select(`
       id,
@@ -25,170 +38,332 @@ async function loadProfiles() {
       orientation,
       population,
       bio,
-      photo_url
+      photo_url,
+      zone
     `)
-    .eq('is_public', true)
-    .order('display_name', { ascending: true });
+    .eq('is_public', true);
+
 
   if (profilesError) {
-    console.error(profilesError);
+
+    console.error(
+      'Error cargando profesionales:',
+      profilesError
+    );
+
     box.innerHTML = `
       <div class="empty">
         No se pudieron cargar los profesionales.
       </div>
     `;
+
     count.textContent = '';
+
     return;
   }
 
+
   if (!profiles || !profiles.length) {
+
     box.innerHTML = `
       <div class="empty">
         No hay profesionales publicados todavía.
       </div>
     `;
+
     count.textContent = '';
+
     return;
   }
 
-  const profileIds = profiles.map(profile => profile.id);
 
-  const { data: locations, error: locationsError } = await sb
-    .from('professional_locations')
+  /*
+   * =====================================================
+   * PRO
+   * =====================================================
+   *
+   * PRO puede venir de:
+   *
+   * 1. Suscripción PRO paga activa
+   * 2. Membresía / cortesía PRO vigente
+   *
+   */
+
+
+  const profileIds =
+    profiles.map(profile => profile.id);
+
+
+  const {
+    data: subscriptions,
+    error: subscriptionsError
+  } = await sb
+    .from('professional_subscriptions')
     .select(`
       profile_id,
-      province,
-      party,
-      locality,
-      neighborhood
+      plan,
+      status
     `)
-    .in('profile_id', profileIds);
+    .in(
+      'profile_id',
+      profileIds
+    )
+    .eq(
+      'plan',
+      'pro'
+    )
+    .eq(
+      'status',
+      'active'
+    );
 
-  if (locationsError) {
-    console.error(locationsError);
+
+  if (subscriptionsError) {
+
+    console.error(
+      'Error cargando suscripciones PRO:',
+      subscriptionsError
+    );
+
   }
-
-  const locationsByProfile = {};
-
-  (locations || []).forEach(location => {
-
-    if (!locationsByProfile[location.profile_id]) {
-      locationsByProfile[location.profile_id] = [];
-    }
-
-    locationsByProfile[location.profile_id].push(location);
-
-  });
-
-  const q = normalizeText(
-    document.getElementById('q').value
-  );
-
-  const zone = normalizeText(
-    document.getElementById('zone').value
-  );
-
-  const modality =
-    document.getElementById('modality').value;
-
-  const population =
-    normalizeText(
-      document.getElementById('population').value
-    );
-
-
-  const filtered = profiles.filter(profile => {
-
-    const profileLocations =
-      locationsByProfile[profile.id] || [];
-
-
-    /*
-     * TEXTO BUSCABLE
-     */
-
-    const locationText = profileLocations
-      .map(location => [
-        location.province,
-        location.party,
-        location.locality,
-        location.neighborhood
-      ].join(' '))
-      .join(' ');
-
-
-    const searchableText = normalizeText([
-      profile.display_name,
-      profile.orientation,
-      profile.population,
-      locationText
-    ].join(' '));
-
-
-    /*
-     * BÚSQUEDA GENERAL
-     */
-
-    const matchesQuery =
-      !q || searchableText.includes(q);
-
-
-    /*
-     * FILTRO POR ZONA
-     */
-
-    const matchesZone =
-      !zone ||
-      profileLocations.some(location => {
-
-        const completeLocation = normalizeText([
-          location.province,
-          location.party,
-          location.locality,
-          location.neighborhood
-        ].join(' '));
-
-        return completeLocation.includes(zone);
-
-      });
-
-
-    /*
-     * FILTRO POR MODALIDAD
-     */
-
-    const matchesModality =
-      !modality ||
-      profile.modality === modality;
-
-
-    /*
-     * FILTRO POR POBLACIÓN
-     */
-
-    const profilePopulation =
-      normalizeText(profile.population);
-
-    const matchesPopulation =
-      !population ||
-      profilePopulation
-        .split(',')
-        .map(item => normalizeText(item))
-        .some(item => item === population);
-
-
-    return (
-      matchesQuery &&
-      matchesZone &&
-      matchesModality &&
-      matchesPopulation
-    );
-
-  });
 
 
   /*
+   * MEMBRESÍAS PRO
+   */
+
+  const {
+    data: courtesyPro,
+    error: courtesyProError
+  } = await sb
+    .from('professional_courtesy_pro')
+    .select(`
+      profile_id,
+      expires_at,
+      revoked_at
+    `)
+    .in(
+      'profile_id',
+      profileIds
+    )
+    .is(
+      'revoked_at',
+      null
+    );
+
+
+  if (courtesyProError) {
+
+    console.error(
+      'Error cargando membresías PRO:',
+      courtesyProError
+    );
+
+  }
+
+
+  const proProfileIds =
+    new Set();
+
+
+  /*
+   * PRO PAGO
+   */
+
+  (subscriptions || []).forEach(
+    subscription => {
+
+      proProfileIds.add(
+        subscription.profile_id
+      );
+
+    }
+  );
+
+
+  /*
+   * PRO CORTESÍA
+   */
+
+  const now =
+    new Date();
+
+
+  (courtesyPro || []).forEach(
+    courtesy => {
+
+      const active =
+        !courtesy.expires_at ||
+        new Date(
+          courtesy.expires_at
+        ) > now;
+
+
+      if (active) {
+
+        proProfileIds.add(
+          courtesy.profile_id
+        );
+
+      }
+
+    }
+  );
+
+
+  /*
+   * =====================================================
+   * FILTROS
+   * =====================================================
+   */
+
+  const q =
+    normalizeText(
+      document.getElementById('q').value
+    );
+
+
+  const zone =
+    normalizeText(
+      document.getElementById('zone').value
+    );
+
+
+  const modality =
+    document.getElementById(
+      'modality'
+    ).value;
+
+
+  const population =
+    normalizeText(
+      document.getElementById(
+        'population'
+      ).value
+    );
+
+
+  /*
+   * =====================================================
+   * FILTRAR
+   * =====================================================
+   */
+
+  const filtered =
+    profiles.filter(profile => {
+
+
+      /*
+       * ZONA
+       *
+       * IMPORTANTE:
+       *
+       * La zona actualmente se guarda
+       * en profiles.zone
+       */
+
+      const profileZone =
+        normalizeText(
+          profile.zone
+        );
+
+
+      /*
+       * TEXTO BUSCABLE
+       */
+
+      const searchableText =
+        normalizeText([
+          profile.display_name,
+          profile.orientation,
+          profile.population,
+          profile.zone
+        ].join(' '));
+
+
+      /*
+       * BÚSQUEDA GENERAL
+       */
+
+      const matchesQuery =
+        !q ||
+        searchableText.includes(q);
+
+
+      /*
+       * FILTRO ZONA
+       */
+
+      const matchesZone =
+        !zone ||
+        profileZone.includes(zone);
+
+
+      /*
+       * FILTRO MODALIDAD
+       */
+
+      const matchesModality =
+        !modality ||
+        profile.modality === modality;
+
+
+      /*
+       * FILTRO POBLACIÓN
+       */
+
+      const profilePopulation =
+        normalizeText(
+          profile.population
+        );
+
+
+      const matchesPopulation =
+        !population ||
+        profilePopulation
+          .split(',')
+          .map(
+            item =>
+              normalizeText(item)
+          )
+          .some(
+            item =>
+              item === population
+          );
+
+
+      return (
+        matchesQuery &&
+        matchesZone &&
+        matchesModality &&
+        matchesPopulation
+      );
+
+    });
+
+
+  /*
+   * =====================================================
+   * ORDEN ALEATORIO
+   * =====================================================
+   *
+   * Los profesionales no aparecen
+   * en orden alfabético.
+   *
+   * Cada vez que se carga el directorio
+   * se mezcla la lista.
+   *
+   */
+
+  filtered.sort(
+    () => Math.random() - 0.5
+  );
+
+
+  /*
+   * =====================================================
    * CONTADOR
+   * =====================================================
    */
 
   count.textContent =
@@ -198,7 +373,9 @@ async function loadProfiles() {
 
 
   /*
+   * =====================================================
    * SIN RESULTADOS
+   * =====================================================
    */
 
   if (!filtered.length) {
@@ -214,168 +391,240 @@ async function loadProfiles() {
 
 
   /*
+   * =====================================================
    * TARJETAS
+   * =====================================================
    */
 
-  box.innerHTML = filtered.map(profile => {
-
-    const initials =
-      (profile.display_name || 'P')
-        .split(' ')
-        .map(word => word[0])
-        .slice(0, 2)
-        .join('')
-        .toUpperCase();
+  box.innerHTML =
+    filtered.map(profile => {
 
 
-    /*
-     * FOTO
-     */
+      /*
+       * INICIALES
+       */
 
-    const avatar = profile.photo_url
-      ? `
-        <img
-          src="${escapeHTML(profile.photo_url)}"
-          alt="${escapeHTML(profile.display_name)}"
-          style="
-            width:52px;
-            height:52px;
-            border-radius:50%;
-            object-fit:cover;
-          "
-        >
-      `
-      : `
-        <div class="avatar">
-          ${escapeHTML(initials)}
-        </div>
-      `;
+      const initials =
+        (profile.display_name || 'P')
+          .split(' ')
+          .map(
+            word =>
+              word[0]
+          )
+          .slice(0, 2)
+          .join('')
+          .toUpperCase();
 
 
-    /*
-     * ZONAS
-     */
+      /*
+       * FOTO
+       */
 
-    const profileLocations =
-      locationsByProfile[profile.id] || [];
-
-
-    const locationLabels =
-      profileLocations.map(location => {
-
-        if (location.neighborhood) {
-          return location.neighborhood;
-        }
-
-        if (location.locality) {
-          return location.locality;
-        }
-
-        if (location.party) {
-          return location.party;
-        }
-
-        return location.province;
-
-      });
-
-
-    /*
-     * CHIPS
-     */
-
-    const chips = [
-      profile.orientation,
-      profile.modality,
-      profile.population,
-      ...locationLabels
-    ]
-      .filter(Boolean)
-      .map(item => `
-        <span class="chip">
-          ${escapeHTML(item)}
-        </span>
-      `)
-      .join('');
-
-
-    /*
-     * TARJETA
-     */
-
-    return `
-      <article class="pro-card">
-
-        <div class="pro-top">
-
-          ${avatar}
-
-          <div>
-
-            <h3>
+      const avatar =
+        profile.photo_url
+          ? `
+            <img
+              src="${escapeHTML(
+                profile.photo_url
+              )}"
+              alt="${escapeHTML(
+                profile.display_name
+              )}"
+              style="
+                width:52px;
+                height:52px;
+                border-radius:50%;
+                object-fit:cover;
+              "
+            >
+          `
+          : `
+            <div class="avatar">
               ${escapeHTML(
-                profile.display_name ||
-                'Profesional'
+                initials
               )}
-            </h3>
+            </div>
+          `;
 
-            <p>
+
+      /*
+       * DISTINTIVO PRO
+       */
+
+      const proBadge =
+        proProfileIds.has(
+          profile.id
+        )
+          ? `
+            <span
+              style="
+                display:inline-flex;
+                align-items:center;
+                margin-left:7px;
+                padding:3px 8px;
+                border-radius:999px;
+                background:#e8f5f2;
+                color:#287d72;
+                font-size:11px;
+                font-weight:700;
+                letter-spacing:.03em;
+                vertical-align:middle;
+              "
+            >
+              ✦ PRO
+            </span>
+          `
+          : '';
+
+
+      /*
+       * ZONA
+       */
+
+      const zoneLabel =
+        profile.zone
+          ? `
+            <span class="chip">
               ${escapeHTML(
-                profile.license || ''
+                profile.zone
               )}
-            </p>
+            </span>
+          `
+          : '';
+
+
+      /*
+       * CHIPS
+       */
+
+      const chips = [
+
+        profile.orientation,
+
+        profile.modality,
+
+        profile.population
+
+      ]
+        .filter(Boolean)
+        .map(
+          item => `
+            <span class="chip">
+              ${escapeHTML(
+                item
+              )}
+            </span>
+          `
+        )
+        .join('');
+
+
+      /*
+       * TARJETA
+       */
+
+      return `
+        <article class="pro-card">
+
+          <div class="pro-top">
+
+            ${avatar}
+
+            <div>
+
+              <h3>
+
+                ${escapeHTML(
+                  profile.display_name ||
+                  'Profesional'
+                )}
+
+                ${proBadge}
+
+              </h3>
+
+              <p>
+                ${escapeHTML(
+                  profile.license || ''
+                )}
+              </p>
+
+            </div>
 
           </div>
 
-        </div>
+
+          <div class="chips">
+
+            ${chips}
+
+            ${zoneLabel}
+
+          </div>
 
 
-        <div class="chips">
+          <p>
 
-          ${chips}
+            ${escapeHTML(
+              profile.bio ||
+              'Profesional de la salud mental.'
+            )}
 
-        </div>
-
-
-        <p>
-
-          ${escapeHTML(
-            profile.bio ||
-            'Profesional de la salud mental.'
-          )}
-
-        </p>
+          </p>
 
 
-        <a
-          class="btn primary full"
-          href="profesional.html?id=${encodeURIComponent(profile.id)}"
-        >
-          Ver perfil
-        </a>
+          <a
+            class="btn primary full"
+            href="profesional.html?id=${encodeURIComponent(
+              profile.id
+            )}"
+          >
+            Ver perfil
+          </a>
 
-      </article>
-    `;
+        </article>
+      `;
 
-  }).join('');
+    })
+    .join('');
 
 }
 
 
 /*
+ * =====================================================
  * LIMPIAR FILTROS
+ * =====================================================
  */
 
-window.clearFilters = function () {
+window.clearFilters =
+  function () {
 
-  document.getElementById('q').value = '';
-  document.getElementById('zone').value = '';
-  document.getElementById('modality').value = '';
-  document.getElementById('population').value = '';
+    document.getElementById(
+      'q'
+    ).value = '';
 
-  loadProfiles();
+    document.getElementById(
+      'zone'
+    ).value = '';
 
-};
+    document.getElementById(
+      'modality'
+    ).value = '';
 
+    document.getElementById(
+      'population'
+    ).value = '';
+
+    loadProfiles();
+
+  };
+
+
+/*
+ * =====================================================
+ * CARGA INICIAL
+ * =====================================================
+ */
 
 loadProfiles();
