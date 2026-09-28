@@ -1245,16 +1245,7 @@ async function loadHomeProfessionals() {
       .eq(
         'is_public',
         true
-      )
-
-      .order(
-        'display_name',
-        {
-          ascending:true
-        }
-      )
-
-      .limit(3);
+      );
 
 
     if (error) {
@@ -1262,9 +1253,22 @@ async function loadHomeProfessionals() {
     }
 
 
+    /*
+     * =====================================================
+     * SELECCIONAR 3 PROFESIONALES ALEATORIOS
+     * =====================================================
+     */
+
+    const randomProfiles =
+      [...(profiles || [])]
+        .sort(
+          () => Math.random() - 0.5
+        )
+        .slice(0, 3);
+
+
     if (
-      !profiles ||
-      !profiles.length
+      !randomProfiles.length
     ) {
 
       box.innerHTML = `
@@ -1287,7 +1291,7 @@ async function loadHomeProfessionals() {
 
       <div class="home-professionals-grid">
 
-        ${profiles.map(profile => {
+        ${randomProfiles.map(profile => {
 
 
           const initials =
