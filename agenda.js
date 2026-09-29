@@ -16,13 +16,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const calendar = document.getElementById('calendar');
   const currentPeriod = document.getElementById('currentPeriod');
-
-  const appointmentModal =
-    document.getElementById('appointmentModal');
-
-  const appointmentForm =
-    document.getElementById('appointmentForm');
-
+  const appointmentModal = document.getElementById('appointmentModal');
+  const appointmentForm = document.getElementById('appointmentForm');
 
   // =========================================================
   // UTILIDADES
@@ -32,7 +27,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     return String(number).padStart(2, '0');
   }
 
-
   function dateToString(date) {
     return [
       date.getFullYear(),
@@ -40,18 +34,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       pad(date.getDate())
     ].join('-');
   }
-
-
-  function formatDate(dateString) {
-    const date = new Date(`${dateString}T12:00:00`);
-
-    return date.toLocaleDateString('es-AR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
-  }
-
 
   function formatShortDate(dateString) {
     const date = new Date(`${dateString}T12:00:00`);
@@ -62,28 +44,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-
   function escapeHTML(value = '') {
     const div = document.createElement('div');
     div.textContent = String(value);
     return div.innerHTML;
   }
 
-
   function getMonday(date) {
-
     const result = new Date(date);
     const day = result.getDay();
 
     const difference = day === 0 ? -6 : 1 - day;
 
     result.setDate(result.getDate() + difference);
-
     result.setHours(0, 0, 0, 0);
 
     return result;
   }
-
 
   function getMonthStart(date) {
     return new Date(
@@ -93,7 +70,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     );
   }
 
-
   function getMonthEnd(date) {
     return new Date(
       date.getFullYear(),
@@ -102,42 +78,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     );
   }
 
-
   function getWeekDates(date) {
-
     const monday = getMonday(date);
-
     const dates = [];
 
     for (let i = 0; i < 7; i++) {
-
       const day = new Date(monday);
-
       day.setDate(monday.getDate() + i);
-
       dates.push(day);
     }
 
     return dates;
   }
 
-
   function capitalize(text) {
-
     if (!text) return '';
-
     return text.charAt(0).toUpperCase() + text.slice(1);
   }
 
-
   function getPatientName(appointment) {
-
-    return (
-      appointment.patient_name ||
-      'Paciente'
-    );
+    return appointment.patient_name || 'Paciente';
   }
-
 
   // =========================================================
   // CARGAR TURNOS
@@ -168,9 +129,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       fromDate = dateToString(monthStart);
       toDate = dateToString(monthEnd);
-
     }
-
 
     const {
       data,
@@ -204,7 +163,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         ascending: true
       });
 
-
     if (error) {
 
       console.error(
@@ -221,14 +179,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-
     appointments = data || [];
 
     updateSummary();
-
     renderCalendar();
   }
-
 
   // =========================================================
   // RESUMEN
@@ -245,10 +200,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const nextAppointment =
       document.getElementById('nextAppointment');
 
-
     appointmentCount.textContent =
       appointments.length;
-
 
     const patients = new Set();
 
@@ -259,12 +212,10 @@ document.addEventListener('DOMContentLoaded', async () => {
           appointment.patient_name.trim()
         );
       }
-
     });
 
     patientCount.textContent =
       patients.size;
-
 
     const now = new Date();
 
@@ -290,7 +241,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           a.dateTime - b.dateTime
         );
 
-
     if (!futureAppointments.length) {
 
       nextAppointment.textContent = '—';
@@ -298,18 +248,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-
     const next =
       futureAppointments[0].appointment;
-
 
     nextAppointment.textContent =
       `${getPatientName(next)} · ${formatShortDate(next.appointment_date)} · ${next.start_time.slice(0, 5)}`;
   }
 
-
   // =========================================================
-  // TÍTULO DEL PERÍODO
+  // TÍTULO
   // =========================================================
 
   function updatePeriodTitle() {
@@ -332,7 +279,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           month: 'long'
         });
 
-
       if (
         first.getMonth() === last.getMonth()
       ) {
@@ -349,7 +295,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-
     const month =
       currentDate.toLocaleDateString('es-AR', {
         month: 'long'
@@ -359,9 +304,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       `${capitalize(month)} ${currentDate.getFullYear()}`;
   }
 
-
   // =========================================================
-  // RENDER CALENDARIO
+  // RENDER
   // =========================================================
 
   function renderCalendar() {
@@ -369,16 +313,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     updatePeriodTitle();
 
     if (currentView === 'week') {
-
       renderWeek();
-
     } else {
-
       renderMonth();
-
     }
   }
-
 
   // =========================================================
   // VISTA SEMANAL
@@ -389,7 +328,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const dates =
       getWeekDates(currentDate);
 
-
     const days = [
       'Lun',
       'Mar',
@@ -399,7 +337,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       'Sáb',
       'Dom'
     ];
-
 
     let html = `
       <div
@@ -428,13 +365,11 @@ document.addEventListener('DOMContentLoaded', async () => {
           ></div>
     `;
 
-
     dates.forEach((date, index) => {
 
       const isToday =
         dateToString(date) ===
         dateToString(new Date());
-
 
       html += `
         <div
@@ -467,8 +402,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       `;
     });
 
-
-    // Filas horarias
     for (let hour = 7; hour <= 22; hour++) {
 
       html += `
@@ -487,12 +420,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         </div>
       `;
 
-
       dates.forEach(date => {
 
         const dateString =
           dateToString(date);
-
 
         const dayAppointments =
           appointments.filter(appointment =>
@@ -502,7 +433,6 @@ document.addEventListener('DOMContentLoaded', async () => {
               10
             ) === hour
           );
-
 
         html += `
           <div
@@ -520,7 +450,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           >
         `;
 
-
         dayAppointments.forEach(appointment => {
 
           html += renderAppointmentCard(
@@ -529,26 +458,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         });
 
-
         html += `
           </div>
         `;
       });
     }
 
-
     html += `
         </div>
       </div>
     `;
-
 
     calendar.innerHTML = html;
 
     attachSlotListeners();
     attachAppointmentListeners();
   }
-
 
   // =========================================================
   // VISTA MENSUAL
@@ -562,16 +487,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const monthEnd =
       getMonthEnd(currentDate);
 
-
     const firstDay =
       monthStart.getDay() === 0
         ? 6
         : monthStart.getDay() - 1;
 
-
     const totalDays =
       monthEnd.getDate();
-
 
     const days = [
       'Lun',
@@ -582,7 +504,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       'Sáb',
       'Dom'
     ];
-
 
     let html = `
       <div
@@ -604,7 +525,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         >
     `;
 
-
     days.forEach(day => {
 
       html += `
@@ -624,8 +544,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       `;
     });
 
-
-    // Espacios antes del primer día
     for (let i = 0; i < firstDay; i++) {
 
       html += `
@@ -640,7 +558,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       `;
     }
 
-
     for (
       let dayNumber = 1;
       dayNumber <= totalDays;
@@ -654,15 +571,12 @@ document.addEventListener('DOMContentLoaded', async () => {
           dayNumber
         );
 
-
       const dateString =
         dateToString(date);
-
 
       const isToday =
         dateString ===
         dateToString(new Date());
-
 
       const dayAppointments =
         appointments.filter(
@@ -670,7 +584,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             appointment.appointment_date ===
             dateString
         );
-
 
       html += `
         <div
@@ -696,7 +609,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           </div>
       `;
 
-
       dayAppointments.forEach(appointment => {
 
         html += renderMonthAppointment(
@@ -705,18 +617,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       });
 
-
       html += `
         </div>
       `;
     }
 
-
     html += `
         </div>
       </div>
     `;
-
 
     calendar.innerHTML = html;
 
@@ -724,33 +633,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     attachAppointmentListeners();
   }
 
-
   // =========================================================
-  // TARJETA DE TURNO — SEMANA
+  // TARJETA TURNO — SEMANA
   // =========================================================
 
   function renderAppointmentCard(
     appointment
   ) {
 
-    const statusClass =
+    const background =
       appointment.status === 'pending'
         ? 'rgba(220,170,60,.15)'
-        : 'rgba(40,125,114,.12)';
-
+        : appointment.status === 'cancelled'
+          ? 'rgba(0,0,0,.06)'
+          : 'rgba(40,125,114,.12)';
 
     return `
       <div
         class="agenda-appointment"
         data-appointment-id="${escapeHTML(appointment.id)}"
         style="
-          background:${statusClass};
+          background:${background};
           border:1px solid var(--line);
           border-radius:8px;
           padding:7px;
           margin-bottom:5px;
           cursor:pointer;
           font-size:12px;
+          ${appointment.status === 'cancelled'
+            ? 'opacity:.55;text-decoration:line-through;'
+            : ''}
         "
       >
 
@@ -784,9 +696,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     `;
   }
 
-
   // =========================================================
-  // TARJETA DE TURNO — MES
+  // TARJETA TURNO — MES
   // =========================================================
 
   function renderMonthAppointment(
@@ -796,8 +707,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const background =
       appointment.status === 'pending'
         ? 'rgba(220,170,60,.15)'
-        : 'rgba(40,125,114,.12)';
-
+        : appointment.status === 'cancelled'
+          ? 'rgba(0,0,0,.06)'
+          : 'rgba(40,125,114,.12)';
 
     return `
       <div
@@ -812,6 +724,9 @@ document.addEventListener('DOMContentLoaded', async () => {
           cursor:pointer;
           font-size:11px;
           overflow:hidden;
+          ${appointment.status === 'cancelled'
+            ? 'opacity:.55;text-decoration:line-through;'
+            : ''}
         "
       >
 
@@ -829,9 +744,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     `;
   }
 
-
   // =========================================================
-  // CLICK EN ESPACIO VACÍO
+  // CLICK ESPACIO VACÍO
   // =========================================================
 
   function attachSlotListeners() {
@@ -852,7 +766,6 @@ document.addEventListener('DOMContentLoaded', async () => {
               return;
             }
 
-
             const date =
               slot.dataset.calendarDate;
 
@@ -860,7 +773,6 @@ document.addEventListener('DOMContentLoaded', async () => {
               Number(
                 slot.dataset.calendarHour
               );
-
 
             openNewAppointment(
               date,
@@ -870,7 +782,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         );
       });
   }
-
 
   function attachMonthListeners() {
 
@@ -890,7 +801,6 @@ document.addEventListener('DOMContentLoaded', async () => {
               return;
             }
 
-
             openNewAppointment(
               day.dataset.calendarDate,
               '09:00'
@@ -900,9 +810,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
   }
 
-
   // =========================================================
-  // CLICK EN TURNO
+  // CLICK TURNO
   // =========================================================
 
   function attachAppointmentListeners() {
@@ -927,9 +836,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 item => item.id === id
               );
 
-
             if (appointment) {
-
               openEditAppointment(
                 appointment
               );
@@ -939,10 +846,33 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
   }
 
+  // =========================================================
+  // MODAL
+  // =========================================================
 
-  // =========================================================
-  // ABRIR NUEVO TURNO
-  // =========================================================
+  function showDeleteButton() {
+
+    const button =
+      document.getElementById(
+        'deleteAppointmentBtn'
+      );
+
+    if (button) {
+      button.style.display = 'inline-flex';
+    }
+  }
+
+  function hideDeleteButton() {
+
+    const button =
+      document.getElementById(
+        'deleteAppointmentBtn'
+      );
+
+    if (button) {
+      button.style.display = 'none';
+    }
+  }
 
   function openNewAppointment(
     date = dateToString(new Date()),
@@ -955,50 +885,51 @@ document.addEventListener('DOMContentLoaded', async () => {
       'appointmentId'
     ).value = '';
 
-
     document.getElementById(
       'appointmentModalTitle'
     ).textContent = 'Nuevo turno';
-
 
     document.getElementById(
       'appointmentDate'
     ).value = date;
 
-
     document.getElementById(
       'appointmentStart'
     ).value = time;
 
+    const [hour, minutes] =
+      time.split(':').map(Number);
 
-    const hour =
-      Number(time.split(':')[0]);
+    const startMinutes =
+      hour * 60 + minutes;
 
+    const endMinutes =
+      Math.min(startMinutes + 60, 23 * 60 + 59);
+
+    const endHour =
+      Math.floor(endMinutes / 60);
+
+    const endMinute =
+      endMinutes % 60;
 
     document.getElementById(
       'appointmentEnd'
     ).value =
-      `${pad(Math.min(hour + 1, 23))}:00`;
-
+      `${pad(endHour)}:${pad(endMinute)}`;
 
     document.getElementById(
       'appointmentStatus'
     ).value = 'confirmed';
 
+    hideDeleteButton();
 
     appointmentModal.style.display =
       'block';
-
 
     document
       .getElementById('patientFirstName')
       .focus();
   }
-
-
-  // =========================================================
-  // EDITAR TURNO
-  // =========================================================
 
   function openEditAppointment(
     appointment
@@ -1009,104 +940,92 @@ document.addEventListener('DOMContentLoaded', async () => {
         .trim()
         .split(/\s+/);
 
-
     const firstName =
       fullName.shift() || '';
 
-
     const lastName =
       fullName.join(' ');
-
 
     document.getElementById(
       'appointmentId'
     ).value = appointment.id;
 
-
     document.getElementById(
       'appointmentModalTitle'
     ).textContent = 'Editar turno';
-
 
     document.getElementById(
       'patientFirstName'
     ).value = firstName;
 
-
     document.getElementById(
       'patientLastName'
     ).value = lastName;
-
 
     document.getElementById(
       'patientWhatsapp'
     ).value =
       appointment.patient_whatsapp || '';
 
-
     document.getElementById(
       'patientEmail'
     ).value =
       appointment.patient_email || '';
-
 
     document.getElementById(
       'appointmentDate'
     ).value =
       appointment.appointment_date;
 
-
     document.getElementById(
       'appointmentStart'
     ).value =
       appointment.start_time.slice(0, 5);
-
 
     document.getElementById(
       'appointmentEnd'
     ).value =
       appointment.end_time.slice(0, 5);
 
-
     document.getElementById(
       'appointmentModality'
     ).value =
       appointment.modality || 'Online';
-
 
     document.getElementById(
       'appointmentZone'
     ).value =
       appointment.zone || '';
 
-
     document.getElementById(
       'appointmentStatus'
     ).value =
       appointment.status || 'confirmed';
-
 
     document.getElementById(
       'appointmentNotes'
     ).value =
       appointment.notes || '';
 
+    showDeleteButton();
 
     appointmentModal.style.display =
       'block';
   }
 
-
-  // =========================================================
-  // CERRAR MODAL
-  // =========================================================
-
   function closeModal() {
 
     appointmentModal.style.display =
       'none';
-  }
 
+    appointmentForm.reset();
+
+    document.getElementById(
+      'appointmentId'
+    ).value = '';
+
+    hideDeleteButton();
+  }
 
   document
     .getElementById('closeAppointmentModal')
@@ -1115,14 +1034,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       closeModal
     );
 
-
   document
     .getElementById('cancelAppointmentBtn')
     .addEventListener(
       'click',
       closeModal
     );
-
 
   appointmentModal.addEventListener(
     'click',
@@ -1137,9 +1054,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   );
 
-
   // =========================================================
-  // GUARDAR TURNO
+  // CREAR / EDITAR TURNO
   // =========================================================
 
   appointmentForm.addEventListener(
@@ -1148,51 +1064,66 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       event.preventDefault();
 
-
       const id =
         document.getElementById(
           'appointmentId'
         ).value;
-
 
       const firstName =
         document.getElementById(
           'patientFirstName'
         ).value.trim();
 
-
       const lastName =
         document.getElementById(
           'patientLastName'
         ).value.trim();
 
-
       const patientName =
-        `${firstName} ${lastName}`
-          .trim();
-
+        `${firstName} ${lastName}`.trim();
 
       const appointmentDate =
         document.getElementById(
           'appointmentDate'
         ).value;
 
-
       const startTime =
         document.getElementById(
           'appointmentStart'
         ).value;
-
 
       const endTime =
         document.getElementById(
           'appointmentEnd'
         ).value;
 
+      if (
+        !patientName ||
+        !appointmentDate ||
+        !startTime ||
+        !endTime
+      ) {
+
+        alert(
+          'Completá los datos obligatorios.'
+        );
+
+        return;
+      }
+
+      if (endTime <= startTime) {
+
+        alert(
+          'La hora de finalización debe ser posterior a la hora de inicio.'
+        );
+
+        return;
+      }
 
       const payload = {
 
-        professional_id: user.id,
+        professional_id:
+          user.id,
 
         patient_name:
           patientName,
@@ -1237,46 +1168,16 @@ document.addEventListener('DOMContentLoaded', async () => {
           ).value.trim() || null
       };
 
-
-      if (
-        !patientName ||
-        !appointmentDate ||
-        !startTime ||
-        !endTime
-      ) {
-
-        alert(
-          'Completá los datos obligatorios.'
-        );
-
-        return;
-      }
-
-
-      if (endTime <= startTime) {
-
-        alert(
-          'La hora de finalización debe ser posterior a la hora de inicio.'
-        );
-
-        return;
-      }
-
-
       const submitButton =
         appointmentForm.querySelector(
           'button[type="submit"]'
         );
 
-
       submitButton.disabled = true;
-
       submitButton.textContent =
         'Guardando...';
 
-
       let result;
-
 
       if (id) {
 
@@ -1296,12 +1197,9 @@ document.addEventListener('DOMContentLoaded', async () => {
           .insert(payload);
       }
 
-
       submitButton.disabled = false;
-
       submitButton.textContent =
         'Guardar turno';
-
 
       if (result.error) {
 
@@ -1317,144 +1215,103 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
 
-
       closeModal();
 
       await loadAppointments();
     }
   );
 
-
   // =========================================================
-  // ELIMINAR / CANCELAR TURNO
+  // BOTÓN CANCELAR TURNO
   // =========================================================
 
-  function addDeleteButton() {
+  const deleteButton =
+    document.createElement('button');
 
-    const modalContent =
-      appointmentModal.querySelector(
-        'form'
-      );
+  deleteButton.id =
+    'deleteAppointmentBtn';
 
+  deleteButton.type =
+    'button';
 
-    let existingButton =
-      document.getElementById(
-        'deleteAppointmentBtn'
-      );
+  deleteButton.className =
+    'btn secondary';
 
+  deleteButton.textContent =
+    'Cancelar turno';
 
-    if (!existingButton) {
+  deleteButton.style.display =
+    'none';
 
-      existingButton =
-        document.createElement(
-          'button'
+  const modalButtons =
+    appointmentForm.lastElementChild;
+
+  modalButtons.insertBefore(
+    deleteButton,
+    modalButtons.firstChild
+  );
+
+  deleteButton.addEventListener(
+    'click',
+    async () => {
+
+      const id =
+        document.getElementById(
+          'appointmentId'
+        ).value;
+
+      if (!id) return;
+
+      const confirmed =
+        confirm(
+          '¿Querés cancelar este turno?'
         );
 
-      existingButton.id =
-        'deleteAppointmentBtn';
+      if (!confirmed) return;
 
-      existingButton.type =
-        'button';
+      deleteButton.disabled =
+        true;
 
-      existingButton.className =
-        'btn secondary';
+      deleteButton.textContent =
+        'Cancelando...';
 
-      existingButton.textContent =
+      const { error } =
+        await sb
+          .from('professional_appointments')
+          .update({
+            status: 'cancelled'
+          })
+          .eq('id', id)
+          .eq(
+            'professional_id',
+            user.id
+          );
+
+      deleteButton.disabled =
+        false;
+
+      deleteButton.textContent =
         'Cancelar turno';
 
+      if (error) {
 
-      const buttons =
-        modalContent.lastElementChild;
+        console.error(
+          'Error cancelando turno:',
+          error
+        );
 
-      buttons.insertBefore(
-        existingButton,
-        buttons.firstChild
-      );
+        alert(
+          'No se pudo cancelar el turno.'
+        );
+
+        return;
+      }
+
+      closeModal();
+
+      await loadAppointments();
     }
-
-
-    existingButton.onclick =
-      async () => {
-
-        const id =
-          document.getElementById(
-            'appointmentId'
-          ).value;
-
-
-        if (!id) return;
-
-
-        const confirmed =
-          confirm(
-            '¿Querés cancelar este turno?'
-          );
-
-
-        if (!confirmed) return;
-
-
-        existingButton.disabled =
-          true;
-
-        existingButton.textContent =
-          'Cancelando...';
-
-
-        const { error } =
-          await sb
-            .from(
-              'professional_appointments'
-            )
-            .update({
-              status: 'cancelled'
-            })
-            .eq('id', id)
-            .eq(
-              'professional_id',
-              user.id
-            );
-
-
-        if (error) {
-
-          console.error(
-            'Error cancelando turno:',
-            error
-          );
-
-          alert(
-            'No se pudo cancelar el turno.'
-          );
-
-          existingButton.disabled =
-            false;
-
-          existingButton.textContent =
-            'Cancelar turno';
-
-          return;
-        }
-
-
-        closeModal();
-
-        await loadAppointments();
-      };
-
-
-    existingButton.style.display =
-      'none';
-  }
-
-
-  addDeleteButton();
-
-
-  // Mostrar botón cancelar solamente al editar
-  const originalOpenEdit =
-    openEditAppointment;
-
+  );
 
   // =========================================================
   // NAVEGACIÓN
@@ -1479,11 +1336,9 @@ document.addEventListener('DOMContentLoaded', async () => {
           );
         }
 
-
         await loadAppointments();
       }
     );
-
 
   document
     .getElementById('nextBtn')
@@ -1504,11 +1359,9 @@ document.addEventListener('DOMContentLoaded', async () => {
           );
         }
 
-
         await loadAppointments();
       }
     );
-
 
   document
     .getElementById('todayBtn')
@@ -1521,7 +1374,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         await loadAppointments();
       }
     );
-
 
   // =========================================================
   // CAMBIO DE VISTA
@@ -1539,7 +1391,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     );
 
-
   document
     .getElementById('monthViewBtn')
     .addEventListener(
@@ -1551,7 +1402,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         await loadAppointments();
       }
     );
-
 
   // =========================================================
   // NUEVO TURNO
@@ -1566,7 +1416,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         openNewAppointment();
       }
     );
-
 
   // =========================================================
   // INICIO
