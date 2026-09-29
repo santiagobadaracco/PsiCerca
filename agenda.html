@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <title>Mi agenda — PsiCerca</title>
+
+  <link rel="stylesheet" href="styles.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
+</head>
+
+<body>
+
+  <!-- HEADER -->
+
+  <header>
+    <div class="container nav">
+
+      <a class="logo" href="dashboard.html">
+        Psi<span>Cerca</span>
+      </a>
+
+      <nav class="navlinks">
+        <a href="dashboard.html">Dashboard</a>
+        <a href="agenda.html">Mi agenda</a>
+      </nav>
+
+    </div>
+  </header>
+
+
+  <!-- CONTENIDO -->
+
+  <main class="dashboard">
+
+    <div class="container">
+
+      <!-- ENCABEZADO -->
+
+      <div
+        style="
+          display:flex;
+          justify-content:space-between;
+          align-items:flex-end;
+          gap:20px;
+          margin-bottom:28px;
+          flex-wrap:wrap;
+        "
+      >
+
+        <div>
+          <span class="eyebrow">PsiCerca PRO</span>
+
+          <h1 style="margin:6px 0 8px;">
+            Mi agenda
+          </h1>
+
+          <p class="small" style="margin:0;">
+            Organizá tus turnos y pacientes en un solo lugar.
+          </p>
+        </div>
+
+        <div
+          style="
+            display:flex;
+            gap:10px;
+            flex-wrap:wrap;
+          "
+        >
+
+          <button
+            id="todayBtn"
+            class="btn secondary"
+            type="button"
+          >
+            Hoy
+          </button>
+
+          <button
+            id="newAppointmentBtn"
+            class="btn primary"
+            type="button"
+          >
+            + Nuevo turno
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <!-- BARRA DE AGENDA -->
+
+      <section
+        style="
+          border:1px solid var(--line);
+          border-radius:16px;
+          background:var(--surface);
+          overflow:hidden;
+        "
+      >
+
+        <!-- CONTROLES -->
+
+        <div
+          style="
+            padding:18px 20px;
+            border-bottom:1px solid var(--line);
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:16px;
+            flex-wrap:wrap;
+          "
+        >
+
+          <div
+            style="
+              display:flex;
+              align-items:center;
+              gap:10px;
+            "
+          >
+
+            <button
+              id="prevBtn"
+              class="btn secondary"
+              type="button"
+              aria-label="Anterior"
+            >
+              ←
+            </button>
+
+            <button
+              id="nextBtn"
+              class="btn secondary"
+              type="button"
+              aria-label="Siguiente"
+            >
+              →
+            </button>
+
+            <strong id="currentPeriod">
+              Cargando…
+            </strong>
+
+          </div>
+
+
+          <div
+            style="
+              display:flex;
+              gap:6px;
+            "
+          >
+
+            <button
+              id="weekViewBtn"
+              class="btn secondary"
+              type="button"
+            >
+              Semana
+            </button>
+
+            <button
+              id="monthViewBtn"
+              class="btn secondary"
+              type="button"
+            >
+              Mes
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <!-- AGENDA -->
+
+        <div id="calendar">
+
+          <div class="empty">
+            Cargando agenda…
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- INFORMACIÓN -->
+
+      <div
+        style="
+          margin-top:18px;
+          display:grid;
+          grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+          gap:14px;
+        "
+      >
+
+        <div
+          style="
+            padding:18px;
+            border:1px solid var(--line);
+            border-radius:14px;
+            background:var(--surface);
+          "
+        >
+
+          <div class="small">
+            Turnos
+          </div>
+
+          <strong
+            id="appointmentCount"
+            style="
+              display:block;
+              font-size:24px;
+              margin-top:4px;
+            "
+          >
+            0
+          </strong>
+
+        </div>
+
+
+        <div
+          style="
+            padding:18px;
+            border:1px solid var(--line);
+            border-radius:14px;
+            background:var(--surface);
+          "
+        >
+
+          <div class="small">
+            Próximo turno
+          </div>
+
+          <strong
+            id="nextAppointment"
+            style="
+              display:block;
+              font-size:16px;
+              margin-top:6px;
+            "
+          >
+            —
+          </strong>
+
+        </div>
+
+
+        <div
+          style="
+            padding:18px;
+            border:1px solid var(--line);
+            border-radius:14px;
+            background:var(--surface);
+          "
+        >
+
+          <div class="small">
+            Pacientes
+          </div>
+
+          <strong
+            id="patientCount"
+            style="
+              display:block;
+              font-size:24px;
+              margin-top:4px;
+            "
+          >
+            0
+          </strong>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+
+  <!-- MODAL NUEVO TURNO -->
+
+  <div
+    id="appointmentModal"
+    style="
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.45);
+      z-index:1000;
+      padding:20px;
+      overflow:auto;
+    "
+  >
+
+    <div
+      style="
+        max-width:620px;
+        margin:40px auto;
+        background:var(--surface);
+        border:1px solid var(--line);
+        border-radius:18px;
+        padding:24px;
+        box-shadow:0 20px 60px rgba(0,0,0,.18);
+      "
+    >
+
+      <div
+        style="
+          display:flex;
+          justify-content:space-between;
+          align-items:flex-start;
+          gap:20px;
+          margin-bottom:24px;
+        "
+      >
+
+        <div>
+
+          <span class="eyebrow">
+            Agenda
+          </span>
+
+          <h2
+            id="appointmentModalTitle"
+            style="margin:6px 0 0;"
+          >
+            Nuevo turno
+          </h2>
+
+        </div>
+
+        <button
+          id="closeAppointmentModal"
+          class="btn secondary"
+          type="button"
+          aria-label="Cerrar"
+        >
+          ✕
+        </button>
+
+      </div>
+
+
+      <form id="appointmentForm">
+
+        <input
+          id="appointmentId"
+          type="hidden"
+        >
+
+
+        <!-- PACIENTE -->
+
+        <div
+          style="
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:14px;
+          "
+        >
+
+          <div class="field">
+
+            <label for="patientFirstName">
+              Nombre
+            </label>
+
+            <input
+              id="patientFirstName"
+              type="text"
+              placeholder="Nombre"
+              autocomplete="off"
+              required
+            >
+
+          </div>
+
+
+          <div class="field">
+
+            <label for="patientLastName">
+              Apellido
+            </label>
+
+            <input
+              id="patientLastName"
+              type="text"
+              placeholder="Apellido"
+              autocomplete="off"
+              required
+            >
+
+          </div>
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="patientWhatsapp">
+            WhatsApp
+          </label>
+
+          <input
+            id="patientWhatsapp"
+            type="tel"
+            placeholder="Ej. 5491123456789"
+            autocomplete="off"
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="patientEmail">
+            Email
+            <span class="small">(opcional)</span>
+          </label>
+
+          <input
+            id="patientEmail"
+            type="email"
+            placeholder="paciente@email.com"
+            autocomplete="off"
+          >
+
+        </div>
+
+
+        <!-- FECHA Y HORARIO -->
+
+        <div
+          style="
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:14px;
+          "
+        >
+
+          <div class="field">
+
+            <label for="appointmentDate">
+              Fecha
+            </label>
+
+            <input
+              id="appointmentDate"
+              type="date"
+              required
+            >
+
+          </div>
+
+
+          <div class="field">
+
+            <label for="appointmentStart">
+              Hora
+            </label>
+
+            <input
+              id="appointmentStart"
+              type="time"
+              required
+            >
+
+          </div>
+
+        </div>
+
+
+        <div
+          style="
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:14px;
+          "
+        >
+
+          <div class="field">
+
+            <label for="appointmentEnd">
+              Finaliza
+            </label>
+
+            <input
+              id="appointmentEnd"
+              type="time"
+              required
+            >
+
+          </div>
+
+
+          <div class="field">
+
+            <label for="appointmentModality">
+              Modalidad
+            </label>
+
+            <select id="appointmentModality">
+
+              <option value="Online">
+                Online
+              </option>
+
+              <option value="Presencial">
+                Presencial
+              </option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="appointmentZone">
+            Zona / lugar
+            <span class="small">(opcional)</span>
+          </label>
+
+          <input
+            id="appointmentZone"
+            type="text"
+            placeholder="Ej. Avellaneda / Consultorio"
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="appointmentStatus">
+            Estado
+          </label>
+
+          <select id="appointmentStatus">
+
+            <option value="confirmed">
+              Confirmado
+            </option>
+
+            <option value="pending">
+              Pendiente
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="appointmentNotes">
+            Notas privadas
+          </label>
+
+          <textarea
+            id="appointmentNotes"
+            rows="4"
+            placeholder="Información privada sobre el turno..."
+          ></textarea>
+
+          <p class="small">
+            Estas notas son privadas y no se muestran en el perfil público.
+          </p>
+
+        </div>
+
+
+        <!-- BOTONES -->
+
+        <div
+          style="
+            display:flex;
+            justify-content:flex-end;
+            gap:10px;
+            margin-top:24px;
+            flex-wrap:wrap;
+          "
+        >
+
+          <button
+            id="cancelAppointmentBtn"
+            class="btn secondary"
+            type="button"
+          >
+            Cancelar
+          </button>
+
+          <button
+            class="btn primary"
+            type="submit"
+          >
+            Guardar turno
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+  <!-- FOOTER -->
+
+  <footer class="footer">
+
+    <div class="container">
+      PsiCerca · Plataforma tecnológica · 2026
+    </div>
+
+  </footer>
+
+
+  <!-- AGENDA JS -->
+
+  <script src="agenda.js"></script>
+
+</body>
+</html>
