@@ -11,7 +11,19 @@
 
   <title>Perfil profesional — PsiCerca</title>
 
-  <link rel="stylesheet" href="styles.css">
+<meta
+  name="description"
+  content="Conocé el perfil de un profesional de la salud mental en PsiCerca."
+>
+
+<meta
+  name="robots"
+  content="index, follow"
+>
+
+<link rel="canonical" href="https://psicerca.com/profesional.html">
+
+<link rel="stylesheet" href="styles.css">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
@@ -922,7 +934,223 @@
     if (!p) {
       throw new Error('Perfil no encontrado');
     }
+/* =====================================================
+   SEO DINÁMICO DEL PERFIL
+   ===================================================== */
 
+const professionalName =
+  String(p.display_name || 'Profesional')
+    .replace(/\r/g, '')
+    .replace(/\n/g, '')
+    .trim();
+
+const professionalZone =
+  String(p.zone || '')
+    .replace(/\r/g, '')
+    .replace(/\n/g, '')
+    .trim();
+
+const professionalOrientation =
+  String(p.orientation || '')
+    .replace(/\r/g, '')
+    .trim();
+
+const professionalModality =
+  String(p.modality || '')
+    .replace(/\r/g, '')
+    .trim();
+
+const seoLocation =
+  professionalZone
+    ? ` en ${professionalZone}`
+    : '';
+
+document.title =
+  `${professionalName} — Psicólogo/a${seoLocation} | PsiCerca`;
+
+
+/*
+ * META DESCRIPTION
+ */
+
+const descriptionParts = [];
+
+descriptionParts.push(
+  `Perfil de ${professionalName} en PsiCerca.`
+);
+
+if (professionalZone) {
+  descriptionParts.push(
+    `Atención en ${professionalZone}.`
+  );
+}
+
+if (professionalOrientation) {
+  descriptionParts.push(
+    `Orientación: ${professionalOrientation}.`
+  );
+}
+
+if (professionalModality) {
+  descriptionParts.push(
+    `Modalidad: ${professionalModality}.`
+  );
+}
+
+const seoDescription =
+  descriptionParts.join(' ');
+
+let metaDescription =
+  document.querySelector(
+    'meta[name="description"]'
+  );
+
+if (!metaDescription) {
+
+  metaDescription =
+    document.createElement('meta');
+
+  metaDescription.setAttribute(
+    'name',
+    'description'
+  );
+
+  document.head.appendChild(
+    metaDescription
+  );
+
+}
+
+metaDescription.setAttribute(
+  'content',
+  seoDescription
+);
+
+
+/*
+ * CANONICAL
+ *
+ * Por ahora mantenemos la URL actual
+ * con ?id= para no romper el sistema.
+ */
+
+let canonical =
+  document.querySelector(
+    'link[rel="canonical"]'
+  );
+
+if (!canonical) {
+
+  canonical =
+    document.createElement('link');
+
+  canonical.setAttribute(
+    'rel',
+    'canonical'
+  );
+
+  document.head.appendChild(
+    canonical
+  );
+
+}
+
+canonical.setAttribute(
+  'href',
+  window.location.href.split('#')[0]
+);
+
+    /* =====================================================
+   DATOS ESTRUCTURADOS
+   ===================================================== */
+
+const structuredData = {
+
+  "@context": "https://schema.org",
+
+  "@type": "WebPage",
+
+  "name":
+    `${professionalName} — PsiCerca`,
+
+  "url":
+    window.location.href.split('#')[0],
+
+  "about": {
+
+    "@type": "Person",
+
+    "name":
+      professionalName,
+
+    "description":
+      String(p.bio || '')
+        .replace(/\r/g, '')
+        .replace(/\n/g, ' ')
+        .trim(),
+
+    "identifier":
+      String(p.id)
+
+  }
+
+};
+
+if (professionalZone) {
+
+  structuredData.about.address = {
+
+    "@type": "PostalAddress",
+
+    "addressLocality":
+      professionalZone,
+
+    "addressCountry":
+      "AR"
+
+  };
+
+}
+
+if (p.photo_url) {
+
+  structuredData.about.image =
+    p.photo_url;
+
+}
+
+if (p.license) {
+
+  structuredData.about.identifier =
+    String(p.license);
+
+}
+
+
+let structuredDataScript =
+  document.getElementById(
+    'psiCercaStructuredData'
+  );
+
+if (!structuredDataScript) {
+
+  structuredDataScript =
+    document.createElement('script');
+
+  structuredDataScript.type =
+    'application/ld+json';
+
+  structuredDataScript.id =
+    'psiCercaStructuredData';
+
+  document.head.appendChild(
+    structuredDataScript
+  );
+
+}
+
+structuredDataScript.textContent =
+  JSON.stringify(structuredData);
     /* =====================================================
        ESTADÍSTICA — VISITA AL PERFIL
        ===================================================== */
