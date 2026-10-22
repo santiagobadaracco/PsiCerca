@@ -1487,103 +1487,153 @@ structuredDataScript.textContent =
     );
 
     /* =====================================================
-       SIN SESIÓN
+       SIN SESIÓN: PERMITIR CONTACTO SIN REGISTRO
        ===================================================== */
 
     if (!user) {
 
-      contactArea.innerHTML = `
+      const {
+        data: contacts,
+        error: contactError
+      } = await sb.rpc(
+        'get_professional_contact',
+        {
+          target_profile_id: id
+        }
+      );
 
-        <div class="access-box">
+      if (
+        contactError ||
+        !contacts ||
+        !contacts.length ||
+        !contacts[0].whatsapp
+      ) {
 
-          <div
-            style="
-              font-weight:700;
-              margin-bottom:6px;
-            "
-          >
-            🔐 ¿Querés contactar a este profesional?
+        console.error(
+          'No se pudo obtener el contacto público:',
+          contactError
+        );
+
+        contactArea.innerHTML = `
+          <div class="access-box">
+            <div style="font-weight:700;margin-bottom:6px;">
+              Contacto no disponible
+            </div>
+            <p class="small">
+              Por el momento no pudimos mostrar el medio
+              de contacto de este profesional.
+            </p>
           </div>
+        `;
 
-          <p
-            class="small"
-            style="margin:0 0 15px;"
-          >
-            Creá una cuenta gratuita para
-            poder contactar a profesionales
-            a través de PsiCerca.
-          </p>
+      } else {
 
-          <div
-            style="
-              display:flex;
-              gap:10px;
-              flex-wrap:wrap;
-            "
-          >
+        const whatsapp = String(
+          contacts[0].whatsapp
+        ).replace(/\D/g, '');
 
-            <a
-              href="registro-paciente.html"
-              class="btn primary"
-            >
-              Crear cuenta
-            </a>
+        const message = encodeURIComponent(
+          'Hola, vi tu perfil en PsiCerca y me gustaría hacer una consulta por un turno.'
+        );
 
-            <a
-              href="login.html"
-              class="btn secondary"
-            >
-              Iniciar sesión
-            </a>
+        if (whatsapp.length >= 8) {
 
-          </div>
+          contactArea.innerHTML = `
+            <div class="whatsapp-box">
+              <div>
+                <div class="whatsapp-title">
+                  ¿Querés contactar a este profesional?
+                </div>
+                <p class="small whatsapp-description">
+                  Podés consultar directamente por WhatsApp,
+                  sin crear una cuenta.
+                </p>
+              </div>
 
-        </div>
+              <a
+                id="whatsappContactButton"
+                class="btn primary"
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://wa.me/${whatsapp}?text=${message}"
+              >
+                Contactar por WhatsApp
+              </a>
+            </div>
+          `;
 
-      `;
+          const whatsappButton =
+            document.getElementById('whatsappContactButton');
+
+          whatsappButton.addEventListener(
+            'click',
+            async function () {
+
+              try {
+
+                let visitorId = localStorage.getItem(
+                  'psicerca_visitor_id'
+                );
+
+                if (!visitorId) {
+                  visitorId =
+                    window.crypto &&
+                    typeof window.crypto.randomUUID === 'function'
+                      ? window.crypto.randomUUID()
+                      : `${Date.now()}-${Math.random()
+                          .toString(36).slice(2)}`;
+
+                  localStorage.setItem(
+                    'psicerca_visitor_id',
+                    visitorId
+                  );
+                }
+
+                await sb.rpc(
+                  'record_professional_profile_event',
+                  {
+                    target_professional_id: id,
+                    target_event_type: 'contact_request',
+                    target_visitor_id: visitorId
+                  }
+                );
+
+              } catch (eventError) {
+
+                console.error(
+                  'No se pudo registrar el contacto:',
+                  eventError
+                );
+
+              }
+
+            }
+          );
+
+        } else {
+
+          contactArea.innerHTML = `
+            <div class="access-box">
+              Este profesional no tiene un WhatsApp válido publicado.
+            </div>
+          `;
+
+        }
+
+      }
 
       inquiryArea.innerHTML = `
-
-        <div
-          class="inquiry-card"
-          style="
-            background:var(--soft);
-            box-shadow:none;
-          "
-        >
-
-          <div class="inquiry-header">
-
-            <div class="inquiry-icon">
-              💬
-            </div>
-
-            <div>
-
-              <span class="eyebrow">
-                Contacto
-              </span>
-
-              <h2 class="inquiry-title">
-                Enviar consulta
-              </h2>
-
-              <p class="inquiry-subtitle">
-                Iniciá sesión o creá una cuenta de paciente
-                para enviar una consulta.
-              </p>
-
-            </div>
-
-          </div>
-
+        <div class="contact-note">
+          Para proteger tu privacidad, podés iniciar el contacto
+          directamente con el profesional. No necesitás registrarte
+          ni compartir tus datos con PsiCerca.
         </div>
-
       `;
 
       return;
 
     }
+
 
     /* =====================================================
        ROL
