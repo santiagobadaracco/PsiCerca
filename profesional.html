@@ -1491,16 +1491,11 @@ structuredDataScript.textContent =
        ===================================================== */
 
     if (!user) {
-
-      const {
-        data: contacts,
-        error: contactError
-      } = await sb.rpc(
-        'get_professional_contact',
-        {
-          target_profile_id: id
-        }
-      );
+        
+      const { data: contacts, error: contactError } = await sb.rpc(
+  'get_public_professional_contact',
+  { target_profile_id: id }
+);
 
       if (
         contactError ||
